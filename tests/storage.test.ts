@@ -13,3 +13,12 @@ it('persists profiles and separate church checkpoints, restores complete state, 
  p.game.failed='Lost';await expect(saveCheckpoint(p,'After defeat','Church')).rejects.toThrow('church');
  expect(await checkpoints('someone-else')).toHaveLength(0);
 });
+it('preserves player skill metrics in checkpoints and supports older skill-less saves',async()=>{
+ const p:Profile={id:'skills-captain',name:'Mary',game:newGame('Mary',2),updated:1};
+ p.game.skills={sailing:{tier:2,points:7}};
+ const saved=await saveCheckpoint(p,'Sailing record','Church');
+ p.game.skills.sailing.points=9;
+ expect(restoreCheckpoint(p,saved).game.skills?.sailing).toEqual({tier:2,points:7});
+ const legacy=structuredClone(saved);delete legacy.game.skills;
+ expect(restoreCheckpoint(p,legacy).game.captain).toBe('Mary');
+});

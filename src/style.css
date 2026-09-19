@@ -76,3 +76,13 @@ input[type=radio]{accent-color:var(--primary)}
 .log-body time{font-size:10px;color:var(--muted)}
 .log-body p{font-size:13px;margin:3px 0}
 @media(max-width:720px){.quick-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:9px 0}.quick-stats>div{padding:0 12px}.quick-stats strong{font-size:16px}.topbar .nav-icon{width:36px;height:36px;padding:8px}.topbar nav{gap:4px}.nav-tooltip{left:auto;right:0;transform:none}.full-stats{grid-template-columns:1fr}.journal-screen{padding:20px;margin:0}.journal-tabs button{padding:8px 12px;font-size:12px}.log-toggle{gap:8px;padding:12px}.log-toggle strong{font-size:11px}.log-preview{font-size:11px}.log-body{padding:0 15px}.gamespace{padding-bottom:90px}}
+
+.skill-card{max-width:760px;border:1px solid var(--line);border-radius:7px;padding:24px}
+.skill-card h2{margin:0}.skill-card>p{color:var(--muted);font-size:14px}
+.skill-card progress{display:block;width:100%;height:12px;border:0;border-radius:8px;overflow:hidden;background:var(--surface);accent-color:var(--primary)}
+.skill-card progress::-webkit-progress-bar{background:var(--surface);border-radius:8px}
+.skill-card progress::-webkit-progress-value{background:var(--primary);border-radius:8px}
+.skill-card progress::-moz-progress-bar{background:var(--primary);border-radius:8px}
+.skill-note{background:var(--surface);padding:16px;border-radius:5px;font-size:13px;margin-top:24px}
+.skill-note p{margin:5px 0 0;color:var(--muted)}
+@media(max-width:520px){.skill-card{padding:17px}}

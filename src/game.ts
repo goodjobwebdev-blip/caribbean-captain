@@ -1,3 +1,4 @@
+import {initialSkills,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
   { id: 'saint-pierre', name: 'Saint-Pierre', island: 'Martinique', nation: 'France', x: -29, y: 50, prices: { sugar: 12, rum: 10, cloth: 25 }, description: 'Green slopes rise behind the waterfront. Boatmen call across the roadstead while merchants inspect the morning cargo.' },
@@ -10,7 +11,7 @@ export const SHIP = { name: 'The Wayfarer', type: 'Trading sloop', capacity: 300
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; weather: string; dice: Dice };
-export type Game = { version: 1; captain: string; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
+export type Game = { version: 1; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
 export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'sleep' | 'repair' | 'deliver' } | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
@@ -22,7 +23,7 @@ export const wageFor = (g: Game, hours: number) => g.crew * 2 * hours / 24;
 export const cash = (n: number) => Math.floor(n).toLocaleString('en');
 export function date(hours: number) { const day = Math.floor(hours / 24); const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; return `${day % 30 + 1} ${months[Math.floor(day / 30) % 12]}, Year ${Math.floor(day / 360) + 1} · ${String(hours % 24).padStart(2,'0')}:00`; }
 export function duration(hours: number) { return `${Math.floor(hours / 24)}d ${hours % 24}h`; }
-export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:1, captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, condition:100, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
+export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:1, skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, condition:100, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
 function note(g:Game,text:string) { g.log.unshift({hours:g.hours,text}); g.log = g.log.slice(0,60); }
 function advance(g:Game,hours:number) {
   const food = foodFor(g,hours);
