@@ -13,7 +13,7 @@ Gamespace and Journal require an active captain. Journal remains accessible duri
 
 ## Gamespace
 
-Compact statistics appear only here: silver, provisions and days of food, crew and passenger count, ship condition, and hold usage. The line above shows the captain, location, and game date.
+Compact statistics appear only here: silver, provisions and days of food, crew and passenger count, hull percentage and ship name, and hold usage. The line above shows the captain, location, and game date.
 
 A fixed bottom strip shows the latest captain's log entry. Expand it upward to read the scrollable history (the latest 60 stored entries). The strip is absent from other screens. Its expanded state does not alter game state. Escape closes the expanded log when keyboard focus is inside its history.
 
@@ -21,7 +21,7 @@ A fixed bottom strip shows the latest captain's log entry. Expand it upward to r
 
 Text-labeled, keyboard-navigable tabs:
 
-- **Ship stats:** condition, speed, hold capacity, location, voyage state, and the captain's name, treasury, calendar, and completed commissions.
+- **Ship stats:** configuration, tier/class, hull points, sails, speed, hold, sale value, crew/berth limits, per-battery cannons, and design ratings; plus the captain's record. Deferred weight and combat effects are labeled.
 - **Crew stats:** crew limits, wages, food consumption, and days of provisions.
 - **Cargo:** trade goods, provisions, and contract freight.
 - **Passengers:** occupied berths, provision needs, and passage destinations.

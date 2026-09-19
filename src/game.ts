@@ -1,3 +1,4 @@
+import {createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
 import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
@@ -7,28 +8,55 @@ export const PORTS = [
 export type PortId = typeof PORTS[number]['id'];
 export type Good = 'sugar' | 'rum' | 'cloth';
 export const GOODS: Good[] = ['sugar', 'rum', 'cloth'];
-export const SHIP = { name: 'The Wayfarer', type: 'Trading sloop', capacity: 300, speed: 1.2, minCrew: 5, maxCrew: 20 };
+// Fixed baseline is retained only for contract pricing and legacy callers.
+export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; weather: string; dice: Dice };
-export type Game = { version: 1; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'sleep' | 'repair' | 'deliver' } | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
+export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
 export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);
 export const sailingBonus = (g?:Pick<Game,'skills'>) => sailingProgress(g?.skills).tier * 0.05;
-export const effectiveSpeed = (g?:Pick<Game,'skills'>) => SHIP.speed * (1 + sailingBonus(g));
+export const effectiveSpeed = (g?:Pick<Game,'skills'|'ship'>) => (g?.ship?shipDefinition(g.ship.configurationId).speed:SHIP.speed) * (1 + sailingBonus(g));
 // Omit the captain only for fixed contract pricing at baseline speed.
-export const hoursTo = (a: PortId, b: PortId, g?:Pick<Game,'skills'>) => Math.ceil(distance(a, b) / effectiveSpeed(g));
+export const hoursTo = (a: PortId, b: PortId, g?:Pick<Game,'skills'|'ship'>) => Math.ceil(distance(a, b) / effectiveSpeed(g));
 export const cargoUsed = (g: Game) => Object.values(g.cargo).reduce((a,b) => a+b, 0) + g.provisions + g.contracts.filter(c => c.type === 'Freight').reduce((a,c) => a+c.amount,0);
 export const passengers = (g: Game) => g.contracts.filter(c => c.type === 'Passengers').reduce((a,c) => a+c.amount,0);
+/** Old records are upgraded lazily; stored checkpoints are never overwritten. */
+export function ownedShip(g:Game):OwnedShip {
+ if(g.ship){shipDefinition(g.ship.configurationId);return g.ship;}
+ const ship=createShip(STARTER_ID,'The Wayfarer',`legacy-wayfarer-${g.seed}`);
+ ship.hullPoints=Math.max(0,Math.min(100,g.condition??100));
+ return ship;
+}
+export const currentShip=(g:Game)=>shipDefinition(ownedShip(g).configurationId);
+export const hullPercent=(g:Game)=>100*ownedShip(g).hullPoints/currentShip(g).maxHull;
+export function normalizeGame(original:Game):Game {
+ if(original.version!==1&&original.version!==2)throw new Error('Unsupported captain save version.');
+ const g=structuredClone(original);g.ship=ownedShip(g);g.version=2;delete g.condition;return g;
+}
+export function shipPurchaseQuote(g:Game,configurationId:string){
+ const target=shipDefinition(configurationId),sale=shipSaleValue(ownedShip(g)),balance=target.price-sale;
+ const problems:string[]=[];
+ if(g.failed)problems.push('Load a church checkpoint to continue.');
+ if(g.voyage)problems.push('Resolve the encounter before visiting a shipyard.');
+ if(target.id===currentShip(g).id)problems.push('You already command this configuration.');
+ if(cargoUsed(g)>target.capacity+1e-8)problems.push(`Reduce your hold load to ${target.capacity} units before exchanging ships.`);
+ if(g.crew>target.maxCrew)problems.push(`Release crew at the tavern until no more than ${target.maxCrew} remain.`);
+ if(g.crew<target.minCrew)problems.push(`Hire at least ${target.minCrew} sailors before taking command.`);
+ if(passengers(g)>target.passengerCapacity)problems.push(`Deliver passengers first: this ship has ${target.passengerCapacity} berths.`);
+ if(g.silver-balance<0)problems.push('Not enough silver for the exchange.');
+ return {target,sale,balance,problems};
+}
 export const foodFor = (g: Game, hours: number) => (g.crew + passengers(g)) * hours / 24;
 export const wageFor = (g: Game, hours: number) => g.crew * 2 * hours / 24;
 export const cash = (n: number) => Math.floor(n).toLocaleString('en');
 export function date(hours: number) { const day = Math.floor(hours / 24); const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; return `${day % 30 + 1} ${months[Math.floor(day / 30) % 12]}, Year ${Math.floor(day / 360) + 1} · ${String(hours % 24).padStart(2,'0')}:00`; }
 export function duration(hours: number) { return `${Math.floor(hours / 24)}d ${hours % 24}h`; }
-export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:1, skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, condition:100, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
+export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:2, ship:createShip(STARTER_ID,'The Wayfarer'), skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
 function note(g:Game,text:string) { g.log.unshift({hours:g.hours,text}); g.log = g.log.slice(0,60); }
 function advance(g:Game,hours:number) {
   const food = foodFor(g,hours);
@@ -48,7 +76,9 @@ export function outcome(total:number) { return total<=6?'Setback':total<=9?'Part
 export function act(original:Game, action:Action, randomOverride?:()=>number):Game {
   if (original.failed) throw new Error('Load a church checkpoint to continue.');
   if (original.voyage && action.type!=='encounter') throw new Error('Resolve the pirate encounter first.');
-  const g=structuredClone(original);
+  const g=normalizeGame(original);
+  const spec=currentShip(g),ship=g.ship!;
+  const damageHull=(percent:number)=>{ship.hullPoints=Math.max(0,ship.hullPoints-spec.maxHull*percent/100);};
   const random=()=>{ if(randomOverride) return randomOverride(); g.seed=(g.seed+0x6D2B79F5)>>>0; let t=g.seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
   const roll=():Dice=>[Math.floor(random()*6)+1,Math.floor(random()*6)+1];
   const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;};
@@ -61,7 +91,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const q=action.quantity;if(!Number.isInteger(q)||q<1||q>300) throw new Error('Choose a valid quantity.');
       if(![...GOODS,'provisions'].includes(action.good)) throw new Error('Unknown goods.');
       if(action.type==='buy') {
-        if(cargoUsed(g)+q>SHIP.capacity+1e-8)throw new Error('Not enough room in the hold.');
+        if(cargoUsed(g)+q>spec.capacity+1e-8)throw new Error('Not enough room in the hold.');
         const price=action.good==='provisions'?1:port(g.port).prices[action.good];pay(q*price);
         if(action.good==='provisions')g.provisions+=q;else g.cargo[action.good]+=q;
         note(g,`Bought ${q} ${action.good} for ${q*price} silver.`);
@@ -72,20 +102,42 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       }
       advance(g,1);break;
     }
-    case 'hire':if(g.crew>=SHIP.maxCrew)throw new Error('Your crew is already full.');pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
+    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
-    case 'repair':{if(g.condition===100)throw new Error('Your ship needs no repairs.');const damage=100-g.condition;pay(damage*2);if(advance(g,Math.ceil(damage/5))){g.condition=100;note(g,`The shipyard repaired The Wayfarer for ${damage*2} silver.`);}break;}
+    case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
+    case 'repair':{
+      const cost=hullRepairQuote(ship);if(!cost)throw new Error('Your hull needs no repairs.');
+      pay(cost);if(advance(g,Math.ceil((spec.maxHull-ship.hullPoints)/5))){ship.hullPoints=spec.maxHull;note(g,`The shipyard repaired ${ship.name}'s hull for ${cost} silver.`);}break;
+    }
+    case 'repair-sails':{
+      const cost=sailRepairQuote(ship);if(!cost)throw new Error('Your sails need no repairs.');
+      pay(cost);if(advance(g,Math.ceil((100-ship.sailCondition)/5))){ship.sailCondition=100;note(g,`Sails repaired for ${cost} silver.`);}break;
+    }
+    case 'replace-cannons':{
+      const cost=cannonReplacementQuote(ship);if(!cost)throw new Error('No default cannons need replacing.');
+      const missing=BATTERIES.reduce((n,b)=>n+Math.max(0,spec.defaultCannons[b]-ship.cannons[b]),0);
+      pay(cost);if(advance(g,missing)){for(const b of BATTERIES)ship.cannons[b]=Math.max(ship.cannons[b],spec.defaultCannons[b]);note(g,`Replaced ${missing} cannons for ${cost} silver.`);}break;
+    }
+    case 'buy-ship':{
+      const quote=shipPurchaseQuote(g,action.configurationId);
+      if(quote.problems.length)throw new Error(quote.problems.join(' '));
+      g.silver-=quote.balance;
+      g.ship=createShip(quote.target.id,undefined,`ship-${g.seed}-${g.hours}-${quote.target.id}`);
+      note(g,`Sold ${ship.name} for ${quote.sale} silver and bought ${quote.target.label} for ${quote.target.price} silver. ${quote.balance>=0?`Paid ${quote.balance}`:`Received ${-quote.balance}`} silver in the exchange.`);
+      break;
+    }
     case 'accept': {
       const c=offers(g).find(c=>c.id===action.contract.id);if(!c)throw new Error('That offer is no longer available.');
       if(g.contracts.length>=3)throw new Error('You can carry up to three active contracts.');
-      if(c.type==='Freight' && cargoUsed(g)+c.amount>SHIP.capacity)throw new Error('This freight needs 40 free hold units.');
-      if(c.type==='Passengers' && passengers(g)+c.amount>6)throw new Error('There are only six passenger berths.');
+      if(c.type==='Freight' && cargoUsed(g)+c.amount>spec.capacity)throw new Error('This freight needs 40 free hold units.');
+      if(c.type==='Passengers' && passengers(g)+c.amount>spec.passengerCapacity)throw new Error(`There are only ${spec.passengerCapacity} passenger berths.`);
       g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery.`);break;
     }
     case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
-      if(g.crew<SHIP.minCrew)throw new Error('You need at least five sailors.');
+      if(g.crew<spec.minCrew)throw new Error(`You need at least ${spec.minCrew} sailors.`);
+      if(ship.hullPoints<=0)throw new Error('Repair your hull before sailing.');
       const weatherRoll=random();const factor=weatherRoll<0.2?0.85:weatherRoll>0.8?1.25:1;
       const weather=factor<1?'Fair winds':factor>1?'Headwinds':'Steady winds';const hours=Math.ceil(hoursTo(g.port,action.to,g)*factor);const dice=roll();
       g.voyage={to:action.to,hours,remaining:hours,weather,dice};g.lastRoll={label:'Voyage encounter',dice,outcome:dice[0]+dice[1]===2?'Pirates sighted':'Clear passage'};
@@ -97,11 +149,11 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(!g.voyage)throw new Error('There is no encounter.');
       const dice=roll(),total=dice[0]+dice[1],band=outcome(total);g.lastRoll={label:action.choice,dice,outcome:band};
       let effects='';
-      if(action.choice==='flee'){const delay=total<=6?24:total<=9?8:0;const damage=total<=6?25:total<=9?10:0;g.condition-=damage;g.voyage.remaining+=delay;effects=`${damage} ship damage; ${delay} hours delay.`;}
-      else if(action.choice==='negotiate'){const demand=total<=6?150:total<=9?60:0;const paid=Math.min(Math.max(0,g.silver),demand);g.silver-=paid;const damage=paid<demand?15:0;g.condition-=damage;effects=`Paid ${cash(paid)} silver.${damage?' Unable to meet their demand: 15 ship damage.':''}`;}
-      else {const damage=total<=6?50:total<=9?20:5;const losses=total<=6?3:total<=9?1:0;const loot=total<=6?0:total<=9?60:150;g.condition-=damage;g.crew-=losses;g.silver+=loot;effects=`${damage} ship damage; ${losses} crew lost; ${loot} silver recovered.`;}
-      g.condition=Math.max(0,g.condition);note(g,`${action.choice}: ${dice.join(' + ')} = ${total}. ${band}. ${effects}`);
-      if(g.condition<=0||g.crew<SHIP.minCrew){g.failed=g.condition<=0?'Your ship was lost. Load a church checkpoint.':'Too few sailors survived to bring the ship home. Load a church checkpoint.';note(g,g.failed);}else arrive();break;
+      if(action.choice==='flee'){const delay=total<=6?24:total<=9?8:0;const damage=total<=6?25:total<=9?10:0;damageHull(damage);g.voyage.remaining+=delay;effects=`${damage}% hull damage; ${delay} hours delay.`;}
+      else if(action.choice==='negotiate'){const demand=total<=6?150:total<=9?60:0;const paid=Math.min(Math.max(0,g.silver),demand);g.silver-=paid;const damage=paid<demand?15:0;damageHull(damage);effects=`Paid ${cash(paid)} silver.${damage?' Unable to meet their demand: 15% hull damage.':''}`;}
+      else {const damage=total<=6?50:total<=9?20:5;const losses=total<=6?3:total<=9?1:0;const loot=total<=6?0:total<=9?60:150;damageHull(damage);g.crew-=losses;g.silver+=loot;effects=`${damage}% hull damage; ${losses} crew lost; ${loot} silver recovered.`;}
+      note(g,`${action.choice}: ${dice.join(' + ')} = ${total}. ${band}. ${effects}`);
+      if(ship.hullPoints<=0||g.crew<spec.minCrew){g.failed=ship.hullPoints<=0?'Your ship was lost. Load a church checkpoint.':'Too few sailors survived to bring the ship home. Load a church checkpoint.';note(g,g.failed);}else arrive();break;
     }
   }
   return g;

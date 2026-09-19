@@ -6,11 +6,11 @@ Recorded 2026-09-19 from the project discussion. Updated with the first playable
 
 The player is a captain in a single-player browser game. The interface uses prose, action buttons, and clear status information. Economic planning leads the first version. Crew stories, exploration, and richer danger can grow in later versions. A visual map is deferred.
 
-The long-term ambition is to sail, earn money, and improve a fleet. The first version deliberately uses one predefined ship: no ship purchases, upgrades, outfitting, or multiple-ship management.
+The long-term ambition is to sail, earn money, and improve a fleet. The current game allows one owned ship, purchased by selling the previous ship in the same exchange. There are 28 predefined configurations across six tiers; fleets and custom outfitting are deferred. See [ships](ships.md).
 
 ## Starting situation and world
 
-The player starts in Bridgetown with a small predefined ship, minimum crew, initial provisions, and enough silver for a first trading voyage. Exact amounts and ship statistics are undecided.
+The player starts in Bridgetown with The Wayfarer, a Universal Sloop, 10 crew, 120 provisions, and 800 silver.
 
 | Island | Town | Status |
 | --- | --- | --- |
@@ -29,10 +29,10 @@ Each town provides the following services:
 | Tavern | Sleep; hire crew |
 | Store | Buy and sell trade goods; buy provisions |
 | Harbour Master | Accept freight, letter-delivery, and passenger tasks for silver |
-| Shipyard | Repair the ship through one simple repair action |
+| Shipyard | Compare and exchange ships; repair hull or sails; replace missing default cannons |
 | Church | Create checkpoints for the current profile |
 
-The ship has a single overall condition rather than separate hull, sail, or cannon damage. Repair pricing, duration, and quantity remain to be balanced.
+Ships track hull points, sail condition, and operational cannons separately. The prototype encounters currently damage the hull only, by percentage of maximum hull. Ship speed, hold capacity, crew limits, and passenger berths depend on the purchased configuration. Detailed weight and combat effects are deferred.
 
 ## Time and sailing
 
@@ -87,7 +87,7 @@ The game remains playable using predefined text without an API key or when gener
 
 ## Deferred ideas
 
-- Buying better ships, outfitting, and managing a fleet.
+- Custom outfitting, configuration conversion, and managing a fleet.
 - Officers, perks, experience, and deeper crew systems.
 - Tactical naval combat beyond the initial action rolls.
 - National allegiance, reputation, and changing flags.

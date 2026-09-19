@@ -1,7 +1,7 @@
 # Ships: catalogue and ownership design
 
-Status: design decisions and proposed catalogue; not yet implemented.
-The current playable game still uses its original single-ship mechanics.
+Status: ship ownership and shipyard purchases are implemented. All 28 configurations across six tiers are available in every port. Numerical balance remains provisional.
+See [the implemented catalogue](ship-catalogue.md) for specifications and [the ship release](ship-release.md) for behavior and deferred mechanics.
 [Game stats](stats.md) defines the base, current, and calculated ship statistics.
 [Trade economy and ship prices](economy-proposal.md) records the proposed income targets and revised price anchors.
 
@@ -28,9 +28,9 @@ Use the same ship model for shipyard offers, player ownership, and eventually en
 Keep hull type, configuration, and individual ship identifiers distinct.
 Ship tiers are separate from the captain's Sailing skill tiers.
 
-## Proposed starting catalogue
+## Hull families and supported configurations
 
-This roster and its tier assignments are a design proposal for numerical balancing.
+This roster and its tier assignments are implemented with provisional balance values.
 The confirmed starting configuration is Universal Sloop.
 Names and roles are game-oriented rather than historical specifications.
 
@@ -88,18 +88,13 @@ Proposed transaction rules:
 - Explain capacity problems and block purchase rather than silently deleting cargo or people.
 - Apply the ship exchange and silver adjustment together.
 
-Sale valuation, equipment transfer details, transaction time, and port stock
-rules remain to be specified.
+The release uses 70% resale less quoted hull, sail, and missing-default-cannon repairs. Cannons stay with the sold ship. Exchanges take no game time; all configurations are available in all three shipyards. Further market stock rules are deferred.
 
-## Implementation phases
+## Implementation phases (progress)
 
-1. **Catalogue and specifications:** settle numerical stats, prices, unit weights,
-   and supported configurations; use the Universal Sloop as the starting baseline.
-2. **Ownership and shipyards:** implement replacement purchase/sale, transfer
-   checks, Journal information, and migration of existing captains and church
-   checkpoints.
-3. **Performance and outfitting:** implement separate repairs, cannon equipment,
-   deadweight, crew effectiveness, and calculated movement.
+1. **Catalogue and specifications — initial pass complete:** numerical design stats, prices, and supported configurations. Item weight definitions remain deferred.
+2. **Ownership and shipyards — complete:** replacement purchase/sale, transfer checks, Journal information, and compatible loading of existing captains and church checkpoints.
+3. **Performance and outfitting — partly deferred:** separate repair services and default cannon replacement are implemented. Custom loadouts, active deadweight, crew effectiveness, and condition-based movement remain deferred.
 
 Capture, fleets, stored spare ships, and configuration conversion are deferred.
 Future enemy ships should use the catalogue, but encounter integration is not

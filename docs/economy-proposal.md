@@ -1,6 +1,6 @@
 # Trade economy and ship price proposal
 
-Status: design proposal, not implemented. The agreed direction is that planned,
+Status: ship price anchors and default-loadout resale are implemented. The proposed trade margins and reduced contract payouts are not implemented. The agreed direction is that planned,
 skilled trading should provide more income than routine contracts. Numerical
 values below remain playtesting targets. Current mechanics are in [balance.md](balance.md).
 
