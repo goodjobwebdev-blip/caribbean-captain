@@ -24,3 +24,18 @@
 input::placeholder{color:var(--muted);opacity:1}
 input[type=radio]{accent-color:var(--primary)}
 @media(max-width:520px){.theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* One searchable model field with a themed, keyboard-accessible popup. */
+.model-picker{position:relative;margin:12px 0 20px}
+.model-picker-field{position:relative}
+.settings .model-picker-field input{margin:0;padding-right:44px}
+.model-picker-toggle{position:absolute;right:2px;top:2px;bottom:2px;width:38px;border:0;padding:0;font-size:18px;color:var(--muted)}
+.model-picker-popup{position:absolute;z-index:10;top:100%;left:0;right:0;margin-top:5px;border:1px solid var(--line);border-radius:6px;background:var(--paper);overflow:hidden;box-shadow:0 8px 24px color-mix(in srgb,var(--sea) 22%,transparent)}
+.model-picker-list{max-height:280px;overflow-y:auto;overscroll-behavior:contain}
+.model-picker-option{padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.model-picker-option:last-child{border-bottom:0}
+.model-picker-option strong{font-size:13px;font-weight:500;display:block;color:var(--text)}
+.model-picker-option small{font-size:11px;color:var(--muted)}
+.model-picker-option[data-active="true"]{background:var(--hover);box-shadow:inset 3px 0 var(--primary)}
+.model-picker-option[aria-selected="true"] strong{color:var(--ink);font-weight:700}
+.model-picker-empty{padding:14px;margin:0;font-size:13px;color:var(--muted)}
