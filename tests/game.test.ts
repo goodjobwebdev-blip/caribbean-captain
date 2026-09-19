@@ -31,3 +31,30 @@ describe('quest archive compatibility',()=>{
   expect(checkpoint.contracts).toHaveLength(1);
  });
 });
+
+describe('Sailing mastery speed bonus',()=>{
+ it('shortens voyages and their costs without changing weather, rewards, or awarding points',()=>{
+  const novice=newGame('Anne',42),expert=newGame('Anne',42);
+  expert.skills={sailing:{tier:10,points:0}};
+  expect(hoursTo('bridgetown','saint-pierre',expert)).toBe(33);
+  expect(offers(expert)).toEqual(offers(novice));
+  const normal=act(novice,{type:'sail',to:'saint-pierre'},random(.5,.5,.5));
+  const fast=act(expert,{type:'sail',to:'saint-pierre'},random(.5,.5,.5));
+  expect(fast.hours-expert.hours).toBe(33);
+  expect(fast.provisions).toBeGreaterThan(normal.provisions);
+  expect(fast.silver).toBeGreaterThan(normal.silver);
+  expect(fast.skills).toEqual(expert.skills);
+  const headwinds=act(expert,{type:'sail',to:'saint-pierre'},random(.99,.5,.5));
+  expect(headwinds.hours-expert.hours).toBe(Math.ceil(33*1.25));
+  expert.skills.sailing.points=200;
+  expect(hoursTo('bridgetown','saint-pierre',expert)).toBe(33);
+ });
+ it('keeps old profiles at baseline and does not recalculate an already-started voyage',()=>{
+  const legacy=newGame('Anne',42);delete legacy.skills;
+  expect(hoursTo('bridgetown','saint-pierre',legacy)).toBe(49);
+  const encounter=act(legacy,{type:'sail',to:'saint-pierre'},random(.5,0,0));
+  encounter.skills={sailing:{tier:10,points:0}};
+  const arrived=act(encounter,{type:'encounter',choice:'flee'},random(.99,.99));
+  expect(arrived.hours-legacy.hours).toBe(49);
+ });
+});

@@ -1,4 +1,4 @@
-import {initialSkills,type PlayerSkills} from './skills';
+import {initialSkills,sailingProgress,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
   { id: 'saint-pierre', name: 'Saint-Pierre', island: 'Martinique', nation: 'France', x: -29, y: 50, prices: { sugar: 12, rum: 10, cloth: 25 }, description: 'Green slopes rise behind the waterfront. Boatmen call across the roadstead while merchants inspect the morning cargo.' },
@@ -15,7 +15,10 @@ export type Game = { version: 1; captain: string; skills?: PlayerSkills; port: P
 export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'sleep' | 'repair' | 'deliver' } | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
-export const hoursTo = (a: PortId, b: PortId) => Math.ceil(distance(a, b) / SHIP.speed);
+export const sailingBonus = (g?:Pick<Game,'skills'>) => sailingProgress(g?.skills).tier * 0.05;
+export const effectiveSpeed = (g?:Pick<Game,'skills'>) => SHIP.speed * (1 + sailingBonus(g));
+// Omit the captain only for fixed contract pricing at baseline speed.
+export const hoursTo = (a: PortId, b: PortId, g?:Pick<Game,'skills'>) => Math.ceil(distance(a, b) / effectiveSpeed(g));
 export const cargoUsed = (g: Game) => Object.values(g.cargo).reduce((a,b) => a+b, 0) + g.provisions + g.contracts.filter(c => c.type === 'Freight').reduce((a,c) => a+c.amount,0);
 export const passengers = (g: Game) => g.contracts.filter(c => c.type === 'Passengers').reduce((a,c) => a+c.amount,0);
 export const foodFor = (g: Game, hours: number) => (g.crew + passengers(g)) * hours / 24;
@@ -79,7 +82,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
       if(g.crew<SHIP.minCrew)throw new Error('You need at least five sailors.');
       const weatherRoll=random();const factor=weatherRoll<0.2?0.85:weatherRoll>0.8?1.25:1;
-      const weather=factor<1?'Fair winds':factor>1?'Headwinds':'Steady winds';const hours=Math.ceil(hoursTo(g.port,action.to)*factor);const dice=roll();
+      const weather=factor<1?'Fair winds':factor>1?'Headwinds':'Steady winds';const hours=Math.ceil(hoursTo(g.port,action.to,g)*factor);const dice=roll();
       g.voyage={to:action.to,hours,remaining:hours,weather,dice};g.lastRoll={label:'Voyage encounter',dice,outcome:dice[0]+dice[1]===2?'Pirates sighted':'Clear passage'};
       note(g,`Departed for ${port(action.to).name}. ${weather}; ${duration(hours)}. Voyage roll: ${dice.join(' + ')} = ${dice[0]+dice[1]}.`);
       if(dice[0]+dice[1]===2){const first=Math.floor(hours/2);g.voyage.remaining-=first;if(advance(g,first))note(g,'A pirate ship closes in. Choose whether to flee, negotiate, or fight.');}

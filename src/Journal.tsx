@@ -1,5 +1,5 @@
 import {useState, type KeyboardEvent} from 'react';
-import {cash, date, cargoUsed, passengers, port, GOODS, SHIP, type Game, type Contract} from './game';
+import {cash, date, cargoUsed, passengers, port, GOODS, SHIP, effectiveSpeed, sailingBonus, type Game, type Contract} from './game';
 import {sailingProgress,nextTierRequirement} from './skills';
 export type Screen = 'game'|'journal'|'profiles'|'settings';
 export function Icon({name}:{name:Screen|'log'}){
@@ -27,13 +27,13 @@ export function Journal({game:g}:{game:Game}){
  <div className="journal-tabs" role="tablist" aria-label="Journal sections" onKeyDown={tabKeys}>{TABS.map(t=><button key={t} role="tab" id={`journal-tab-${t}`} aria-selected={tab===t} aria-controls={`journal-panel-${t}`} tabIndex={tab===t?0:-1} onClick={()=>setTab(t)}>{t==='Ship'?'Ship stats':t==='Crew'?'Crew stats':t}</button>)}</div>
  <section role="tabpanel" id={`journal-panel-${tab}`} aria-labelledby={`journal-tab-${tab}`} tabIndex={0} className="journal-content">
  {tab==='Ship'&&<><h2>{SHIP.name}</h2><Details items={[
- ['Type',SHIP.type],['Condition',`${g.condition}%`],['Sailing speed',`${SHIP.speed} distance units/hour`],['Hold used',`${cargoUsed(g).toFixed(1)} / ${SHIP.capacity}`],['Free hold space',`${Math.max(0,SHIP.capacity-cargoUsed(g)).toFixed(1)} units`],['Location',location],['Status',g.failed?'Voyage ended':g.voyage?'Pirate encounter':'In port']
+ ['Type',SHIP.type],['Condition',`${g.condition}%`],['Base ship speed',`${SHIP.speed} distance units/hour`],['Effective sailing speed',`${effectiveSpeed(g).toFixed(2)} distance units/hour`],['Hold used',`${cargoUsed(g).toFixed(1)} / ${SHIP.capacity}`],['Free hold space',`${Math.max(0,SHIP.capacity-cargoUsed(g)).toFixed(1)} units`],['Location',location],['Status',g.failed?'Voyage ended':g.voyage?'Pirate encounter':'In port']
  ]}/><h2>Captain’s record</h2><Details items={[
  ['Captain',g.captain],['Treasury',`${cash(g.silver)} silver${g.silver<0?' (wages owed)':''}`],['Calendar',date(g.hours)],['Completed commissions',String(archived.length)]
  ]}/></>}
  {tab==='Skills'&&<><p className="eyebrow">PLAYER SKILLS</p><article className="skill-card"><div className="section-line"><h2>Sailing &amp; Navigation</h2><span className="quest-status">Tier {sailing.tier} / 10</span></div><p>Ship handling, sail and rigging work, route planning, weather judgment, and avoiding maritime hazards.</p><Details items={[
- ['Mastery tier',`${sailing.tier} / 10`],['Progress to next tier',target===null?'Maximum mastery':`${sailing.points} / ${target} points`]
- ]}/>{target!==null&&<><label htmlFor="sailing-progress">Progress toward tier {sailing.tier+1}</label><progress id="sailing-progress" value={Math.min(sailing.points,target)} max={target}>{sailing.points} / {target}</progress></>}<p className="muted">Only mastery tiers will affect gameplay. Points track progress toward the next tier.</p><div className="skill-note"><strong>Gameplay effects not yet active</strong><p>Learning rules and sailing bonuses are still being decided. Tier 0 and 0 points are provisional starting values.</p></div></article></>}
+ ['Mastery tier',`${sailing.tier} / 10`],['Sailing speed bonus',`+${Math.round(sailingBonus(g)*100)}%`],['Effective sailing speed',`${effectiveSpeed(g).toFixed(2)} units/hour`],['Progress to next tier',target===null?'Maximum mastery':`${sailing.points} / ${target} points`]
+ ]}/>{target!==null&&<><label htmlFor="sailing-progress">Progress toward tier {sailing.tier+1}</label><progress id="sailing-progress" value={Math.min(sailing.points,target)} max={target}>{sailing.points} / {target}</progress></>}<p className="muted">Only mastery tiers affect gameplay. Points track progress toward the next tier.</p><div className="skill-note"><strong>5% more sailing speed per mastery tier</strong><p>Weather effects are unchanged. Learning rules are still being decided, so voyages do not award points yet. Tier 0 and 0 points are provisional starting values.</p></div></article></>}
  {tab==='Crew'&&<><h2>The ship’s company</h2><Details items={[
  ['Sailors aboard',`${g.crew} / ${SHIP.maxCrew}`],['Minimum to sail',`${SHIP.minCrew} sailors`],['Daily crew wages',`${g.crew*2} silver`],['Crew provisions',`${g.crew} per day`],['All aboard',`${g.crew+passengers(g)} people`],['Total provisions',`${g.provisions.toFixed(1)} units`],['Food remaining',`${(g.provisions/(g.crew+passengers(g))).toFixed(1)} days for everyone aboard`]
  ]}/><p className="muted">Officers, individual experience, and skills will be added later.</p></>}
