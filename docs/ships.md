@@ -3,6 +3,7 @@
 Status: design decisions and proposed catalogue; not yet implemented.
 The current playable game still uses its original single-ship mechanics.
 [Game stats](stats.md) defines the base, current, and calculated ship statistics.
+[Trade economy and ship prices](economy-proposal.md) records the proposed income targets and revised price anchors.
 
 ## Agreed direction
 
