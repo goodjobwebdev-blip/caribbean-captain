@@ -1,22 +1,31 @@
 name: Deploy GitHub Pages
-
 on:
   push:
     branches: [main]
-    paths:
-      - 'site/**'
-      - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 concurrency:
   group: github-pages
   cancel-in-progress: false
-
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -27,14 +36,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+      - uses: actions/configure-pages@v5
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4

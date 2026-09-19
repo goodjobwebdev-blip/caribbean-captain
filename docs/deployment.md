@@ -1,37 +1,13 @@
-# GitHub Pages deployment
+# Deployment
 
-The current website is a standalone placeholder in `site/index.html`. It uses HTML and CSS without a build step or external assets. Gameplay is not implemented.
+GitHub Pages publishes the production Vite build at `/caribbean-captain/`. The repository's Pages source must be **GitHub Actions**.
 
-## One-time repository setup
+`.github/workflows/deploy-pages.yml` runs on pushes to `main` and manual dispatch. It installs locked dependencies, runs tests, builds the app, uploads only `dist/`, and deploys through the `github-pages` environment. A failed test or build prevents deployment. Existing documentation is not included in the published bundle.
 
-In GitHub, open **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions**.
+No personal token or NanoGPT secret is needed in Actions. The built-in token has contents-read permission; only the deploy job has pages-write and OIDC permissions. NanoGPT keys are entered by players at runtime, never included in the build.
 
-Then open **Actions → Deploy GitHub Pages → Run workflow**, select `main`, and run it. If the initial push already deployed successfully, no manual run is necessary.
+Framework: React + TypeScript + Vite. CSS handles the responsive layout. IndexedDB provides local profiles and church checkpoints. There is no server or cloud save service.
 
-The successful deployment's `github-pages` environment displays the live site URL. Do not treat a committed workflow as proof of a successful deployment.
+NanoGPT uses the documented [model list](https://docs.nano-gpt.com/api-reference/endpoint/models) and [chat completion](https://docs.nano-gpt.com/api-reference/endpoint/chat-completion) endpoints. Requests are optional, time-limited, and fall back to predefined prose. Keys remain in memory for the current tab. Authenticated generation has not been validated with a real user key.
 
-## Automatic deployments
-
-Changes to `site/**` or `.github/workflows/deploy-pages.yml` on `main` trigger deployment. The workflow can also be run manually. Only the `site` directory is published, not the repository documentation.
-
-The workflow uses GitHub's standard Pages actions and the built-in token with contents-read, pages-write, and OIDC permissions. No personal access token or NanoGPT key is required.
-
-If Configure Pages reports that the Pages site cannot be found, enable the source setting above, then rerun the workflow. The repository connector does not expose Pages administration.
-
-## Proposed game stack
-
-This is a recommendation for discussion, not an implemented or approved framework decision:
-
-- TypeScript for game state, rules, and content definitions.
-- React for prose, action menus, inventory, contracts, and settings.
-- Vite for local development and static production builds.
-- Plain CSS for responsive styling.
-- IndexedDB for local profiles and checkpoints, with versioned saves and eventual export/import.
-- Vitest for economy, time, dice, and save-state tests; Playwright for a few complete player journeys.
-- GitHub Actions and GitHub Pages for publishing.
-
-Keep game rules independent of React and LLM calls. The LLM only produces optional dialogue prose. Browser access to NanoGPT must be verified before choosing direct requests versus a minimal proxy. GitHub Pages cannot itself run that proxy. API keys must never enter the repository, build output, or checkpoints.
-
-When the actual app is introduced, set Vite's base path to `/caribbean-captain/`, add install/build steps, and upload `dist` instead of `site`.
-
-Reference: [GitHub's custom Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+See [GitHub's Pages workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).

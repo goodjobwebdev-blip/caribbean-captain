@@ -1,6 +1,6 @@
 # Agreed game design
 
-Recorded 2026-09-19 from the project discussion. This is a requirements baseline, not a claim that the game is implemented.
+Recorded 2026-09-19 from the project discussion. Updated with the first playable implementation. Numerical values are provisional; see [balance](balance.md).
 
 ## Experience and scope
 
@@ -15,10 +15,10 @@ The player starts in Bridgetown with a small predefined ship, minimum crew, init
 | Island | Town | Status |
 | --- | --- | --- |
 | Barbados | Bridgetown | Agreed starting location |
-| Martinique | To be selected | One town in the first version |
-| Curaçao | To be selected | One town in the first version |
+| Martinique | Saint-Pierre | Agreed first town |
+| Curaçao | Willemstad | Agreed first town |
 
-Use real islands. The historical year and the other town names have not been chosen. The broader concept includes England, France, the Dutch, Spain, and pirates; national reputation and flag-changing mechanics are not part of the agreed initial feature set.
+Use real islands. The historical year has not been chosen; the calendar uses a fictional Year 1. The broader concept includes England, France, the Dutch, Spain, and pirates; national reputation and flag-changing mechanics are not part of the agreed initial feature set.
 
 ## Port services
 
@@ -38,7 +38,7 @@ The ship has a single overall condition rather than separate hull, sail, or cann
 
 Track months, days, and hours. Time advances through player actions, without real-world waiting. Some actions cost hours; voyages take days.
 
-Port-to-port routes have predefined base sailing times. Weather and encounters can change voyage duration. Seasonal influences belong to the original sailing concept, but their initial implementation scope and numerical rules still need to be selected.
+Route distances are calculated as straight lines between anchorage coordinates in fictional distance units. Bridgetown is (0, 0); X increases east and Y increases north. The reference speed is 1 unit per hour. Travel time is distance divided by ship speed, rounded up to an hour. Weather and encounters can change duration. Coastlines and waypoints are ignored. Seasons are deferred. See [balance](balance.md) for provisional coordinates.
 
 Opening hours and other time-dependent availability are deferred. Later, shipyards may open only during the day, making sleep at a tavern or aboard the ship useful. Tavern sleep itself is included now.
 
@@ -58,14 +58,14 @@ Use 2d6: roll two six-sided dice and add the results.
 
 There are two separate roll stages:
 
-1. Every port-to-port voyage gets an encounter roll. A total of **2 triggers a pirate attack**. The meaning of 3–12 has not yet been assigned.
+1. Every port-to-port voyage gets an encounter roll. A total of **2 triggers a pirate attack**. Totals 3–12 mean clear passage in this version.
 2. During an encounter, the player chooses **flee**, **negotiate**, or **fight** before a new roll resolves that action and its consequences.
 
 The voyage roll must not be confused with the action-resolution roll. With fair independent dice, the pirate trigger has a probability of 1/36 per voyage, approximately 2.78%.
 
-The earlier proposed action bands were 2–6 setback, 7–9 mixed outcome, and 10–12 success, with possible small ship/crew modifiers. The user's explicit confirmation established the three actions and their rolls; the bands, modifiers, and exact consequences remain provisional rather than locked rules.
+The user approved the action bands: 2–6 setback, 7–9 partial success, and 10–12 success. There are no dice modifiers in the first version. Each of flee, negotiate, and fight has its own provisional consequence table in [balance](balance.md).
 
-The first version does not implement tactical naval combat. Consequences such as lost silver, cargo, provisions, time, crew, or ship condition need an explicit action table before implementation. No specific consequence amounts are currently approved.
+The first version does not implement tactical naval combat. Provisions running out, ship loss, or losing the minimum sailing crew ends play. There is no rescue: recovery is only through an existing church checkpoint.
 
 ## Profiles and checkpoints
 
@@ -73,7 +73,7 @@ Support unlimited profiles and unlimited checkpoints within each profile: no art
 
 A church in every town provides checkpoint creation. The player can continue from a chosen checkpoint after a setback. Checkpoints must belong to their corresponding profile and restore its game state.
 
-This replaces the earlier suggestion of one overwritten checkpoint. Saving is intended to be free, as proposed and accepted in the church discussion. Preserving the current session when the browser closes is also part of the accepted save proposal; its exact autosave behavior and persistence technology remain to be designed.
+Checkpoints are free and can only be created at church while alive and in port. The initial captain begins at the church, but no checkpoint is created automatically. Current-session progress is persisted separately after each action so reopening the browser resumes that state, including defeat; it is not an additional recovery checkpoint. Profiles and independent checkpoints use IndexedDB, without an artificial count limit. Checkpoints include the random generator state so restoring repeats the same future rolls for the same actions.
 
 ## Optional LLM dialogue
 
@@ -83,7 +83,7 @@ The core dialogue, available actions, and underlying answers are predefined. The
 
 The game, not the LLM, determines prices, contract terms, inventory, available actions, dice outcomes, and rewards. Fixed UI details remain authoritative. Generated text must not execute actions or change game state.
 
-The game remains playable using predefined text without an API key or when generation fails. Request timing and limits, the model-list API, browser access support, and credential persistence are implementation decisions still to be checked. Never put actual API keys into repository content or game checkpoints.
+The game remains playable using predefined text without an API key or when generation fails. The UI fetches available models and filters them by search. With AI enabled, entering an NPC location requests a short rephrasing with a timeout. Keys remain in tab memory only and are never persisted. Browser/API failures use the predefined text. A live authenticated response still needs verification with the player’s own key. Never put actual API keys into repository content or game checkpoints.
 
 ## Deferred ideas
 

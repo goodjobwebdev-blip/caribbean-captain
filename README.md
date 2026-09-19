@@ -1,14 +1,35 @@
 # Caribbean Captain
 
-Working title for a single-player, text-based browser game about captaining a ship in the Caribbean. Economic planning is the focus of the first version.
+A single-player text-based browser game about sailing, trading, and keeping a small ship afloat.
 
-**Status: design documentation only. No game implementation yet.**
+[Play the game](https://goodjobwebdev-blip.github.io/caribbean-captain/)
 
-Prepare in port, choose cargo and contracts, provision the ship, sail, resolve encounters, and earn silver at the next port.
+## First playable version
 
-## Documents
+Create a captain in Bridgetown. Visit the church to make your first checkpoint, buy provisions and trade goods, take a Harbour Master contract, and sail to Saint-Pierre or Willemstad. Pirate encounters use two six-sided dice and let you flee, negotiate, or fight. Repair at the shipyard and hire crew or sleep at the tavern.
 
-- [Agreed game design](docs/game-design.md): scope, systems, and later ideas.
-- [Open decisions](docs/open-decisions.md): details still requiring design or balancing.
+Failure is recoverable only from a church checkpoint. Profiles and checkpoints are local to your browser. Current-session resume includes failed voyages; it is not an undo button. There is no artificial profile/checkpoint limit, but browser storage capacity applies.
 
-The latest explicit user decisions take precedence over earlier suggestions. Numbers and technologies not agreed in the discussion remain undecided.
+Optional NanoGPT dialogue can be enabled in Settings with your own API key and model. Keys stay in tab memory and clear on refresh. The game works with predefined text when AI is disabled or unavailable. AI never determines prices, rewards, rolls, or actions.
+
+## Development
+
+Node.js 22.12+ (CI uses Node 24).
+
+```sh
+npm ci
+npm run dev
+npm test
+npm run build
+```
+
+Vite serves the app under `/caribbean-captain/`. Production output is `dist/`.
+
+Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/game.ts`, separate from the interface and optional LLM calls. Vitest covers travel, economy, failure, and checkpoint persistence.
+
+## Documentation
+
+- [Game design](docs/game-design.md)
+- [Provisional balance and world coordinates](docs/balance.md)
+- [Remaining decisions](docs/open-decisions.md)
+- [Deployment](docs/deployment.md)
