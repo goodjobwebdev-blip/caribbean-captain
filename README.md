@@ -33,6 +33,7 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 - [Player skill system](docs/skills.md)
 - [Game stats](docs/stats.md)
 - [Ships and ownership design](docs/ships.md)
+- [Trade system](docs/trade.md)
 - [Trade economy and revised ship prices (proposal)](docs/economy-proposal.md)
 - [Provisional balance and world coordinates](docs/balance.md)
 - [Remaining decisions](docs/open-decisions.md)
