@@ -3,6 +3,7 @@
 Status: ship ownership and shipyard purchases are implemented. All 28 configurations across six tiers are available in every port. Numerical balance remains provisional.
 See [the implemented catalogue](ship-catalogue.md) for specifications and [the ship release](ship-release.md) for behavior and deferred mechanics.
 [Game stats](stats.md) defines the base, current, and calculated ship statistics.
+[Active performance formulas](ship-performance.md) define weights, loading limits, and crew/condition modifiers.
 [Trade economy and ship prices](economy-proposal.md) records the proposed income targets and revised price anchors.
 
 ## Agreed direction
@@ -69,7 +70,7 @@ separately. Repairs and cannon replacement should follow those distinctions.
 
 Cargo-space units describe occupied hold space; weight units describe carried
 deadweight. They are independent limits. Item weights and space requirements
-still need numerical definitions. Crew, passengers, equipment, and cannons count
+are now defined for implemented goods, people, and cannons in ship-performance.md; future items remain undefined. Crew, passengers, equipment, and cannons count
 toward deadweight as specified in stats.md.
 
 Base movement assumes full hull, full sails, no cargo or cannons, and optimal
@@ -92,9 +93,9 @@ The release uses 70% resale less quoted hull, sail, and missing-default-cannon r
 
 ## Implementation phases (progress)
 
-1. **Catalogue and specifications — initial pass complete:** numerical design stats, prices, and supported configurations. Item weight definitions remain deferred.
+1. **Catalogue and specifications — initial pass complete:** numerical design stats, prices, and supported configurations. Initial item weights are implemented; future trade goods remain deferred.
 2. **Ownership and shipyards — complete:** replacement purchase/sale, transfer checks, Journal information, and compatible loading of existing captains and church checkpoints.
-3. **Performance and outfitting — partly deferred:** separate repair services and default cannon replacement are implemented. Custom loadouts, active deadweight, crew effectiveness, and condition-based movement remain deferred.
+3. **Performance and outfitting — partly deferred:** separate repair services and default cannon replacement are implemented. Deadweight, optimal-crew effectiveness, and condition-based movement are now active. Custom loadouts, crew injuries/experience, and combat effects remain deferred.
 
 Capture, fleets, stored spare ships, and configuration conversion are deferred.
 Future enemy ships should use the catalogue, but encounter integration is not

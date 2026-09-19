@@ -10,9 +10,9 @@ These are provisional implementation values for playtesting, not historical clai
 | Saint-Pierre | -29 | 50 |
 | Willemstad | -285 | -25 |
 
-These are simplified game positions with approximate geographic relationships, not surveyed coordinates. Distances use `Math.hypot(dx, dy)`. Reference speed is 1 unit/hour; The Wayfarer sails at 1.2 units/hour. The short voyage is 49 hours in normal weather. There are no waypoint or coastline checks.
+These are simplified game positions with approximate geographic relationships, not surveyed coordinates. Distances use `Math.hypot(dx, dy)`. Reference map speed is 1 unit/hour; The Wayfarer starts at 1.2 units/hour with its normal load and healthy condition. The short voyage is 49 hours in normal weather. There are no waypoint or coastline checks.
 
-The starting Universal Sloop has 300 hold units, 100 hull points, and 5 minimum / 10 optimal / 20 maximum crew. Shipyards offer 28 configurations; selected ship specifications replace these starting limits. See [ship catalogue](ship-catalogue.md). A new captain has 800 silver, 10 crew, and 120 provisions. Crew experience, seasons, and speed effects from damage are deferred.
+The starting Universal Sloop has 300 hold units, 100 hull points, and 5 minimum / 10 optimal / 20 maximum crew. Shipyards offer 28 configurations; selected ship specifications replace these starting limits. See [ship catalogue](ship-catalogue.md). A new captain has 800 silver, 10 crew, and 120 provisions. Crew experience and seasons are deferred. Load, crew count, hull, and sails affect performance as described in [ship performance](ship-performance.md).
 
 The calendar starts at 08:00 on 1 January, Year 1. Months have 30 days and years 360 days. This fictional calendar avoids selecting a historical year prematurely.
 
@@ -29,15 +29,15 @@ Goods and freight occupy one hold unit each; provisions occupy one each, includi
 | Cloth | 22 | 25 | 14 |
 | Provisions | 1 | 1 | 1 |
 
-Selling yields 85% of local buy price, rounded down. Provisions cannot be sold. Every transaction takes 1 hour. Quantities available are 1, 10, 25, and 50. Goods supply is unlimited for this prototype.
+Selling yields 85% of local buy price, rounded down. Provisions cannot be sold. Every transaction takes 1 hour. Quantities available are 1, 10, 25, 50, 100, 250, 500, and 1,000. Goods supply is unlimited for this prototype.
 
 Hire one sailor: 25 silver and 1 hour. Sleep: 8 silver and 8 hours. Hull repair: ship tier in silver per missing hull point, at 5 hull points/hour rounded up. This retains 2 silver/point on the starting tier 2 sloop. Sail repair: ship tier in silver per missing percentage point, at 5 percentage points/hour rounded up. Missing default cannons cost 100 × ship tier each and take one hour each. Each service restores its own component in one action. Wages and provisions continue during these actions. Visiting locations and creating checkpoints take no time.
 
 ## Contracts
 
-Up to three active tasks. Each other port offers a letter, 40-unit freight, and three passengers each game day. An offer can only be accepted once that day; unused offers refresh the next day. Existing contracts never expire in this version.
+Up to three active tasks. Each other port offers a letter, three freight sizes (40, 200, 800 units), and three passengers each game day. An offer can only be accepted once that day; unused offers refresh the next day. Existing contracts never expire in this version.
 
-Rewards: `round(normal voyage hours × rate + 60)`, with rates 3 for letters, 5 for freight, 4 for passengers. Acceptance and delivery each consume an hour. Payment requires visiting the destination Harbour Master and delivering; arrival alone grants no silver. Contract terms come from game data, never NPC prose.
+Rewards: `round(normal voyage hours × rate + 60)`, with rates 3 for letters, 5 × freight amount / 40 for freight, 4 for passengers. Pricing uses the original 1.2-unit/hour baseline, independent of the captain or actual sailing conditions. Acceptance and delivery each consume an hour. Payment requires visiting the destination Harbour Master and delivering; arrival alone grants no silver. Contract terms come from game data, never NPC prose.
 
 ## Sailing and encounter rolls
 
@@ -60,3 +60,5 @@ The departure panel shows normal-weather costs, the weather duration range, and 
 ## Persistence and random results
 
 IndexedDB stores current profiles and separate checkpoints. A checkpoint captures the entire game state, including random seed. Restoring it replaces current progress but preserves all other checkpoints. Names need not be unique; internal identifiers are unique. The first checkpoint must be created explicitly at church. Session resume cannot undo defeat. No cross-device synchronization or save export/import yet.
+
+Current deadweight is independent of hold space. [Ship performance](ship-performance.md) defines goods/person/cannon weights, safe loading checks, and multiplicative speed/maneuverability formulas.

@@ -5,7 +5,7 @@ Purchase prices include full repairs and default cannons. See [release behavior]
 
 ## Movement, cargo, and price
 
-| Tier | Configuration | Class | Silver | Hull HP | Speed (units/hour) | Cargo space | Deadweight capacity¹ |
+| Tier | Configuration | Class | Silver | Hull HP | Speed (units/hour) | Cargo space | Deadweight capacity |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | 1 | Universal Tartana | Universal | 4,000 | 60 | 0.95 | 140 | 230 |
 | 1 | Merchant Tartana | Merchant | 4,500 | 60 | 0.95 | 180 | 270 |
@@ -38,7 +38,7 @@ Purchase prices include full repairs and default cannons. See [release behavior]
 
 ## Crew and design ratings
 
-| Configuration | Crew min / optimal¹ / max | Passenger berths | Maneuverability¹ | Protection¹ |
+| Configuration | Crew min / optimal / max | Passenger berths | Base maneuverability | Protection¹ |
 | --- | --- | ---: | ---: | ---: |
 | Universal Tartana | 3 / 5 / 10 | 3 | 85 | 5 |
 | Merchant Tartana | 3 / 4 / 10 | 3 | 85 | 5 |
@@ -104,4 +104,4 @@ Each battery is shown as default installed / maximum capacity.
 | Battle Galleon | 30 / 42 | 30 / 42 | 2 / 4 | 2 / 4 | 64 / 92 |
 | Warship Man-of-war | 40 / 48 | 40 / 48 | 2 / 4 | 2 / 4 | 84 / 104 |
 
-¹ Design values for later weight, crew efficiency, and combat mechanics. Cannon state and default replacement are stored, but do not modify current dice rolls. Protection and maneuverability are ratings out of 100, not percentages applied to damage or rolls.
+¹ Cannon and protection effects on battle remain deferred. Deadweight and crew performance are active; current maneuverability is calculated from load, condition, and crew. See [performance formulas](ship-performance.md). Cannon state and default replacement are stored, but do not modify current dice rolls. Protection and maneuverability are ratings out of 100, not percentages applied to damage or rolls.

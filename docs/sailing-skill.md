@@ -10,7 +10,7 @@ For discussion next: quest rewards and future ship-tier training limits. Weather
 
 ## Active speed effect
 
-Sailing mastery now grants **+5% ship speed per tier**, additively: `effective speed = base ship speed × (1 + tier × 0.05)`. The bonus is +50% at tier 10. Raw progress points have no mechanical effect.
+Sailing mastery now grants **+5% ship speed per tier**, additively: `effective speed = base ship speed × load × hull × sails × crew × (1 + tier × 0.05)`. The mastery factor is applied once and reaches +50% at tier 10. [Ship performance](ship-performance.md) defines the other factors. Raw progress points have no mechanical effect.
 
 Normal hours are `ceil(distance / effective speed)`. The existing weather multiplier is applied afterward and rounded up again. Weather chances and multipliers are unchanged. Time savings naturally reduce wages and food consumption. Encounter delays remain fixed additions.
 
@@ -30,4 +30,4 @@ Letter quests grant `ceil(straight-line route distance / 100)` Sailing points al
 
 Older active letters without a stored skill reward use the same route-distance formula on delivery. Historical archived quests without that field show zero and are not retroactively rewarded.
 
-A future ship-tier system should limit how far a captain can train Sailing aboard a small/basic ship. The maximum mastery trainable on each ship tier, whether quest bonuses share the cap, and treatment of blocked progress are undecided. Do not apply a ship-based training cap to the current single-ship prototype. This would be a limit on gaining points, not a loss of mastery already earned.
+A future ship-tier system should limit how far a captain can train Sailing aboard a small/basic ship. The maximum mastery trainable on each ship tier, whether quest bonuses share the cap, and treatment of blocked progress are undecided. Do not apply a ship-based training cap until those progression limits are agreed. This would be a limit on gaining points, not a loss of mastery already earned.

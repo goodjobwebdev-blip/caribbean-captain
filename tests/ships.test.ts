@@ -50,7 +50,7 @@ describe('ship catalogue and replacement',()=>{
  });
  it('uses owned ship speed, cargo, crew and berths while keeping quest pricing fixed',()=>{
   const g=rich(),schooner=buy(g,'schooner-universal');
-  expect(hoursTo('bridgetown','saint-pierre',schooner)).toBe(40);expect(offers(schooner)).toEqual(offers(g));
+  expect(hoursTo('bridgetown','saint-pierre',schooner)).toBe(46);schooner.crew=12;expect(hoursTo('bridgetown','saint-pierre',schooner)).toBe(40);expect(offers(schooner)).toEqual(offers(g));
   const merchant=buy(g,'sloop-merchant');const loaded=act(merchant,{type:'buy',good:'provisions',quantity:250});expect(cargoUsed(loaded)).toBeGreaterThan(300);
   schooner.crew=24;expect(()=>act(schooner,{type:'hire'})).toThrow('full');
   const small=buy(g,'tartana-universal');const passage=offers(small).find(c=>c.type==='Passengers')!;

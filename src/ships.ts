@@ -67,3 +67,11 @@ export const sailRepairQuote=(s:OwnedShip)=>Math.ceil((100-s.sailCondition)*ship
 export const cannonPrice=(s:ShipDefinition)=>100*s.tier;
 export function cannonReplacementQuote(s:OwnedShip){const spec=shipDefinition(s.configurationId);return BATTERIES.reduce((sum,b)=>sum+Math.max(0,spec.defaultCannons[b]-s.cannons[b]),0)*cannonPrice(spec);}
 export function shipSaleValue(s:OwnedShip){const spec=shipDefinition(s.configurationId);return Math.max(0,Math.floor(spec.price*.7-hullRepairQuote(s)-sailRepairQuote(s)-cannonReplacementQuote(s)));}
+
+/** Shared legacy resolution for calculations and lazy save migration. */
+export function resolveShip(g:{ship?:OwnedShip;condition?:number;seed:number}):OwnedShip {
+ if(g.ship){shipDefinition(g.ship.configurationId);return g.ship;}
+ const ship=createShip(STARTER_ID,'The Wayfarer',`legacy-wayfarer-${g.seed}`);
+ ship.hullPoints=Math.max(0,Math.min(100,g.condition??100));
+ return ship;
+}

@@ -1,4 +1,5 @@
-import {createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
+import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,GOODS_LOAD,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
+import {resolveShip,createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
 import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
@@ -12,7 +13,7 @@ export const GOODS: Good[] = ['sugar', 'rum', 'cloth'];
 export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
-export type Voyage = { to: PortId; hours: number; remaining: number; weather: string; dice: Dice };
+export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice };
 export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
 export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
@@ -20,18 +21,13 @@ export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b)
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
 export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);
 export const sailingBonus = (g?:Pick<Game,'skills'>) => sailingProgress(g?.skills).tier * 0.05;
-export const effectiveSpeed = (g?:Pick<Game,'skills'|'ship'>) => (g?.ship?shipDefinition(g.ship.configurationId).speed:SHIP.speed) * (1 + sailingBonus(g));
+export const effectiveSpeed = (g?:Game) => g?shipPerformance(g).speed:SHIP.speed;
 // Omit the captain only for fixed contract pricing at baseline speed.
-export const hoursTo = (a: PortId, b: PortId, g?:Pick<Game,'skills'|'ship'>) => Math.ceil(distance(a, b) / effectiveSpeed(g));
-export const cargoUsed = (g: Game) => Object.values(g.cargo).reduce((a,b) => a+b, 0) + g.provisions + g.contracts.filter(c => c.type === 'Freight').reduce((a,c) => a+c.amount,0);
+export const hoursTo = (a: PortId, b: PortId, g?:Game) => effectiveSpeed(g)>0?Math.ceil(distance(a, b) / effectiveSpeed(g)):Infinity;
+export const cargoUsed = cargoSpaceUsed;
 export const passengers = (g: Game) => g.contracts.filter(c => c.type === 'Passengers').reduce((a,c) => a+c.amount,0);
 /** Old records are upgraded lazily; stored checkpoints are never overwritten. */
-export function ownedShip(g:Game):OwnedShip {
- if(g.ship){shipDefinition(g.ship.configurationId);return g.ship;}
- const ship=createShip(STARTER_ID,'The Wayfarer',`legacy-wayfarer-${g.seed}`);
- ship.hullPoints=Math.max(0,Math.min(100,g.condition??100));
- return ship;
-}
+export const ownedShip=(g:Game)=>resolveShip(g);
 export const currentShip=(g:Game)=>shipDefinition(ownedShip(g).configurationId);
 export const hullPercent=(g:Game)=>100*ownedShip(g).hullPoints/currentShip(g).maxHull;
 export function normalizeGame(original:Game):Game {
@@ -40,7 +36,10 @@ export function normalizeGame(original:Game):Game {
 }
 export function shipPurchaseQuote(g:Game,configurationId:string){
  const target=shipDefinition(configurationId),sale=shipSaleValue(ownedShip(g)),balance=target.price-sale;
+ const offeredShip=createShip(target.id,undefined,'preview');
+ const offeredPerformance=shipPerformance(g,offeredShip);
  const problems:string[]=[];
+ if(offeredPerformance.overloaded)problems.push(`The offered ship would be overloaded by ${(-offeredPerformance.availableDeadweight).toFixed(1)} weight units. Reduce cargo before exchanging ships.`);
  if(g.failed)problems.push('Load a church checkpoint to continue.');
  if(g.voyage)problems.push('Resolve the encounter before visiting a shipyard.');
  if(target.id===currentShip(g).id)problems.push('You already command this configuration.');
@@ -49,13 +48,13 @@ export function shipPurchaseQuote(g:Game,configurationId:string){
  if(g.crew<target.minCrew)problems.push(`Hire at least ${target.minCrew} sailors before taking command.`);
  if(passengers(g)>target.passengerCapacity)problems.push(`Deliver passengers first: this ship has ${target.passengerCapacity} berths.`);
  if(g.silver-balance<0)problems.push('Not enough silver for the exchange.');
- return {target,sale,balance,problems};
+ return {target,sale,balance,problems,offeredPerformance};
 }
 export const foodFor = (g: Game, hours: number) => (g.crew + passengers(g)) * hours / 24;
 export const wageFor = (g: Game, hours: number) => g.crew * 2 * hours / 24;
 export const cash = (n: number) => Math.floor(n).toLocaleString('en');
 export function date(hours: number) { const day = Math.floor(hours / 24); const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; return `${day % 30 + 1} ${months[Math.floor(day / 30) % 12]}, Year ${Math.floor(day / 360) + 1} · ${String(hours % 24).padStart(2,'0')}:00`; }
-export function duration(hours: number) { return `${Math.floor(hours / 24)}d ${hours % 24}h`; }
+export function duration(hours: number) { if(!Number.isFinite(hours))return 'Unavailable'; return `${Math.floor(hours / 24)}d ${hours % 24}h`; }
 export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:2, ship:createShip(STARTER_ID,'The Wayfarer'), skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
 function note(g:Game,text:string) { g.log.unshift({hours:g.hours,text}); g.log = g.log.slice(0,60); }
 function advance(g:Game,hours:number) {
@@ -68,8 +67,27 @@ function advance(g:Game,hours:number) {
   }
   g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; return true;
 }
+export const FREIGHT_SIZES=[40,200,800] as const;
 export function offers(g:Game):Contract[] {
-  return PORTS.filter(p=>p.id!==g.port).flatMap(p=>(['Letter','Freight','Passengers'] as const).map(type=>({id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}`,type,from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,reward:Math.round(hoursTo(g.port,p.id)*(type==='Letter'?3:type==='Freight'?5:4)+60),amount:type==='Freight'?40:type==='Passengers'?3:0}))).filter(c=>!g.accepted.includes(c.id));
+ return PORTS.filter(p=>p.id!==g.port).flatMap(p=>{
+  const normalHours=hoursTo(g.port,p.id);
+  const base=(type:Contract['type'],amount:number):Contract=>({
+   id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}${type==='Freight'&&amount!==40?`:${amount}`:''}`,
+   type,from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,
+   reward:Math.round(normalHours*(type==='Letter'?3:type==='Freight'?5*amount/40:4)+60),amount,
+  });
+  // Keep original offer IDs and ordering for saved commissions.
+  return [base('Letter',0),base('Freight',40),base('Passengers',3),...FREIGHT_SIZES.filter(n=>n!==40).map(n=>base('Freight',n))];
+ }).filter(c=>!g.accepted.includes(c.id));
+}
+export function contractProblems(g:Game,c:Contract):string[]{
+ const spec=currentShip(g),problems:string[]=[];
+ if(g.contracts.length>=3)problems.push('You can carry up to three active contracts.');
+ if(c.type==='Freight'&&cargoUsed(g)+c.amount>spec.capacity+1e-8)problems.push(`This freight needs ${c.amount} free hold units.`);
+ if(c.type==='Passengers'&&passengers(g)+c.amount>spec.passengerCapacity)problems.push(`There are only ${spec.passengerCapacity} passenger berths.`);
+ const addedWeight=c.type==='Freight'?c.amount*FREIGHT_WEIGHT:c.type==='Passengers'?c.amount*PERSON_WEIGHT:0;
+ if(addedWeight>0&&loadBreakdown(g).total+addedWeight>spec.deadweight+1e-8)problems.push(`This contract needs ${addedWeight} available weight units.`);
+ return problems;
 }
 export function canSave(g:Game) { return !g.failed && !g.voyage; }
 export function outcome(total:number) { return total<=6?'Setback':total<=9?'Partial success':'Success'; }
@@ -81,6 +99,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   const damageHull=(percent:number)=>{ship.hullPoints=Math.max(0,ship.hullPoints-spec.maxHull*percent/100);};
   const random=()=>{ if(randomOverride) return randomOverride(); g.seed=(g.seed+0x6D2B79F5)>>>0; let t=g.seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
   const roll=():Dice=>[Math.floor(random()*6)+1,Math.floor(random()*6)+1];
+  const allowWeight=(added:number)=>{if(loadBreakdown(g).total+added>spec.deadweight+1e-8)throw new Error('Not enough available deadweight. Sell cargo or reduce your load first.');};
   const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;};
   const arrive=()=>{const v=g.voyage!; if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;
     const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
@@ -88,10 +107,11 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
   switch(action.type) {
     case 'buy': case 'sell': {
-      const q=action.quantity;if(!Number.isInteger(q)||q<1||q>300) throw new Error('Choose a valid quantity.');
+      const q=action.quantity;if(!Number.isInteger(q)||q<1||q>1000) throw new Error('Choose a valid quantity.');
       if(![...GOODS,'provisions'].includes(action.good)) throw new Error('Unknown goods.');
       if(action.type==='buy') {
         if(cargoUsed(g)+q>spec.capacity+1e-8)throw new Error('Not enough room in the hold.');
+        allowWeight(q*GOODS_LOAD[action.good].weight);
         const price=action.good==='provisions'?1:port(g.port).prices[action.good];pay(q*price);
         if(action.good==='provisions')g.provisions+=q;else g.cargo[action.good]+=q;
         note(g,`Bought ${q} ${action.good} for ${q*price} silver.`);
@@ -102,7 +122,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       }
       advance(g,1);break;
     }
-    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
+    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
     case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
     case 'repair':{
@@ -116,7 +136,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     case 'replace-cannons':{
       const cost=cannonReplacementQuote(ship);if(!cost)throw new Error('No default cannons need replacing.');
       const missing=BATTERIES.reduce((n,b)=>n+Math.max(0,spec.defaultCannons[b]-ship.cannons[b]),0);
-      pay(cost);if(advance(g,missing)){for(const b of BATTERIES)ship.cannons[b]=Math.max(ship.cannons[b],spec.defaultCannons[b]);note(g,`Replaced ${missing} cannons for ${cost} silver.`);}break;
+      allowWeight(missing*CANNON_WEIGHT);pay(cost);if(advance(g,missing)){for(const b of BATTERIES)ship.cannons[b]=Math.max(ship.cannons[b],spec.defaultCannons[b]);note(g,`Replaced ${missing} cannons for ${cost} silver.`);}break;
     }
     case 'buy-ship':{
       const quote=shipPurchaseQuote(g,action.configurationId);
@@ -128,19 +148,16 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     }
     case 'accept': {
       const c=offers(g).find(c=>c.id===action.contract.id);if(!c)throw new Error('That offer is no longer available.');
-      if(g.contracts.length>=3)throw new Error('You can carry up to three active contracts.');
-      if(c.type==='Freight' && cargoUsed(g)+c.amount>spec.capacity)throw new Error('This freight needs 40 free hold units.');
-      if(c.type==='Passengers' && passengers(g)+c.amount>spec.passengerCapacity)throw new Error(`There are only ${spec.passengerCapacity} passenger berths.`);
+      const problems=contractProblems(g,c);if(problems.length)throw new Error(problems.join(' '));
       g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery.`);break;
     }
     case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
-      if(g.crew<spec.minCrew)throw new Error(`You need at least ${spec.minCrew} sailors.`);
-      if(ship.hullPoints<=0)throw new Error('Repair your hull before sailing.');
+      const problems=sailingProblems(g);if(problems.length)throw new Error(problems.join(' '));
       const weatherRoll=random();const factor=weatherRoll<0.2?0.85:weatherRoll>0.8?1.25:1;
       const weather=factor<1?'Fair winds':factor>1?'Headwinds':'Steady winds';const hours=Math.ceil(hoursTo(g.port,action.to,g)*factor);const dice=roll();
-      g.voyage={to:action.to,hours,remaining:hours,weather,dice};g.lastRoll={label:'Voyage encounter',dice,outcome:dice[0]+dice[1]===2?'Pirates sighted':'Clear passage'};
+      g.voyage={to:action.to,hours,remaining:hours,departureSpeed:effectiveSpeed(g),weather,dice};g.lastRoll={label:'Voyage encounter',dice,outcome:dice[0]+dice[1]===2?'Pirates sighted':'Clear passage'};
       note(g,`Departed for ${port(action.to).name}. ${weather}; ${duration(hours)}. Voyage roll: ${dice.join(' + ')} = ${dice[0]+dice[1]}.`);
       if(dice[0]+dice[1]===2){const first=Math.floor(hours/2);g.voyage.remaining-=first;if(advance(g,first))note(g,'A pirate ship closes in. Choose whether to flee, negotiate, or fight.');}
       else arrive();break;

@@ -8,7 +8,7 @@ Topics to revisit after playing:
 - Whether crew wage arrears should have consequences beyond restricting purchases.
 - Whether to block underprovisioned departures or keep the current explicit warning.
 - Historical year and calendar; current months are a simple 30-day abstraction.
-- Seasonal weather, crew experience, and ship-condition effects on speed.
+- Seasonal weather, crew experience, and further balancing of the implemented ship-performance formulas.
 - Contract deadlines, market stock, and price changes.
 - Checkpoint deletion, save export/import, and cross-device support.
 - Further towns, anchorages, national reputation, and treasure hunting.

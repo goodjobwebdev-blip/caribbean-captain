@@ -32,7 +32,7 @@ Each town provides the following services:
 | Shipyard | Compare and exchange ships; repair hull or sails; replace missing default cannons |
 | Church | Create checkpoints for the current profile |
 
-Ships track hull points, sail condition, and operational cannons separately. The prototype encounters currently damage the hull only, by percentage of maximum hull. Ship speed, hold capacity, crew limits, and passenger berths depend on the purchased configuration. Detailed weight and combat effects are deferred.
+Ships track hull points, sail condition, and operational cannons separately. The prototype encounters currently damage the hull only, by percentage of maximum hull. Ship speed, hold capacity, crew limits, and passenger berths depend on the purchased configuration. Weight, hull condition, sails, and crew count now affect performance; detailed combat effects remain deferred. See [ship performance](ship-performance.md).
 
 ## Time and sailing
 
