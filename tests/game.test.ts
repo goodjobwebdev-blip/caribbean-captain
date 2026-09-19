@@ -15,3 +15,19 @@ describe('sailing and economy',()=>{
  it('produces the same future rolls from the same saved state',()=>{const g=newGame('Anne',42);expect(act(g,{type:'sail',to:'saint-pierre'})).toEqual(act(structuredClone(g),{type:'sail',to:'saint-pierre'}));});
  it('does not allow profitable buy/sell churn in the same port',()=>{let g=newGame('Anne',42);g=act(g,{type:'buy',good:'sugar',quantity:10});g=act(g,{type:'sell',good:'sugar',quantity:10});expect(g.silver).toBeLessThan(800);expect(g.cargo.sugar).toBe(0);expect(cargoUsed(g)).toBeLessThanOrEqual(SHIP.capacity);});
 });
+
+describe('quest archive compatibility',()=>{
+ it('archives delivered quests once, including in an older save without an archive',()=>{
+  let g=newGame('Anne',42);delete g.archive;
+  const task=offers(g).find(c=>c.to==='saint-pierre'&&c.type==='Letter')!;
+  g=act(g,{type:'accept',contract:task});
+  g=act(g,{type:'sail',to:'saint-pierre'},random(.5,.5,.5));
+  const checkpoint=structuredClone(g);
+  g=act(g,{type:'deliver'});
+  expect(g.contracts).toHaveLength(0);
+  expect(g.archive).toEqual([{...task,completedAt:g.hours}]);
+  expect(()=>act(g,{type:'deliver'})).toThrow();
+  expect(checkpoint.archive).toBeUndefined();
+  expect(checkpoint.contracts).toHaveLength(1);
+ });
+});
