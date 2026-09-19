@@ -24,8 +24,10 @@ Successful arrival grants one Sailing point per 24 actual weather-adjusted saili
 
 Only the original voyage duration counts: port time and extra encounter delays are excluded. Failed voyages grant no practice credit. Tier gains affect the next voyage, not the duration already sailed. The captain's log reports point awards and promotions. Journal displays both tier progress and hours toward the next point. Practice hours are saved in the profile and church checkpoints; older saves default to zero uncredited hours.
 
-## Future quest rewards and ship limits
+## Letter rewards and future ship limits
 
-Some specific quests, such as letter delivery, should grant bonus skill points. Bonus amounts and which quests qualify remain to be decided; no quest bonus is active yet.
+Letter quests grant `ceil(straight-line route distance / 100)` Sailing points alongside silver when delivered at the destination Harbour Master. The whole-point reward is stored in the offer and accepted contract, independent of weather and captain speed. Bridgetown–Saint-Pierre grants 1 point; Bridgetown–Willemstad grants 3. Freight and passenger tasks grant no bonus. Awards share Sailing mastery thresholds and the tier-10 cap, preserving carried practice hours. Journal, quest offers, active tasks, and completion logs display the skill reward.
+
+Older active letters without a stored skill reward use the same route-distance formula on delivery. Historical archived quests without that field show zero and are not retroactively rewarded.
 
 A future ship-tier system should limit how far a captain can train Sailing aboard a small/basic ship. The maximum mastery trainable on each ship tier, whether quest bonuses share the cap, and treatment of blocked progress are undecided. Do not apply a ship-based training cap to the current single-ship prototype. This would be a limit on gaining points, not a loss of mastery already earned.

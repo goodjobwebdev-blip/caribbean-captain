@@ -209,4 +209,4 @@ The following details will be designed separately:
 
 ## Implemented Sailing progression
 
-See [Sailing & Navigation](sailing-skill.md) for the active speed and learning rules: +5% speed per mastery tier, and 1 point per 24 sailing hours on arrival with leftover hours and points carried forward. Quest bonuses and ship-tier training limits are planned but not active.
+See [Sailing & Navigation](sailing-skill.md) for the active speed and learning rules: +5% speed per mastery tier, and 1 point per 24 sailing hours on arrival with leftover hours and points carried forward. Letter delivery also grants `ceil(route distance / 100)` Sailing points on completion. Ship-tier training limits are planned but not active.

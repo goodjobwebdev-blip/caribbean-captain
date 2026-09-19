@@ -1,5 +1,5 @@
 import {useState, type KeyboardEvent} from 'react';
-import {cash, date, cargoUsed, passengers, port, GOODS, SHIP, effectiveSpeed, sailingBonus, type Game, type Contract} from './game';
+import {cash, date, cargoUsed, passengers, port, GOODS, SHIP, effectiveSpeed, sailingBonus, questSkillReward, type Game, type Contract} from './game';
 import {sailingProgress,nextTierRequirement} from './skills';
 export type Screen = 'game'|'journal'|'profiles'|'settings';
 export function Icon({name}:{name:Screen|'log'}){
@@ -16,7 +16,7 @@ function tabKeys(event:KeyboardEvent<HTMLDivElement>){
  tabs[index].focus();tabs[index].click();
 }
 function Details({items}:{items:[string,string][]}){return <dl className="full-stats">{items.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>;}
-function Quest({quest,status,finished}:{quest:Contract;status:string;finished?:number}){return <article className="quest-entry"><div className="section-line"><h3>{quest.type} to {port(quest.to).name}</h3><span className="quest-status">{status}</span></div><p>{port(quest.from).name} → {port(quest.to).name}</p><Details items={[[status==='Completed'?'Payment received':'Payment on delivery',`${cash(quest.reward)} silver`],['Load',quest.type==='Freight'?`${quest.amount} hold units`:quest.type==='Passengers'?`${quest.amount} passengers`:'One letter · no hold space'],['Deadline','None']]}/>{finished!==undefined&&<small>Completed {date(finished)}</small>}</article>;}
+function Quest({quest,status,finished}:{quest:Contract;status:string;finished?:number}){return <article className="quest-entry"><div className="section-line"><h3>{quest.type} to {port(quest.to).name}</h3><span className="quest-status">{status}</span></div><p>{port(quest.from).name} → {port(quest.to).name}</p><Details items={[[status==='Completed'?'Payment received':'Payment on delivery',`${cash(quest.reward)} silver`],['Sailing reward',`${finished!==undefined?(quest.sailingReward??0):questSkillReward(quest)} points`],['Load',quest.type==='Freight'?`${quest.amount} hold units`:quest.type==='Passengers'?`${quest.amount} passengers`:'One letter · no hold space'],['Deadline','None']]}/>{finished!==undefined&&<small>Completed {date(finished)}</small>}</article>;}
 export function Journal({game:g}:{game:Game}){
  const [tab,setTab]=useState<Tab>('Ship');const [questView,setQuestView]=useState<'active'|'archived'>('active');
  const freight=g.contracts.filter(c=>c.type==='Freight');const people=g.contracts.filter(c=>c.type==='Passengers');

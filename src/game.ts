@@ -1,4 +1,4 @@
-import {initialSkills,sailingProgress,creditSailing,type PlayerSkills} from './skills';
+import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
   { id: 'saint-pierre', name: 'Saint-Pierre', island: 'Martinique', nation: 'France', x: -29, y: 50, prices: { sugar: 12, rum: 10, cloth: 25 }, description: 'Green slopes rise behind the waterfront. Boatmen call across the roadstead while merchants inspect the morning cargo.' },
@@ -8,13 +8,15 @@ export type PortId = typeof PORTS[number]['id'];
 export type Good = 'sugar' | 'rum' | 'cloth';
 export const GOODS: Good[] = ['sugar', 'rum', 'cloth'];
 export const SHIP = { name: 'The Wayfarer', type: 'Trading sloop', capacity: 300, speed: 1.2, minCrew: 5, maxCrew: 20 };
-export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; amount: number };
+export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; weather: string; dice: Dice };
 export type Game = { version: 1; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
 export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'sleep' | 'repair' | 'deliver' } | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
+export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
+export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);
 export const sailingBonus = (g?:Pick<Game,'skills'>) => sailingProgress(g?.skills).tier * 0.05;
 export const effectiveSpeed = (g?:Pick<Game,'skills'>) => SHIP.speed * (1 + sailingBonus(g));
 // Omit the captain only for fixed contract pricing at baseline speed.
@@ -39,7 +41,7 @@ function advance(g:Game,hours:number) {
   g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; return true;
 }
 export function offers(g:Game):Contract[] {
-  return PORTS.filter(p=>p.id!==g.port).flatMap(p=>(['Letter','Freight','Passengers'] as const).map(type=>({id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}`,type,from:g.port,to:p.id,reward:Math.round(hoursTo(g.port,p.id)*(type==='Letter'?3:type==='Freight'?5:4)+60),amount:type==='Freight'?40:type==='Passengers'?3:0}))).filter(c=>!g.accepted.includes(c.id));
+  return PORTS.filter(p=>p.id!==g.port).flatMap(p=>(['Letter','Freight','Passengers'] as const).map(type=>({id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}`,type,from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,reward:Math.round(hoursTo(g.port,p.id)*(type==='Letter'?3:type==='Freight'?5:4)+60),amount:type==='Freight'?40:type==='Passengers'?3:0}))).filter(c=>!g.accepted.includes(c.id));
 }
 export function canSave(g:Game) { return !g.failed && !g.voyage; }
 export function outcome(total:number) { return total<=6?'Setback':total<=9?'Partial success':'Success'; }
@@ -80,7 +82,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(c.type==='Passengers' && passengers(g)+c.amount>6)throw new Error('There are only six passenger berths.');
       g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery.`);break;
     }
-    case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);g.silver+=reward;g.archive=[...delivered.map(c=>({...c,completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.`);break;}
+    case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
       if(g.crew<SHIP.minCrew)throw new Error('You need at least five sailors.');
