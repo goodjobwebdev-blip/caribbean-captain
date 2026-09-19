@@ -30,6 +30,7 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 ## Documentation
 
 - [Game design](docs/game-design.md)
+- [Player skill system](docs/skills.md)
 - [Provisional balance and world coordinates](docs/balance.md)
 - [Remaining decisions](docs/open-decisions.md)
 - [Deployment](docs/deployment.md)
