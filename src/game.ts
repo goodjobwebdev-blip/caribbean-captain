@@ -1,4 +1,4 @@
-import {initialSkills,sailingProgress,type PlayerSkills} from './skills';
+import {initialSkills,sailingProgress,creditSailing,type PlayerSkills} from './skills';
 export const PORTS = [
   { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
   { id: 'saint-pierre', name: 'Saint-Pierre', island: 'Martinique', nation: 'France', x: -29, y: 50, prices: { sugar: 12, rum: 10, cloth: 25 }, description: 'Green slopes rise behind the waterfront. Boatmen call across the roadstead while merchants inspect the morning cargo.' },
@@ -50,7 +50,10 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   const random=()=>{ if(randomOverride) return randomOverride(); g.seed=(g.seed+0x6D2B79F5)>>>0; let t=g.seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
   const roll=():Dice=>[Math.floor(random()*6)+1,Math.floor(random()*6)+1];
   const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;};
-  const arrive=()=>{const v=g.voyage!; if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
+  const arrive=()=>{const v=g.voyage!; if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;
+    const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
+    if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
+    note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
   switch(action.type) {
     case 'buy': case 'sell': {
       const q=action.quantity;if(!Number.isInteger(q)||q<1||q>300) throw new Error('Choose a valid quantity.');

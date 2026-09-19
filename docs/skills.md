@@ -149,7 +149,7 @@ Raw skill points measure progress toward the next tier but do not directly modif
 
 ## Skill-point progression
 
-Each skill accumulates points toward its next mastery tier independently. When the requirement is met, the skill gains one mastery tier and its progress counter resets. The requirement doubles for every tier.
+Each skill accumulates points toward its next mastery tier independently. When the requirement is met, the skill gains one mastery tier. Sailing subtracts that tier's requirement and carries excess points forward; overflow rules for other skills remain to be defined. The requirement doubles for every tier.
 
 The point requirement is:
 
@@ -203,6 +203,10 @@ The following details will be designed separately:
 - Trainers, books, and special rewards
 - Starting skill values
 - Character creation and skill-point allocation
-- Treatment of excess points when a tier is gained
+- Treatment of excess points for skills other than Sailing
 - Crew attributes and progression
 - Ship and crew metrics
+
+## Implemented Sailing progression
+
+See [Sailing & Navigation](sailing-skill.md) for the active speed and learning rules: +5% speed per mastery tier, and 1 point per 24 sailing hours on arrival with leftover hours and points carried forward. Quest bonuses and ship-tier training limits are planned but not active.
