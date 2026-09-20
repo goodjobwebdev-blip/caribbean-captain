@@ -1,17 +1,15 @@
 import {CrewSummary} from './CrewServices';
-import {CaptainEquipment,CombatSkills} from './EquipmentPanel';
+import {CaptainEquipment} from './EquipmentPanel';
+import {SkillCards} from './SkillCards';
 import {FinanceJournal} from './FinanceJournal';
 import {CargoLedger} from './CargoLedger';
-import {spread} from './trade';
 import {MarketsJournal} from './MarketsJournal';
 import {CATALOGUE} from './goods';
-import {tradeProgress} from './skills';
 import {PerformanceBreakdown,LoadBreakdown} from './Performance';
 import {shipPerformance,GOODS_LOAD} from './performance';
 import {BATTERIES,totalCannons,shipSaleValue} from './ships';
 import {useState, type KeyboardEvent} from 'react';
-import {cash, date, cargoUsed, passengers, port, GOODS, currentShip, ownedShip, hullPercent, effectiveSpeed, sailingBonus, questSkillReward, type Game, type Contract} from './game';
-import {sailingProgress,nextTierRequirement} from './skills';
+import {cash, date, cargoUsed, passengers, port, GOODS, currentShip, ownedShip, hullPercent, effectiveSpeed, questSkillReward, type Game, type Contract} from './game';
 export type Screen = 'game'|'journal'|'profiles'|'settings';
 export function Icon({name}:{name:Screen|'log'}){
  const paths={game:<><circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6Z"/></>,journal:<><path d="M3 4h6a4 4 0 0 1 3 2 4 4 0 0 1 3-2h6v16h-6a4 4 0 0 0-3 1 4 4 0 0 0-3-1H3Z"/><path d="M12 6v15"/></>,profiles:<><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2M8 3l4-1 4 1"/></>,settings:<><path d="m9 3 1-1h4l1 3 3 1 3-1 1 4-2 2v3l2 2-2 4-3-1-3 2-1 2H9l-1-3-3-1-2 1-1-4 2-2v-3L2 8l2-3 3 1Z"/><circle cx="12" cy="12" r="3"/></>,log:<><path d="M5 3h14v18H5Z M8 7h8 M8 11h8 M8 15h5"/></>};
@@ -33,7 +31,6 @@ export function Journal({game:g}:{game:Game}){
  const [tab,setTab]=useState<Tab>('Ship');const [questView,setQuestView]=useState<'active'|'archived'>('active');
  const freight=g.contracts.filter(c=>c.type==='Freight');const people=g.contracts.filter(c=>c.type==='Passengers');
  const archived=g.archive??[];
- const sailing=sailingProgress(g.skills);const target=nextTierRequirement(sailing.tier);
  const location=g.voyage?`At sea, bound for ${port(g.voyage.to).name}`:port(g.port).name;
  return <section className="panel journal-screen"><p className="eyebrow">CAPTAIN {g.captain.toUpperCase()} · {location}</p><h1>Journal</h1><p className="muted">Your ship, people, and commissions. Take actions in Gamespace; this journal is read-only.</p>
  <div className="journal-tabs" role="tablist" aria-label="Journal sections" onKeyDown={tabKeys}>{TABS.map(t=><button key={t} role="tab" id={`journal-tab-${t}`} aria-selected={tab===t} aria-controls={`journal-panel-${t}`} tabIndex={tab===t?0:-1} onClick={()=>setTab(t)}>{t==='Ship'?'Ship stats':t==='Crew'?'Crew stats':t}</button>)}</div>
@@ -46,9 +43,7 @@ export function Journal({game:g}:{game:Game}){
  {tab==='Finance'&&<FinanceJournal game={g}/>}
  {tab==='Markets'&&<MarketsJournal game={g}/>}
  {tab==='Equipment'&&<CaptainEquipment game={g}/>}
- {tab==='Skills'&&<><CombatSkills game={g}/><article className="skill-card"><h2>Trade</h2><p>Tier {tradeProgress(g.skills).tier} / 10 · {tradeProgress(g.skills).points.toFixed(2)} / {nextTierRequirement(tradeProgress(g.skills).tier)??'Maximum'} points</p><p>Market spread: {(spread(g)*100).toFixed(1)}%. Each tier improves both buying and selling prices. Local attitude and reputation also affect legal terms.</p><p className="muted">Earn 1 point per 100 silver of profitable resale of goods purchased at another port, before voyage expenses. Learning follows each acquired portion of cargo; unprofitable portions earn nothing. Fractions carry forward. Starting cargo and purchases of unknown origin earn no points.</p></article><p className="eyebrow">PLAYER SKILLS</p><article className="skill-card"><div className="section-line"><h2>Sailing &amp; Navigation</h2><span className="quest-status">Tier {sailing.tier} / 10</span></div><p>Ship handling, sail and rigging work, route planning, weather judgment, and avoiding maritime hazards.</p><Details items={[
- ['Mastery tier',`${sailing.tier} / 10`],['Sailing speed bonus',`+${Math.round(sailingBonus(g)*100)}%`],['Effective sailing speed',`${effectiveSpeed(g).toFixed(2)} units/hour`],['Progress to next tier',target===null?'Maximum mastery':`${sailing.points} / ${target} points`],['Practice toward next point',target===null?'Maximum mastery':`${sailing.sailingHours??0} / 24 sailing hours`]
- ]}/>{target!==null&&<><label htmlFor="sailing-progress">Progress toward tier {sailing.tier+1}</label><progress id="sailing-progress" value={Math.min(sailing.points,target)} max={target}>{sailing.points} / {target}</progress></>}<p className="muted">Only mastery tiers affect gameplay. Points track progress toward the next tier.</p><div className="skill-note"><strong>5% more sailing speed per mastery tier</strong><p>Earn 1 point per 24 hours of sailing, awarded on arrival. Leftover hours and points carry forward. Port time and extra encounter delays do not count. Weather effects are unchanged.</p></div></article></>}
+ {tab==='Skills'&&<SkillCards game={g}/>}
  {tab==='Crew'&&<><CrewSummary game={g}/><CaptainEquipment game={g}/><h2>The ship’s company</h2><Details items={[
  ['Sailors aboard',`${g.crew} / ${spec.maxCrew}`],['Minimum to sail',`${spec.minCrew} sailors`],['Optimal crew',`${spec.optimalCrew} sailors`],['Crew performance',`${(performance.factors.crew*100).toFixed(1)}%`],['Daily crew wages',`${g.crew*2} silver`],['Crew provisions',`${g.crew} per day`],['All aboard',`${g.crew+passengers(g)} people`],['Total provisions',`${g.provisions.toFixed(1)} units`],['Food remaining',`${(g.provisions/(g.crew+passengers(g))).toFixed(1)} days for everyone aboard`]
  ]}/><p className="muted">Fit crew handle combat duties. Injured crew remain aboard and consume provisions and wages.</p></>}
