@@ -16,6 +16,8 @@ Trade 45 goods through a basket with exact totals, finite stock, supply/demand p
 
 Journal → Finance now records automatic port-to-port voyage accounts and trade history, separating cash flow from cargo profit. Departure review adds a forecast using remembered prices. See [voyage finances](docs/voyage-finances.md).
 
+Settings → Wiki contains the searchable in-game handbook, including rules, worked mechanics, and goods/ship reference tables. It is available without a captain profile and requires no AI connection.
+
 ## Development
 
 Node.js 22.12+ (CI uses Node 24).
