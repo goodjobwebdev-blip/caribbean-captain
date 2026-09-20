@@ -1,5 +1,7 @@
 # Implemented trade release
 
+This records the first trade release. [Trade phase two](trade-phase-two.md) supersedes the locked-access limitations, adds standing-based spreads, permits, smuggling, local events and planning tools.
+
 This release implements the accepted scope in `trade-release-draft.md`, with the adjustments recommended by `trade-validation.md`. Those documents remain the planning and offline validation record.
 
 ## Store and Journal

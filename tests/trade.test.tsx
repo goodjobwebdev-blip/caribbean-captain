@@ -95,6 +95,6 @@ describe('trade provenance and learning',()=>{
 });
 it('renders the basket and remembered market with accessible controls',()=>{
  const g=rich();const store=renderToStaticMarkup(<Store game={g} busy={false} perform={()=>{}}/>);
- expect(store).toContain('Your basket');expect(store).toContain('Provisions quantity');expect(store).toContain('Access unavailable');expect(store).toContain('Jewelry');
+ expect(store).toContain('Your basket');expect(store).toContain('Provisions quantity');expect(store).toContain('Requires a national trade permit');expect(store).toContain('Jewelry');
  const journal=renderToStaticMarkup(<MarketsJournal game={g}/>);expect(journal).toContain('Remembered markets');expect(journal).toContain('Recorded');
 });

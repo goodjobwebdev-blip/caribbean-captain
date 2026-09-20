@@ -1,3 +1,4 @@
+import {PERMIT_PRICE,nationOf,attitude,hasPermit,changeStanding,type Channel} from './commerce';
 import {ALL_GOODS,type GoodId} from './goods';
 import {ensureEconomy,observeMarket,consumeLots,settleBasket,type Economy,type BasketLine} from './trade';
 import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
@@ -17,7 +18,7 @@ export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; 
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice };
 export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = {type:'trade';lines:BasketLine[];expected:string} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Action = {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -110,10 +111,31 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   switch(action.type) {
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
+      const channel=action.type==='trade'?(action.channel??'legal'):'legal';
       // Verify against the original state before lazy migration changes its representation.
-      if(action.type==='trade'&&action.expected!==JSON.stringify([original,lines]))throw new Error('The deal changed. Review the updated basket.');
-      const q=settleBasket(g,lines);advance(g,1);
+      if(action.type==='trade'&&action.expected!==JSON.stringify([original,lines,channel]))throw new Error('The deal changed. Review the updated basket.');
+      const q=settleBasket(g,lines,undefined,channel);
+      if(channel==='smuggler'){
+       const dice=roll(),total=dice[0]+dice[1],gross=q.buys+q.sales;
+       const fine=total<=6?Math.max(50,Math.ceil(gross*.25)):total<=9?Math.max(25,Math.ceil(gross*.10)):0;
+       if(total<=6){for(const line of q.lines.filter(l=>l.side==='buy')){if(line.good==='provisions')g.provisions-=line.quantity;else g.cargo[line.good]-=line.quantity;g.economy!.lots[line.good]!.pop();}}
+       g.silver-=fine;changeStanding(g,total<=6?-10:total<=9?-3:0,total<=6?-5:total<=9?-1:0);
+       g.lastRoll={label:'Smuggling inspection',dice,outcome:total<=6?'Caught: purchases confiscated':total<=9?'Suspicion: fine':'Undetected'};
+       note(g,`Smuggling inspection: ${dice.join(' + ')} = ${total}. ${g.lastRoll.outcome}. Fine: ${fine} silver${fine&&g.silver<0?' (unpaid balance is debt)':''}.`);
+      }
+      advance(g,1);if(channel==='smuggler')observeMarket(g,'smuggler');
       note(g,`Trade deal: paid ${q.buys}, received ${q.sales} silver. ${q.lines.length} cargo line(s).${q.xp?` +${q.xp.toFixed(2)} Trade points.`:''}`);break;
+    }
+    case 'buy-permit':{
+      if(hasPermit(g))throw new Error('You already hold this national permit.');
+      if(attitude(g)<-30)throw new Error('Local attitude must be at least −30. Complete commissions to rebuild trust.');
+      if(g.provisions<foodFor(g,1))throw new Error('Keep provisions for one hour.');
+      pay(PERMIT_PRICE);g.economy!.commerce!.permits[nationOf(g.port)]=true;advance(g,1);note(g,`Purchased a permanent ${nationOf(g.port)} trade permit for ${PERMIT_PRICE} silver.`);break;
+    }
+    case 'meet-smuggler':{
+      if(g.economy!.commerce!.contacts[g.port])throw new Error('You already have a local smuggler contact.');
+      if(g.provisions<foodFor(g,1))throw new Error('Keep provisions for one hour.');
+      pay(50);g.economy!.commerce!.contacts[g.port]=true;advance(g,1);observeMarket(g,'smuggler');note(g,'A discreet introduction cost 50 silver. Smuggler deals are now available at the trading counter when the contact is in town.');break;
     }
     case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
@@ -144,7 +166,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const problems=contractProblems(g,c);if(problems.length)throw new Error(problems.join(' '));
       g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery.`);break;
     }
-    case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
+    case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);changeStanding(g,2*delivered.length,delivered.length);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
       const problems=sailingProblems(g);if(problems.length)throw new Error(problems.join(' '));

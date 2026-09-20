@@ -1,0 +1,476 @@
+{
+  "assumptions": "Normal winds, no pirates, starting sloop and crew, 100 silver purchase reserve, finite stocks, real actions and skill/event rules. One-way net values subtract provision consumption at 1.15 silver/unit. Routes use perfect knowledge for balance testing, not player-visible forecasts. Repeated route refills to 120 provisions each departure. Upgrade threshold is Merchant Schooner exchange plus 1000 cash reserve; the simulation keeps the sloop.",
+  "routes": [
+    {
+      "cash": 800,
+      "from": "Bridgetown",
+      "to": "Saint-Pierre",
+      "best": [
+        {
+          "good": "Sugar",
+          "quantity": 86,
+          "net": 236.81,
+          "hours": 55
+        },
+        {
+          "good": "Molasses",
+          "quantity": 107,
+          "net": 230.81,
+          "hours": 55
+        },
+        {
+          "good": "Hides",
+          "quantity": 54,
+          "net": -34.94,
+          "hours": 51
+        }
+      ]
+    },
+    {
+      "cash": 800,
+      "from": "Bridgetown",
+      "to": "Willemstad",
+      "best": [
+        {
+          "good": "Hides",
+          "quantity": 54,
+          "net": 205.69,
+          "hours": 241
+        },
+        {
+          "good": "Cotton",
+          "quantity": 72,
+          "net": -2.31,
+          "hours": 241
+        },
+        {
+          "good": "Sugar",
+          "quantity": 86,
+          "net": -36.19,
+          "hours": 263
+        }
+      ]
+    },
+    {
+      "cash": 800,
+      "from": "Saint-Pierre",
+      "to": "Bridgetown",
+      "best": [
+        {
+          "good": "Coffee",
+          "quantity": 30,
+          "net": 248.06,
+          "hours": 51
+        },
+        {
+          "good": "Timber",
+          "quantity": 60,
+          "net": 103.81,
+          "hours": 55
+        },
+        {
+          "good": "Tobacco",
+          "quantity": 27,
+          "net": -31.94,
+          "hours": 51
+        }
+      ]
+    },
+    {
+      "cash": 800,
+      "from": "Saint-Pierre",
+      "to": "Willemstad",
+      "best": [
+        {
+          "good": "Tobacco",
+          "quantity": 27,
+          "net": 29.69,
+          "hours": 225
+        },
+        {
+          "good": "Cocoa",
+          "quantity": 36,
+          "net": 27.69,
+          "hours": 225
+        },
+        {
+          "good": "Coffee",
+          "quantity": 30,
+          "net": 19.69,
+          "hours": 225
+        }
+      ]
+    },
+    {
+      "cash": 800,
+      "from": "Willemstad",
+      "to": "Bridgetown",
+      "best": [
+        {
+          "good": "Common Cloth",
+          "quantity": 36,
+          "net": 6.69,
+          "hours": 241
+        },
+        {
+          "good": "Books",
+          "quantity": 17,
+          "net": 6.69,
+          "hours": 241
+        },
+        {
+          "good": "Fine Cloth",
+          "quantity": 13,
+          "net": 4.69,
+          "hours": 241
+        }
+      ]
+    },
+    {
+      "cash": 800,
+      "from": "Willemstad",
+      "to": "Saint-Pierre",
+      "best": [
+        {
+          "good": "Common Cloth",
+          "quantity": 36,
+          "net": 27.69,
+          "hours": 225
+        },
+        {
+          "good": "Ceramics",
+          "quantity": 34,
+          "net": 22.69,
+          "hours": 225
+        },
+        {
+          "good": "Glassware",
+          "quantity": 21,
+          "net": 22.69,
+          "hours": 225
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Bridgetown",
+      "to": "Saint-Pierre",
+      "best": [
+        {
+          "good": "Sugar",
+          "quantity": 180,
+          "net": 518.31,
+          "hours": 63
+        },
+        {
+          "good": "Molasses",
+          "quantity": 180,
+          "net": 403.56,
+          "hours": 59
+        },
+        {
+          "good": "Rum",
+          "quantity": 180,
+          "net": -5.44,
+          "hours": 59
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Bridgetown",
+      "to": "Willemstad",
+      "best": [
+        {
+          "good": "Hides",
+          "quantity": 90,
+          "net": 532.44,
+          "hours": 245
+        },
+        {
+          "good": "Molasses",
+          "quantity": 180,
+          "net": 112.19,
+          "hours": 281
+        },
+        {
+          "good": "Cotton",
+          "quantity": 90,
+          "net": 70.37,
+          "hours": 242
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Saint-Pierre",
+      "to": "Bridgetown",
+      "best": [
+        {
+          "good": "Coffee",
+          "quantity": 127,
+          "net": 1174.75,
+          "hours": 52
+        },
+        {
+          "good": "Timber",
+          "quantity": 60,
+          "net": 103.81,
+          "hours": 55
+        },
+        {
+          "good": "Tobacco",
+          "quantity": 111,
+          "net": 42.06,
+          "hours": 51
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Saint-Pierre",
+      "to": "Willemstad",
+      "best": [
+        {
+          "good": "Tobacco",
+          "quantity": 111,
+          "net": 959.06,
+          "hours": 227
+        },
+        {
+          "good": "Coffee",
+          "quantity": 127,
+          "net": 937.19,
+          "hours": 233
+        },
+        {
+          "good": "Cocoa",
+          "quantity": 148,
+          "net": 911.56,
+          "hours": 235
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Willemstad",
+      "to": "Bridgetown",
+      "best": [
+        {
+          "good": "Fine Cloth",
+          "quantity": 55,
+          "net": 1004.69,
+          "hours": 241
+        },
+        {
+          "good": "Books",
+          "quantity": 71,
+          "net": 977.06,
+          "hours": 243
+        },
+        {
+          "good": "Common Cloth",
+          "quantity": 148,
+          "net": 897.13,
+          "hours": 246
+        }
+      ]
+    },
+    {
+      "cash": 3000,
+      "from": "Willemstad",
+      "to": "Saint-Pierre",
+      "best": [
+        {
+          "good": "Glassware",
+          "quantity": 89,
+          "net": 976.5,
+          "hours": 232
+        },
+        {
+          "good": "Tools",
+          "quantity": 119,
+          "net": 920,
+          "hours": 256
+        },
+        {
+          "good": "Common Cloth",
+          "quantity": 148,
+          "net": 918.12,
+          "hours": 230
+        }
+      ]
+    }
+  ],
+  "legs": [
+    {
+      "leg": 1,
+      "silver": 1063.17,
+      "day": 2.63,
+      "tradeTier": 0,
+      "sailingTier": 0
+    },
+    {
+      "leg": 2,
+      "silver": 1420.67,
+      "day": 4.75,
+      "tradeTier": 0,
+      "sailingTier": 0
+    },
+    {
+      "leg": 3,
+      "silver": 1836.83,
+      "day": 7.29,
+      "tradeTier": 1,
+      "sailingTier": 0
+    },
+    {
+      "leg": 4,
+      "silver": 2544.33,
+      "day": 9.42,
+      "tradeTier": 1,
+      "sailingTier": 0
+    },
+    {
+      "leg": 5,
+      "silver": 3371.83,
+      "day": 12.04,
+      "tradeTier": 1,
+      "sailingTier": 1
+    },
+    {
+      "leg": 6,
+      "silver": 4656.17,
+      "day": 14.13,
+      "tradeTier": 2,
+      "sailingTier": 1
+    },
+    {
+      "leg": 7,
+      "silver": 4781.17,
+      "day": 16.63,
+      "tradeTier": 2,
+      "sailingTier": 1
+    },
+    {
+      "leg": 8,
+      "silver": 6290.67,
+      "day": 18.75,
+      "tradeTier": 2,
+      "sailingTier": 1
+    },
+    {
+      "leg": 9,
+      "silver": 7045.67,
+      "day": 21.25,
+      "tradeTier": 2,
+      "sailingTier": 1
+    },
+    {
+      "leg": 10,
+      "silver": 7562.17,
+      "day": 23.38,
+      "tradeTier": 3,
+      "sailingTier": 1
+    },
+    {
+      "leg": 11,
+      "silver": 7950.17,
+      "day": 25.88,
+      "tradeTier": 3,
+      "sailingTier": 1
+    },
+    {
+      "leg": 12,
+      "silver": 9257.67,
+      "day": 28,
+      "tradeTier": 3,
+      "sailingTier": 1
+    },
+    {
+      "leg": 13,
+      "silver": 9631.67,
+      "day": 30.5,
+      "tradeTier": 3,
+      "sailingTier": 1
+    },
+    {
+      "leg": 14,
+      "silver": 10868.17,
+      "day": 32.63,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 15,
+      "silver": 11232.67,
+      "day": 35,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 16,
+      "silver": 12413.83,
+      "day": 37.04,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 17,
+      "silver": 12767.33,
+      "day": 39.42,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 18,
+      "silver": 13126.5,
+      "day": 41.46,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 19,
+      "silver": 14060,
+      "day": 43.83,
+      "tradeTier": 3,
+      "sailingTier": 2
+    },
+    {
+      "leg": 20,
+      "silver": 14375.17,
+      "day": 45.88,
+      "tradeTier": 4,
+      "sailingTier": 2
+    },
+    {
+      "leg": 21,
+      "silver": 14753.67,
+      "day": 48.25,
+      "tradeTier": 4,
+      "sailingTier": 2
+    },
+    {
+      "leg": 22,
+      "silver": 15950.83,
+      "day": 50.29,
+      "tradeTier": 4,
+      "sailingTier": 2
+    },
+    {
+      "leg": 23,
+      "silver": 16046.33,
+      "day": 52.67,
+      "tradeTier": 4,
+      "sailingTier": 2
+    },
+    {
+      "leg": 24,
+      "silver": 18876.5,
+      "day": 54.71,
+      "tradeTier": 4,
+      "sailingTier": 2
+    }
+  ],
+  "upgradeLeg": 12
+}

@@ -12,7 +12,7 @@ Failure is recoverable only from a church checkpoint. Profiles and checkpoints a
 
 Optional NanoGPT dialogue can be enabled in Settings with your own API key and model. Keys stay in tab memory and clear on refresh. The game works with predefined text when AI is disabled or unavailable. AI never determines prices, rewards, rolls, or actions.
 
-Trade 45 goods through a basket with exact totals, finite stock, supply/demand pricing, and Trade skill progression. The Journal’s Markets tab remembers dated prices from visited ports. Provisions can be bought and sold. Controlled goods are listed, with access reserved for a later release. See [implemented trade rules](docs/trade-release.md).
+Trade 45 goods through a basket with exact totals, finite stock, supply/demand pricing, and Trade skill progression. The Journal’s Markets tab remembers dated prices from visited ports. Provisions can be bought and sold. Buy national permits at the Harbour Master for Controlled goods, or meet a smuggler contact at the tavern. Local events and reputation affect prices. Compare remembered prices and cargo costs in the Journal. See [implemented trade rules](docs/trade-release.md), [planning/access/events](docs/trade-phase-two.md), and [engine playtests](docs/trade-playtest.md).
 
 ## Development
 

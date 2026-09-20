@@ -2,7 +2,7 @@
 
 This document defines the planned trade system: goods, port markets, stock, access restrictions, pricing, and market information.
 
-Exact prices, multipliers, stock quantities, restocking rates, and balance values will be defined separately.
+The playable core is documented in [trade release](trade-release.md). The next release adds [planning tools, permits, reputation, smugglers and events](trade-phase-two.md). This document retains the broader design, including deferred operational uses and spoilage.
 
 ## Design goals
 
@@ -413,7 +413,9 @@ Enslaved people are never represented as player-traded goods or cargo.
 
 Any future narrative treatment should be deliberate and handled in a separate design discussion.
 
-## Deferred decisions
+## Design parameters and remaining decisions
+
+The core numerical values, inventories, bulk pricing, permits, smuggler rules and initial events below now have initial implementations in the linked release documents. Unimplemented operational uses and spoilage remain deferred; balance values can still be revised.
 
 The following details will be defined separately:
 
@@ -442,4 +444,4 @@ The following details will be defined separately:
 
 ## First release planning
 
-See [confirmed release decisions and draft balance](trade-release-draft.md) for the agreed initial scope, large finite provision stocks, and proposed deal/price/stock rules. The multi-good basket deal is agreed: one combined quote and confirmation for purchases and sales. Numerical balance tables remain drafts; the trade system is not yet implemented.
+See [confirmed release decisions and draft balance](trade-release-draft.md) for the agreed initial scope, large finite provision stocks, and proposed deal/price/stock rules. The multi-good basket deal is agreed: one combined quote and confirmation for purchases and sales. The core trade system and the subsequent planning/access/event phase are implemented. See [current additions and rules](trade-phase-two.md) and [game-engine playtest results](trade-playtest.md).
