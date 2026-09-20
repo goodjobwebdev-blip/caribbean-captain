@@ -39,6 +39,10 @@ describe('smuggler deals',()=>{
   const legal=stockAt(g,'weapons');g=deal(g,[buy('weapons',1)],'smuggler');expect(g.cargo.weapons).toBe(1);expect(stockAt(g,'weapons')).toBe(legal);expect(stockAt(g,'weapons',g.port,'smuggler')).toBeLessThan(100);
   expect(quoteBasket(g,[buy('sugar',1)],'smuggler').errors.join()).toContain('do not handle');
  });
+ it('refreshes accessible local smuggler memories after time passes in port',()=>{
+  const g=act(rich(),{type:'meet-smuggler'}),old=g.economy!.blackMemories!.bridgetown!.hour;
+  const next=act(g,{type:'sleep'});expect(next.economy!.blackMemories!.bridgetown!.hour).toBe(next.hours);expect(next.hours).toBeGreaterThan(old);expect(next.economy!.blackMemories!['saint-pierre']).toBeUndefined();
+ });
  it('rejects unavailable days atomically without updating remembered prices',()=>{
   const g=act(rich(),{type:'meet-smuggler'}),seen=structuredClone(g.economy!.blackMemories);g.hours=24*4;expect(smugglerOpen(g)).toBe(false);
   const before=structuredClone(g);expect(()=>deal(g,[buy('weapons',1)],'smuggler')).toThrow('absent');observeMarket(g,'smuggler');expect(g).toEqual(before);expect(g.economy!.blackMemories).toEqual(seen);

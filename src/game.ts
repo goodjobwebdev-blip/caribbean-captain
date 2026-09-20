@@ -123,7 +123,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
        g.lastRoll={label:'Smuggling inspection',dice,outcome:total<=6?'Caught: purchases confiscated':total<=9?'Suspicion: fine':'Undetected'};
        note(g,`Smuggling inspection: ${dice.join(' + ')} = ${total}. ${g.lastRoll.outcome}. Fine: ${fine} silver${fine&&g.silver<0?' (unpaid balance is debt)':''}.`);
       }
-      advance(g,1);if(channel==='smuggler')observeMarket(g,'smuggler');
+      advance(g,1);
       note(g,`Trade deal: paid ${q.buys}, received ${q.sales} silver. ${q.lines.length} cargo line(s).${q.xp?` +${q.xp.toFixed(2)} Trade points.`:''}`);break;
     }
     case 'buy-permit':{
@@ -188,6 +188,6 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(ship.hullPoints<=0||g.crew<spec.minCrew){g.failed=ship.hullPoints<=0?'Your ship was lost. Load a church checkpoint.':'Too few sailors survived to bring the ship home. Load a church checkpoint.';note(g,g.failed);}else arrive();break;
     }
   }
-  if(!g.voyage)observeMarket(g);
+  if(!g.voyage){observeMarket(g);observeMarket(g,'smuggler');}
   return g;
 }
