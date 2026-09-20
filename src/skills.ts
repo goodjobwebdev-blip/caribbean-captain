@@ -1,6 +1,6 @@
 /** Player-only skill progress. Sailing practice is credited on successful arrival. */
 export type SkillProgress = { tier: number; points: number; sailingHours?: number };
-export type PlayerSkills = { sailing: SkillProgress; trade?:SkillProgress };
+export type PlayerSkills = { sailing: SkillProgress; trade?:SkillProgress } & Partial<Record<import('./battle/types').Skill,SkillProgress>>;
 export const initialSkills = ():PlayerSkills => ({sailing:{tier:0,points:0}});
 export function sailingProgress(skills?:PlayerSkills):SkillProgress {
   return skills?.sailing ?? {tier:0,points:0};

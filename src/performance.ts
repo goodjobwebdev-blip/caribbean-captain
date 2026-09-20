@@ -27,7 +27,8 @@ export function shipPerformance(g:Game,ship:OwnedShip=resolveShip(g)){
  const hullRatio=clamp(ship.hullPoints/spec.maxHull),sailRatio=clamp(ship.sailCondition/100);
  const hull=hullRatio===0?0:.5+.5*hullRatio;
  const sails=sailRatio===0?0:.2+.8*sailRatio;
- const crew=g.crew<spec.minCrew?0:spec.optimalCrew===spec.minCrew?1:.6+.4*clamp((g.crew-spec.minCrew)/(spec.optimalCrew-spec.minCrew));
+ const fit=g.crewState?.fit??g.crew;
+ const crew=fit<spec.minCrew?0:spec.optimalCrew===spec.minCrew?1:.6+.4*clamp((fit-spec.minCrew)/(spec.optimalCrew-spec.minCrew));
  const mastery=1+sailingProgress(g.skills).tier*.05;
  const speed=spec.speed*loadSpeed*hull*sails*crew*mastery;
  const maneuverability=spec.maneuverability*loadManeuver*hull*sails*crew;
@@ -37,7 +38,7 @@ export function shipPerformance(g:Game,ship:OwnedShip=resolveShip(g)){
 export function sailingProblems(g:Game):string[]{
  const ship=resolveShip(g),spec=shipDefinition(ship.configurationId),performance=shipPerformance(g,ship),problems:string[]=[];
  if(cargoSpaceUsed(g)>spec.capacity+1e-8)problems.push('Reduce your hold load before sailing.');
- if(g.crew<spec.minCrew)problems.push(`You need at least ${spec.minCrew} sailors.`);
+ if((g.crewState?.fit??g.crew)<spec.minCrew)problems.push(`You need at least ${spec.minCrew} sailors.`);
  if(ship.hullPoints<=0)problems.push('Repair your hull before sailing.');
  if(ship.sailCondition<=0)problems.push('Repair your sails before sailing.');
  if(performance.overloaded)problems.push(`Overloaded by ${(-performance.availableDeadweight).toFixed(1)} weight units. Sell cargo or deliver freight before sailing.`);

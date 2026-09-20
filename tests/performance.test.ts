@@ -1,3 +1,4 @@
+import {legacyVoyage} from './legacy-voyage';
 import {describe,it,expect} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {createElement} from 'react';
@@ -50,7 +51,7 @@ describe('ship performance',()=>{
  it('uses the departure snapshot through encounters, weather, and later skill changes',()=>{
   const g=rich();g.cargo.sugar=120;
   const expected=Math.ceil(hoursTo(g.port,'saint-pierre',g)*1.25);
-  const encounter=act(g,{type:'sail',to:'saint-pierre'},rng(.99,0,0));
+  const encounter=legacyVoyage(g,1.25);
   expect(encounter.voyage!.hours).toBe(expected);expect(encounter.voyage!.departureSpeed).toBe(shipPerformance(g).speed);
   encounter.skills={sailing:{tier:10,points:0}};
   const next=act(encounter,{type:'encounter',choice:'flee'},rng(0,0));
@@ -107,7 +108,7 @@ describe('larger freight',()=>{
   const job=offers(g).find(c=>c.amount===800&&c.to==='saint-pierre')!;
   g=act(g,{type:'accept',contract:{...job,reward:999999,amount:1}});
   expect(g.contracts[0].amount).toBe(800);expect(g.contracts[0].reward).toBe(2018);
-  g=act(g,{type:'sail',to:'saint-pierre'},rng(.5,.5,.5));expect(g.failed).toBeNull();
+  g.pirateDanger=0;g=act(g,{type:'sail',to:'saint-pierre'},rng(.5,.5,.5));expect(g.failed).toBeNull();
   const before=g.silver;g=act(g,{type:'deliver'});expect(g.silver).toBeCloseTo(before+2018-32/24);expect(g.archive![0].amount).toBe(800);
   expect(()=>act(g,{type:'deliver'})).toThrow();
  });

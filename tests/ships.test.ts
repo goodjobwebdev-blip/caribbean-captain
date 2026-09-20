@@ -1,3 +1,4 @@
+import {legacyVoyage} from './legacy-voyage';
 import 'fake-indexeddb/auto';
 import {describe,it,expect} from 'vitest';
 import {act,newGame,normalizeGame,ownedShip,currentShip,shipPurchaseQuote,hoursTo,offers,cargoUsed,hullPercent,type Game} from '../src/game';
@@ -72,7 +73,7 @@ describe('condition and ship saves',()=>{
  });
  it('keeps prototype encounter hull damage proportional and respects each crew minimum',()=>{
   const g=rich();g.ship=createShip('brig-universal');g.crew=16;g.provisions=200;
-  let calls=0;const encounter=act(g,{type:'sail',to:'saint-pierre'},()=>calls++===0?.5:0);
+  let calls=0;const encounter=legacyVoyage(g);
   const next=act(encounter,{type:'encounter',choice:'fight'},()=>.5);
   expect(next.ship!.hullPoints).toBe(240);expect(hullPercent(next)).toBe(80);expect(next.failed).toContain('Too few');
   expect(()=>buy(encounter,STARTER_ID)).toThrow('encounter');expect(()=>buy(next,STARTER_ID)).toThrow('checkpoint');

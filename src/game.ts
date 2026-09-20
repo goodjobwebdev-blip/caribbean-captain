@@ -1,3 +1,7 @@
+import {contacts,beginEncounter,resolveEncounter,type EncounterChoice} from './battle/encounter';
+import {createBattle} from './battle/naval';
+import {battleAct,type BattleAction} from './battle/reducer';
+import {finish,type Encounter,type Battle,type Contact,type Crew,type Captain,type Roll} from './battle/types';
 import {ensureFinances,beginAccount,finishAccounting,record,recordConsumption,recordTrade,type Finances,type EntryKind} from './finance';
 import {fruitAfter,spoilCargo,prepareProvisions,supplyRepairMaterials,type FoodGood,type RepairKind} from './operations';
 import {PERMIT_PRICE,nationOf,attitude,hasPermit,changeStanding,type Channel} from './commerce';
@@ -18,9 +22,9 @@ export const GOODS: Good[] = ALL_GOODS.filter((id):id is Good=>id!=='provisions'
 export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
-export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice };
-export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
+export type Game = { encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
+export type Action = {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -99,8 +103,10 @@ export function contractProblems(g:Game,c:Contract):string[]{
 export function canSave(g:Game) { return !g.failed && !g.voyage; }
 export function outcome(total:number) { return total<=6?'Setback':total<=9?'Partial success':'Success'; }
 export function act(original:Game, action:Action, randomOverride?:()=>number):Game {
+  if(action.type==='difficulty'){if(!['Easy','Normal','Hard'].includes(action.value))throw Error('Invalid difficulty.');const next=normalizeGame(original);next.difficulty=action.value;if(next.battle)next.battle.difficulty=action.value;return next;}
   if (original.failed) throw new Error('Load a church checkpoint to continue.');
-  if (original.voyage && action.type!=='encounter') throw new Error('Resolve the pirate encounter first.');
+  if (original.voyage && !['encounter','contact','continue-voyage'].includes(action.type)&&!action.type.startsWith('battle-')) throw new Error('Resolve the encounter first.');
+  if(original.battle&&!action.type.startsWith('battle-'))throw new Error('Resolve the active battle first.');
   const g=normalizeGame(original);
   const spec=currentShip(g),ship=g.ship!;
   const damageHull=(percent:number)=>{ship.hullPoints=Math.max(0,ship.hullPoints-spec.maxHull*percent/100);};
@@ -108,10 +114,14 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   const roll=():Dice=>[Math.floor(random()*6)+1,Math.floor(random()*6)+1];
   const allowWeight=(added:number)=>{if(loadBreakdown(g).total+added>spec.deadweight+1e-8)throw new Error('Not enough available deadweight. Sell cargo or reduce your load first.');};
   const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;const kinds:Partial<Record<Action['type'],EntryKind>>={hire:'recruiting',sleep:'lodging',repair:'repairs','repair-sails':'repairs','replace-cannons':'repairs','buy-permit':'permit','meet-smuggler':'contact'};record(g,kinds[action.type]??'repairs',-cost);};
-  const arrive=()=>{const v=g.voyage!; if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;
+  const arrive=()=>{const v=g.voyage!;
+    const next=v.contacts?.shift();
+    if(next){const elapsed=v.elapsed??0,step=Math.max(0,next.at-elapsed);v.remaining=Math.max(0,v.remaining-step);v.elapsed=next.at;if(advance(g,step))beginEncounter(g,next.npc);return;}
+    if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;delete g.encounter;
     const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
     if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
+  if(action.type.startsWith('battle-')){battleAct(g,action as BattleAction);if(action.type==='battle-resume')arrive();finishAccounting(g);return g;}
   switch(action.type) {
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
@@ -150,9 +160,9 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const q=supplyRepairMaterials(g,action.kind);record(g,'repairs',-q.silver);record(g,'materials-used',0,{cost:q.knownCost});
       if(advance(g,q.hours)){if(action.kind==='hull')ship.hullPoints=spec.maxHull;else ship.sailCondition=100;note(g,`Repaired ${action.kind} using cargo materials. Paid ${q.silver} silver; material credit ${q.discount} silver. ${q.hours} hours of work.`);}break;
     }
-    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
+    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;if(g.crewState)g.crewState.fit++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
-    case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
+    case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;if(g.crewState)g.crewState.fit=Math.max(0,g.crewState.fit-1);advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
     case 'repair':{
       const cost=hullRepairQuote(ship);if(!cost)throw new Error('Your hull needs no repairs.');
       pay(cost);if(advance(g,Math.ceil((spec.maxHull-ship.hullPoints)/5))){ship.hullPoints=spec.maxHull;note(g,`The shipyard repaired ${ship.name}'s hull for ${cost} silver.`);}break;
@@ -186,13 +196,22 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       beginAccount(g,action.to);
       const weatherRoll=random();const factor=weatherRoll<0.2?0.85:weatherRoll>0.8?1.25:1;
       const weather=factor<1?'Fair winds':factor>1?'Headwinds':'Steady winds';const hours=Math.ceil(hoursTo(g.port,action.to,g)*factor);const dice=roll();
-      g.voyage={to:action.to,hours,remaining:hours,departureSpeed:effectiveSpeed(g),weather,dice};g.lastRoll={label:'Voyage encounter',dice,outcome:dice[0]+dice[1]===2?'Pirates sighted':'Clear passage'};
-      note(g,`Departed for ${port(action.to).name}. ${weather}; ${duration(hours)}. Voyage roll: ${dice.join(' + ')} = ${dice[0]+dice[1]}.`);
-      if(dice[0]+dice[1]===2){const first=Math.floor(hours/2);g.voyage.remaining-=first;if(advance(g,first))note(g,'A pirate ship closes in. Choose whether to flee, negotiate, or fight.');}
-      else arrive();break;
+      g.voyage={to:action.to,hours,remaining:hours,elapsed:0,departureSpeed:effectiveSpeed(g),weather,dice,contacts:contacts(g,hours)};
+      g.lastRoll={label:'Voyage weather',dice,outcome:weather};
+      note(g,`Departed for ${port(action.to).name}. ${weather}; ${duration(hours)}.`);
+      arrive();break;
+    }
+    case 'continue-voyage': {if(!g.voyage||g.encounter)throw Error('Resolve the contact first.');arrive();break;}
+    case 'contact': {
+      if(!g.encounter)throw Error('No contact is pending.');
+      const next=resolveEncounter(g,action.response);note(g,g.encounter.message);
+      if(g.ship!.hullPoints<=0){g.battle=createBattle(g,g.encounter.npc);finish(g.battle,g.battle.npcId,'Player ship sunk during the encounter.');break;}
+      if(next==='naval'||next==='pursuit'||next==='capture'){g.battle=createBattle(g,g.encounter.npc,next==='pursuit');if(next==='capture')finish(g.battle,g.battle.npcId,'Player surrendered; Capture Resolution pending.');}
+      else if(next==='continue'){delete g.encounter;arrive();}
+      break;
     }
     case 'encounter': {
-      if(!g.voyage)throw new Error('There is no encounter.');
+      if(!g.voyage)throw new Error('There is no encounter.');if(g.encounter)throw Error('Use the new encounter responses.');
       const dice=roll(),total=dice[0]+dice[1],band=outcome(total);g.lastRoll={label:action.choice,dice,outcome:band};
       let effects='';
       if(action.choice==='flee'){const delay=total<=6?24:total<=9?8:0;const damage=total<=6?25:total<=9?10:0;damageHull(damage);g.voyage.remaining+=delay;effects=`${damage}% hull damage; ${delay} hours delay.`;}
