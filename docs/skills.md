@@ -4,6 +4,10 @@ This document defines the planned skill system for the player character. It is b
 
 The system has 24 skills covering sailing, naval combat, command, ship maintenance, social interaction, personal combat, and adventuring. These skills belong only to the player character; crew members use separate ship and crew systems.
 
+## Current implementation
+
+Sailing and Trade have their own reward rules. Seventeen active encounter/combat skills now earn bounded practice; see [progression and equipment](combat-progression-equipment.md) for implemented action hooks and rates. The broader list below remains the full design, including skills without playable hooks yet.
+
 ## Skills
 
 ### Sailing and awareness

@@ -1,3 +1,4 @@
+import {encounterPractice} from './progression';
 import type {Game,PortId} from '../game';
 import {SHIPS,createShip,resolveShip,shipDefinition,totalCannons} from '../ships';
 import {shipPerformance} from '../performance';
@@ -81,7 +82,7 @@ export type EncounterChoice={choice:string;confirmed?:boolean;dump?:'goods'|'gun
 export function resolveEncounter(g:Game,a:EncounterChoice):'continue'|'naval'|'pursuit'|'capture'|null{
  const e=g.encounter!;if(!e||!encounterActions(e).includes(a.choice))throw Error('That response is not available.');const n=e.npc;if(e.demand?.kind==='passengers'&&!['comply','offer-passengers','surrender'].includes(a.choice))e.passengersRefused=true;
  const end=()=>{if(e.passengersRefused&&g.contracts.some(c=>c.type==='Passengers')){rewardSafePassengers(g);}return 'continue' as const;};
- if(a.choice==='continue'||a.choice==='investigate'){e.stage=e.posture==='Flee'?'pursuit':'response';e.message+=a.choice==='investigate'?` Lookout identifies a ${rank(n.level)} captain.`:'';return null;}
+ if(a.choice==='continue'||a.choice==='investigate'){if(a.choice==='investigate')encounterPractice(g,'lookout');e.stage=e.posture==='Flee'?'pursuit':'response';e.message+=a.choice==='investigate'?` Lookout identifies a ${rank(n.level)} captain.`:'';return null;}
  if(['ignore','let-go','respond'].includes(a.choice)){if(a.choice==='respond'){g.economy!.memories[n.origin]=structuredClone(n.market);e.message=`Market intelligence from ${n.origin}, observed at hour ${n.departed}.`;}if(a.choice==='ignore'&&e.posture==='Threaten')return 'naval';return end();}
  if(a.choice==='surrender')return 'capture';
  if(a.choice==='attack'||a.choice==='fight'){
@@ -102,7 +103,7 @@ export function resolveEncounter(g:Game,a:EncounterChoice):'continue'|'naval'|'p
  if(a.choice==='flee'&&a.dump){if(a.dump==='goods'){const value=goodsValue(g);for(const id of tradeGoods(g))loss(g,id,g.cargo[id]);distraction=['Pirate','Privateer'].includes(n.role)?value>=.5*(e.demand?.value??Infinity)?3:value>=.25*(e.demand?.value??Infinity)?2:value>=.1*(e.demand?.value??Infinity)?1:0:0;}else{if((g.cargo.gunpowder??0)<1)throw Error('No prepared gunpowder charge available.');loss(g,'gunpowder',1);distraction=1+Math.floor(mastery(g,'demolitions')/3);}}
  if(moving){parts.Sailing=Math.floor(mastery(g,'sailing')/3);parts['Relative speed']=clamp(Math.round((shipPerformance(g).speed-shipDefinition(n.ship.configurationId).speed)*4),-3,3);parts.Maneuverability=Math.round((shipPerformance(g).maneuverability-shipDefinition(n.ship.configurationId).maneuverability)/30);parts['Crew sailing experience']=Math.floor((g.crewState?.experience??50)/40);parts['NPC movement resistance']=-Math.floor(n.level/5);parts['Early sighting']=e.early&&!e.movementUsed?Math.floor(mastery(g,'lookout')/3):0;parts.Distraction=distraction;e.movementUsed=true;}
  else{const skill=a.choice==='negotiate'?'diplomacy':a.choice==='deceive'?'deception':'intimidation';parts[skill]=Math.floor(mastery(g,skill)/2);parts['NPC resistance']=-Math.floor(n.level/5);if(skill==='diplomacy')parts.Relationship=Math.round(standing(g,n.faction)/40);if(skill==='intimidation')parts['Apparent strength']=clamp(Math.round(n.perceivedStrength/(totalCannons(n.ship.cannons)+n.crew.fit*.2)-1),-2,2);}
- const r=roll(g,a.choice,parts);g.encounterRoll=r;g.lastRoll={label:a.choice,dice:r.dice,outcome:['Setback','Partial','Success'][r.band]};e.message=`${a.choice}: ${r.dice.join(' + ')} ${r.modifier>=0?'+':''}${r.modifier} = ${r.total}. ${['Setback','Partial success','Full success'][r.band]}.`;
+ const r=roll(g,a.choice,parts);if(!moving)encounterPractice(g,a.choice==='negotiate'?'diplomacy':a.choice==='deceive'?'deception':'intimidation',r.band===0?.25:.5);if(a.dump==='gunpowder')encounterPractice(g,'demolitions');g.encounterRoll=r;g.lastRoll={label:a.choice,dice:r.dice,outcome:['Setback','Partial','Success'][r.band]};e.message=`${a.choice}: ${r.dice.join(' + ')} ${r.modifier>=0?'+':''}${r.modifier} = ${r.total}. ${['Setback','Partial success','Full success'][r.band]}.`;
  if(a.choice==='avoid'){if(r.band===2)return end();e.stage='response';return null;}
  if(a.choice==='pursue'){if(r.dice[0]+r.dice[1]===12||(r.dice[0]+r.dice[1]!==2&&r.total>=9))return 'pursuit';g.voyage!.remaining+=4;return end();}
  if(a.choice==='flee'){

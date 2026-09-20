@@ -1,3 +1,5 @@
+import {equipmentAct,type Equipment,type EquipmentAction} from './equipment';
+import {awardBattlePractice} from './battle/progression';
 import {returnFee} from './battle/capture';
 import {contacts,beginEncounter,resolveEncounter,type EncounterChoice} from './battle/encounter';
 import {createBattle} from './battle/naval';
@@ -24,8 +26,8 @@ export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Uni
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
-export type Game = { encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Game = { equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
+export type Action = EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -124,7 +126,9 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
   if(action.type.startsWith('battle-')){
     if(action.type==='battle-resume'&&g.battle?.phase==='ended'&&sailingProblems(g).length)throw Error('Your ship or captain cannot continue. Arrange return to port.');
+    awardBattlePractice(g);
     battleAct(g,action as BattleAction);
+    awardBattlePractice(g);
     if(action.type==='battle-return'){
       const b=g.battle!;if(g.ship!.hullPoints<=0||(g.captainState?.injury??0)>=6)throw Error('A lost ship or dead captain requires a checkpoint.');
       const fee=returnFee(g),wages=wageFor(g,12);g.silver-=fee+wages;record(g,'recovery',-fee);record(g,'wages',-wages);
@@ -140,6 +144,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     finishAccounting(g);return g;
   }
   switch(action.type) {
+    case 'buy-equipment': case 'equip-weapon': case 'load-pistol': case 'unload-pistol': case 'prepare-battery':equipmentAct(g,action);break;
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
       const channel=action.type==='trade'?(action.channel??'legal'):'legal';

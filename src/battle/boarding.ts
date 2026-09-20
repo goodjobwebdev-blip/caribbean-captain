@@ -1,3 +1,4 @@
+import {practice} from './progression';
 import type {Game} from '../game';
 import {shipDefinition} from '../ships';
 import {clamp,strength,ratioEdge,masteryEdge,casualties,roll,recordRoll,report,finish,type Battle,type Combatant} from './types';
@@ -15,7 +16,7 @@ export function legalBoarding(b:Battle,id:string):string[]{
 export function resolveDeck(g:Game,b:Battle){
  const p=b.ships[b.playerId],n=b.ships[b.npcId],pa=b.committed![0],na=b.accepted!.action_ids[0];if(na==='surrender'){finish(b,b.playerId,'Enemy captain surrendered.');return;}
  const mods:Record<string,number>={Assault:0,guard:1,breakthrough:-1};
- const r=roll(g,'Deck Battle',{Strength:ratioEdge(strength(p)/Math.max(.001,strength(n))),'Home deck':b.attacker===b.playerId?-1:1,'Player order':mods[pa]??0,'NPC order':-(mods[na]??0)});recordRoll(g,b,r);
+ const r=roll(g,'Deck Battle',{Strength:ratioEdge(strength(p)/Math.max(.001,strength(n))),'Home deck':b.attacker===b.playerId?-1:1,'Player order':mods[pa]??0,'NPC order':-(mods[na]??0)});recordRoll(g,b,r);practice(b,b.playerId,'boarding',r.band===0?.25:.5);
  const natural=r.dice[0]+r.dice[1],decisive=natural===2||natural===12,winner=r.band===2?1:r.band===0?-1:0;
  if(winner!==0){const winningOrder=winner===1?pa:na;if(winningOrder!=='guard')b.control+=winner*(decisive||winningOrder==='breakthrough'?2:1);}
  const before=[p.crew.fit,n.crew.fit],injured=[p.crew.injured,n.crew.injured],dead=[p.crew.dead,n.crew.dead];
@@ -27,6 +28,7 @@ export function resolveDeck(g:Game,b:Battle){
 }
 export function clearDecision(b:Battle){delete b.accepted;delete b.committed;b.decisionKey++;}
 const condition=(s:Combatant)=>-[0,0,1,2,3,4,4][s.captain.injury]-[0,0,1,2,3][s.captain.fatigue];
+const weaponQuality=(s:Combatant,action:string)=>['pistol','dodge'].includes(action)?0:s.captain.quality;
 const damage=(a:string)=>a==='heavy'||a==='pistol'?2:1;
 export function resolveDuel(g:Game,b:Battle){
  const d=b.duel!,p=b.ships[b.playerId],n=b.ships[b.npcId],pa=b.committed![0],na=b.accepted!.action_ids[0];
@@ -35,13 +37,13 @@ export function resolveDuel(g:Game,b:Battle){
  if(pa==='demand-surrender'){
   d.demandedAt.push(n.captain.injury);
   if(b.npc.temperament==='Fanatical'&&n.crew.fit>0){d.initiative=b.npcId;report(b,'The fanatical captain refuses surrender.');}
-  else{const r=roll(g,'Demand Surrender',{'Intimidation edge':masteryEdge((p.skills.intimidation??0)-Math.floor(b.npc.level/2)),'Injury pressure':n.captain.injury-2,'Crew pressure':ratioEdge(strength(p)/Math.max(.001,strength(n)))});recordRoll(g,b,r);if(r.band>0){finish(b,b.playerId,r.band===2?'Unconditional surrender.':'Conditional surrender.',r.band===1?'Personal safety and honorable treatment':undefined);return;}d.initiative=b.npcId;}
+  else{const r=roll(g,'Demand Surrender',{'Intimidation edge':masteryEdge((p.skills.intimidation??0)-Math.floor(b.npc.level/2)),'Injury pressure':n.captain.injury-2,'Crew pressure':ratioEdge(strength(p)/Math.max(.001,strength(n)))});recordRoll(g,b,r);practice(b,b.playerId,'intimidation',r.band===0?.25:.5);if(r.band>0){finish(b,b.playerId,r.band===2?'Unconditional surrender.':'Conditional surrender.',r.band===1?'Personal safety and honorable treatment':undefined);return;}d.initiative=b.npcId;}
  }else{
   if(attack==='pistol')(attacking?p:n).captain.pistol=false;
   const skill=attacking?(attack==='pistol'?'shooting':p.captain.weapon):defense==='dodge'?'athletics':p.captain.weapon;
   const actionMod=attack==='quick'?1:attack==='heavy'?-2:0;
   const defenseMod=defense==='block'?1:defense==='parry'&&attack==='heavy'?-1:0;
-  const r=roll(g,attacking?`Attack: ${attack} against ${defense}`:`Defend: ${defense} against ${attack}`,{'Mastery edge':masteryEdge((p.skills[skill]??0)-Math.floor(b.npc.level/2)),'Action':attacking?actionMod:-actionMod,'Reaction':attacking?-defenseMod:defenseMod,'Player conditions':condition(p),'Opponent condition advantage':-condition(n),'Weapon quality':p.captain.quality-n.captain.quality,'Boarding Control':d.firstRoll?d.control:0});recordRoll(g,b,r);d.firstRoll=false;
+  const r=roll(g,attacking?`Attack: ${attack} against ${defense}`:`Defend: ${defense} against ${attack}`,{'Mastery edge':masteryEdge((p.skills[skill]??0)-Math.floor(b.npc.level/2)),'Action':attacking?actionMod:-actionMod,'Reaction':attacking?-defenseMod:defenseMod,'Player conditions':condition(p),'Opponent condition advantage':-condition(n),'Weapon quality':weaponQuality(p,attacking?attack:defense)-weaponQuality(n,attacking?defense:attack),'Boarding Control':d.firstRoll?d.control:0});recordRoll(g,b,r);practice(b,b.playerId,skill,r.band===0?.25:.5);d.firstRoll=false;
   const natural=r.dice[0]+r.dice[1];let toPlayer=0,toNpc=0;
   if(attacking){
    if(natural===2){toPlayer=attack==='pistol'?0:1;d.initiative=b.npcId;}

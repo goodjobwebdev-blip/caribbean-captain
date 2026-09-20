@@ -41,3 +41,15 @@ export function creditTrade(skills:PlayerSkills|undefined,points:number):PlayerS
  if(trade.tier===10)trade.points=0;
  return next;
 }
+
+export const COMBAT_SKILLS = ['lookout','deception','diplomacy','intimidation','boarding','aiming','reloading','demolitions','carpentry','sailmaking','doctoring','leadership','lightWeapons','mediumWeapons','heavyWeapons','athletics','shooting'] as const;
+export const skillName=(id:string)=>id.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
+export function creditSkillPoints(skills:PlayerSkills|undefined,id:import('./battle/types').Skill,points:number):PlayerSkills {
+ if(!Number.isFinite(points)||points<0)throw Error('Practice must be finite and nonnegative.');
+ const next=structuredClone(skills??initialSkills()),progress=next[id]??{tier:0,points:0};next[id]=progress;
+ if(progress.tier>=10)return next;
+ progress.points+=points;
+ while(progress.tier<10&&progress.points>=nextTierRequirement(progress.tier)!){progress.points-=nextTierRequirement(progress.tier)!;progress.tier++;}
+ if(progress.tier===10)progress.points=0;
+ return next;
+}

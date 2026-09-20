@@ -1,3 +1,4 @@
+import {practice} from './progression';
 import type {Game} from '../game';
 import {BATTERIES,shipDefinition,totalCannons,type Battery} from '../ships';
 import {shipPerformance} from '../performance';
@@ -73,6 +74,7 @@ function volley(g:Game,b:Battle,id:string,o:Order,pre:Battle){
  const shipTarget='ship' in target?target:null,tier=shipTarget?shipDefinition(shipTarget.ship.configurationId).tier:1;
  const transverse=shipTarget?Math.abs(Math.sin((shipTarget.heading-Math.atan2(target.y-shooter.y,target.x-shooter.x)*180/Math.PI)*Math.PI/180)*speed(shipTarget,pre)*250):0;
  const r=roll(g,'Cannon volley',{'Cannon Aiming':Math.floor((shooter.skills.aiming??0)/3),'Ammunition range':rangeMod,'Target size':shipTarget?tier<=2?-1:tier>=5?1:0:-2,'Transverse movement':transverse<25?1:transverse<100?0:transverse<200?-1:-2,'Gunnery experience':Math.floor((shooter.crew.experience-50)/25)});recordRoll(g,b,r);
+ practice(b,id,'aiming',r.band===0?.25:.5);
  const natural=r.dice[0]+r.dice[1],out=natural===2?0:natural===12?3:r.total<=6?0:r.total<=8?1:r.total<=10?2:3,mult=[0,.5,1,1.5][out];
  s.batteries[o.battery!].loaded=0;s.batteries[o.battery!].ammo=null;report(b,`${id} ${o.battery}: ${['Miss','Glancing hit','Solid hit','Critical hit'][out]}.`);if(!out)return;
  if(!shipTarget){explode(g,b,o.target!,out===3);return;}const t=b.ships[o.target!],packets:Record<string,number>={hull:0,sails:0,crew:0,cannons:0};
@@ -86,14 +88,20 @@ function complete(g:Game,b:Battle,id:string,o:Scheduled,pre:Battle):string|undef
  const s=b.ships[id],old=pre.ships[id],spec=shipDefinition(s.ship.configurationId);if(o.failed){report(b,`${o.id} fails: ${o.failed}`);return;}
  const adjusted={...o,resources:o.kind==='reload'?{[o.ammo!]:old.ship.cannons[o.battery!],gunpowder:old.ship.cannons[o.battery!]}:o.resources};const errors=validateOrder(old,adjusted);if(errors.length){report(b,`${o.id} fails after spending ${o.cost}: ${errors.join(' ')}`);return;}
  if(o.kind==='fire'){volley(g,b,id,o,pre);return;}
- if(o.kind==='grapple'){const target=pre.ships[o.target!],relative=Math.hypot(speed(old,pre)*Math.cos(old.heading*Math.PI/180)-speed(target,pre)*Math.cos(target.heading*Math.PI/180),speed(old,pre)*Math.sin(old.heading*Math.PI/180)-speed(target,pre)*Math.sin(target.heading*Math.PI/180))*250;if(distance(old,target)>25||relative>50){report(b,'Grapple failed: requires distance ≤25 and relative movement ≤50.');return;}const r=roll(g,'Grapple',{Strength:ratioEdge(strength(old)/Math.max(.001,strength(target))),Maneuverability:Math.round((performance(old).maneuverability-performance(target).maneuverability)/25)});recordRoll(g,b,r);if(r.dice[0]+r.dice[1]===12||(r.dice[0]+r.dice[1]!==2&&r.total>=9))return id;return;}
+ if(o.kind==='grapple'){const target=pre.ships[o.target!],relative=Math.hypot(speed(old,pre)*Math.cos(old.heading*Math.PI/180)-speed(target,pre)*Math.cos(target.heading*Math.PI/180),speed(old,pre)*Math.sin(old.heading*Math.PI/180)-speed(target,pre)*Math.sin(target.heading*Math.PI/180))*250;if(distance(old,target)>25||relative>50){report(b,'Grapple failed: requires distance ≤25 and relative movement ≤50.');return;}const r=roll(g,'Grapple',{Strength:ratioEdge(strength(old)/Math.max(.001,strength(target))),Maneuverability:Math.round((performance(old).maneuverability-performance(target).maneuverability)/25)});recordRoll(g,b,r);practice(b,id,'boarding',r.band===0?.25:.5);if(r.dice[0]+r.dice[1]===12||(r.dice[0]+r.dice[1]!==2&&r.total>=9))return id;return;}
  inventoryEffect(s,adjusted);
  if(o.kind==='patch')s.ship.hullPoints=Math.min(s.startHull,s.ship.hullPoints+spec.maxHull*(.02+.005*(s.skills.carpentry??0)));
  if(o.kind==='repair')s.ship.sailCondition=Math.min(s.startSails,s.ship.sailCondition+5+(s.skills.sailmaking??0));
  if(o.kind==='extinguish')s.states.fire=Math.max(0,s.states.fire-1);if(o.kind==='flooding')s.states.flooding=Math.max(0,s.states.flooding-1);if(o.kind==='rally')s.states.shock=Math.max(0,s.states.shock-1);
  if(o.kind==='doctor'){const restored=Math.min(s.crew.injured,Math.max(0,s.startFit-s.crew.fit),Math.ceil((s.crew.fit+s.crew.injured)*(.02+.005*(s.skills.doctoring??0))));s.crew.fit+=restored;s.crew.injured-=restored;}
  if(o.kind==='dump')b.hazards.push({id:`charge-${id}-${b.window}-${b.unit}`,x:old.x,y:old.y,owner:id,armed:false});
- if(o.kind==='deceive'){const other=pre.ships[id===b.playerId?b.npcId:b.playerId];const r=roll(g,'Combat Deception',{Deception:Math.floor((old.skills.deception??0)/2),Discipline:Math.floor((old.crew.discipline-50)/25),Resistance:-Math.floor((other.skills.lookout??0)/2)});recordRoll(g,b,r);if(r.band)b.deception={...b.deception,[id]:{window:b.window+1,band:r.band}};}
+ if(o.kind==='deceive'){const other=pre.ships[id===b.playerId?b.npcId:b.playerId];const r=roll(g,'Combat Deception',{Deception:Math.floor((old.skills.deception??0)/2),Discipline:Math.floor((old.crew.discipline-50)/25),Resistance:-Math.floor((other.skills.lookout??0)/2)});recordRoll(g,b,r);practice(b,id,'deception',r.band===0?.25:.5);if(r.band)b.deception={...b.deception,[id]:{window:b.window+1,band:r.band}};}
+ if(o.kind==='reload')practice(b,id,'reloading');
+ if(o.kind==='dump')practice(b,id,'demolitions');
+ if(s.ship.hullPoints>old.ship.hullPoints||s.states.flooding<old.states.flooding)practice(b,id,'carpentry');
+ if(s.ship.sailCondition>old.ship.sailCondition)practice(b,id,'sailmaking');
+ if(s.crew.fit>old.crew.fit)practice(b,id,'doctoring');
+ if(s.states.shock<old.states.shock||s.states.fire<old.states.fire)practice(b,id,'leadership');
  report(b,`${id}: ${o.id} completes at ${b.unit}.`);
 }
 /** Merge independent effects from a shared pre-event snapshot, so repair/fire order cannot decide survival. */
@@ -109,6 +117,10 @@ export function mergeCompletions(b:Battle,pre:Battle,events:Battle[]){
   for(const k of new Set([...Object.keys(old.cargo),...all.flatMap(s=>Object.keys(s.cargo))]))s.cargo[k]=Math.max(0,delta(old.cargo[k]??0,all.map(s=>s.cargo[k]??0)));
   for(const k of ['fire','flooding','rigging','shock'] as const)s.states[k]=clamp(delta(old.states[k],all.map(s=>s.states[k])),0,3);
   s.heading=all.find(s=>s.heading!==old.heading)?.heading??old.heading;s.sails=all.find(s=>s.sails!==old.sails)?.sails??old.sails;
+ }
+ for(const skill of skills){
+  const earned=events.reduce((sum,event)=>sum+Math.max(0,(event.practice?.[skill]??0)-(pre.practice?.[skill]??0)),0);
+  if(earned>0)practice(b,b.playerId,skill,earned);
  }
  const removed=new Set(pre.hazards.filter(h=>events.some(e=>!e.hazards.some(v=>v.id===h.id))).map(h=>h.id));
  b.hazards=[...pre.hazards.filter(h=>!removed.has(h.id)),...events.flatMap(e=>e.hazards.filter(h=>!pre.hazards.some(v=>v.id===h.id)))];

@@ -87,10 +87,10 @@ describe('ship performance',()=>{
   expect(overweightQuote.problems).toHaveLength(1);expect(overweightQuote.problems[0]).toContain('overloaded');
   const before=structuredClone(heavy);expect(()=>act(heavy,{type:'buy-ship',configurationId:'sloop-universal'})).toThrow('overloaded');expect(heavy).toEqual(before);
  });
- it('renders current factors and weight contributors without hiding deferred combat',()=>{
+ it('renders current factors and weight contributors with naval effects',()=>{
   const g=rich();g.cargo.sugar=100;g.ship!.sailCondition=50;
   const html=renderToStaticMarkup(createElement(PerformanceBreakdown,{game:g}));
-  expect(html).toContain('Sail condition');expect(html).toContain('−40.0%');expect(html).toContain('Modifiers multiply');expect(html).toContain('battle effects');
+  expect(html).toContain('Sail condition');expect(html).toContain('−40.0%');expect(html).toContain('Modifiers multiply');expect(html).toContain('grappling in naval combat');
   const load=renderToStaticMarkup(createElement(LoadBreakdown,{game:g}));expect(load).toContain('Installed cannons');expect(load).toContain('261.0 / 500');
  });
 });

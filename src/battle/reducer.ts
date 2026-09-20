@@ -1,3 +1,5 @@
+import {equipment} from '../equipment';
+import {BATTERIES} from '../ships';
 import {settleCapture,restoreEscapeLoads,type CaptureChoice} from './capture';
 import {rewardSafePassengers} from './encounter';
 import type {Game} from '../game';
@@ -9,17 +11,25 @@ import {type Ammo,type Decision,finish} from './types';
 import {preload,schedule,stepNaval,replaceOrder,completePreloads} from './naval';
 import {legalBoarding,resolveDeck,resolveDuel} from './boarding';
 import {validateDecision} from './planner';
-export type BattleAction={type:'battle-settle';choice:CaptureChoice}|{type:'battle-return'}|{type:'battle-preload';battery:Battery;ammo:Ammo}|{type:'battle-commit';ids:string[]}|{type:'battle-accept';decision:Decision;key:number}|{type:'battle-step'|'battle-reveal'|'battle-transition'|'battle-surrender'|'battle-request'|'battle-resume'|'battle-instant'};
+export type BattleAction={type:'battle-loadout'}|{type:'battle-settle';choice:CaptureChoice}|{type:'battle-return'}|{type:'battle-preload';battery:Battery;ammo:Ammo}|{type:'battle-commit';ids:string[]}|{type:'battle-accept';decision:Decision;key:number}|{type:'battle-step'|'battle-reveal'|'battle-transition'|'battle-surrender'|'battle-request'|'battle-resume'|'battle-instant'};
 export function syncBattle(g:Game){const b=g.battle!,p=b.ships[b.playerId];g.ship=structuredClone(p.ship);g.crew=p.crew.fit+p.crew.injured;g.crewState=structuredClone(p.crew);g.captainState=structuredClone(p.captain);
  for(const [id,amount] of Object.entries(g.cargo)){const after=p.cargo[id]??0;if(after<amount){consumeLots(g,id as GoodId,amount-after);record(g,'materials-used',0,{good:id as GoodId,quantity:amount-after});}}
  g.cargo=structuredClone(p.cargo);
 }
 export function battleAct(g:Game,a:BattleAction){
+ g.equipment??=equipment(g);
  const b=g.battle;if(!b)throw Error('No active battle.');
  if(a.type==='battle-settle'){settleCapture(g,a.choice);return;}
  if(a.type==='battle-return'){if(b.phase!=='ended')throw Error('Settle the battle first.');restoreEscapeLoads(g);return;}
  if(b.phase==='ended'&&a.type!=='battle-resume')throw Error('The battle is already resolved.');
  if(a.type==='battle-surrender'){if(!['planning','transition'].includes(b.status))throw Error('Surrender is available before planning or between exchanges.');finish(b,b.npcId,'Player surrendered.');}
+ else if(a.type==='battle-loadout'){
+  // Validate the entire remaining preset on a clone before consuming any cargo.
+  const prepared=structuredClone(b);let count=0;
+  for(const battery of BATTERIES){const ammo=equipment(g).preloads[battery];if(!ammo||!prepared.ships[b.playerId].ship.cannons[battery]||prepared.preloaded.includes(`${b.playerId}:${battery}`))continue;preload(prepared,b.playerId,battery,ammo);count++;}
+  if(!count)throw Error('No unprepared batteries in your saved loadout.');
+  Object.assign(b,prepared);
+ }
  else if(a.type==='battle-preload')preload(b,b.playerId,a.battery,a.ammo);
  else if(a.type==='battle-transition'){if(b.status!=='transition')throw Error('No phase transition pending.');b.status='planning';}
  else if(a.type==='battle-request'){if(b.status==='replacement'&&b.replacement?.includes(b.npcId)&&!b.replacement.includes(b.playerId)){b.status='waiting';return;}if(b.phase!=='duel'||b.duel?.initiative!==b.npcId||b.status!=='planning')throw Error('No enemy attack pending.');b.status='waiting';}
