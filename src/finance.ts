@@ -2,10 +2,10 @@ import type {Game,PortId} from './game';
 import type {GoodId} from './goods';
 import type {Channel} from './commerce';
 import {cargoCost} from './trade';
-export type EntryKind='purchase'|'sale'|'wages'|'provisions-used'|'spoilage'|'materials-used'|'confiscation'|'repairs'|'recruiting'|'lodging'|'permit'|'contact'|'preparation'|'quest'|'fine'|'ransom'|'loot'|'ship-purchase'|'ship-sale';
-export const ENTRY_NAMES:Record<EntryKind,string>={purchase:'Cargo purchase',sale:'Cargo sale',wages:'Crew wages','provisions-used':'Provisions consumed',spoilage:'Spoilage','materials-used':'Repair materials',confiscation:'Confiscated purchases',repairs:'Shipyard bill',recruiting:'Recruitment',lodging:'Lodging',permit:'Trade permit',contact:'Smuggler introduction',preparation:'Food preparation',quest:'Quest payment',fine:'Inspection fine',ransom:'Pirate payment',loot:'Encounter proceeds','ship-purchase':'Ship purchase','ship-sale':'Ship sale'};
+export type EntryKind='purchase'|'sale'|'wages'|'provisions-used'|'spoilage'|'materials-used'|'confiscation'|'repairs'|'recruiting'|'lodging'|'permit'|'contact'|'preparation'|'quest'|'fine'|'ransom'|'loot'|'ship-purchase'|'ship-sale'|'recovery';
+export const ENTRY_NAMES:Record<EntryKind,string>={recovery:'Rescue and recovery',purchase:'Cargo purchase',sale:'Cargo sale',wages:'Crew wages','provisions-used':'Provisions consumed',spoilage:'Spoilage','materials-used':'Repair materials',confiscation:'Confiscated purchases',repairs:'Shipyard bill',recruiting:'Recruitment',lodging:'Lodging',permit:'Trade permit',contact:'Smuggler introduction',preparation:'Food preparation',quest:'Quest payment',fine:'Inspection fine',ransom:'Pirate payment',loot:'Encounter proceeds','ship-purchase':'Ship purchase','ship-sale':'Ship sale'};
 export type FinanceEntry={id:number;account:number|null;hour:number;port:PortId;atSea:boolean;kind:EntryKind;cash:number;cost?:number|null;unknownQuantity?:number;good?:GoodId;quantity?:number;channel?:Channel;deal?:number};
-export type VoyageAccount={id:number;from:PortId;to:PortId;departure:number;arrival?:number;closed?:number;openingSilver:number;currentSilver:number;status:'at-sea'|'in-port'|'closed'|'failed';partial:boolean};
+export type VoyageAccount={plannedTo?:PortId;id:number;from:PortId;to:PortId;departure:number;arrival?:number;closed?:number;openingSilver:number;currentSilver:number;status:'at-sea'|'in-port'|'closed'|'failed';partial:boolean};
 export type Finances={started:number;openingSilver:number;entries:FinanceEntry[];voyages:VoyageAccount[];active:number|null};
 export function ensureFinances(g:Game){
  if(g.finances)return;
@@ -34,7 +34,7 @@ export function recordTrade(g:Game,before:Game,lines:{good:GoodId;side:'buy'|'se
  ensureFinances(g);const deal=g.finances!.entries.length+1;
  for(const l of lines){const cost=cargoCost(before,l.good,l.quantity);record(g,l.side==='buy'?'purchase':'sale',l.side==='buy'?-l.total:l.total,{deal,good:l.good,quantity:l.quantity,channel,...(l.side==='sell'?{cost:cost.unknown>1e-8?null:cost.total,unknownQuantity:cost.unknown}:{})});}
 }
-const CASH_COSTS:EntryKind[]=['wages','repairs','recruiting','lodging','permit','contact','fine','ransom'];
+const CASH_COSTS:EntryKind[]=['wages','repairs','recruiting','lodging','permit','contact','fine','ransom','recovery'];
 const INVENTORY_COSTS:EntryKind[]=['provisions-used','spoilage','materials-used','confiscation'];
 export function financialSummary(entries:FinanceEntry[]){
  const sales=entries.filter(e=>e.kind==='sale'),costs=entries.filter(e=>INVENTORY_COSTS.includes(e.kind));

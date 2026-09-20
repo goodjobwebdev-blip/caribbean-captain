@@ -12,7 +12,11 @@ Naval planning supports free initial battery preloads, timed orders, ammunition/
 
 Boarding replaces the timeline with secret crew orders, casualties, Boarding Control and captain exchanges. The UI shows initiative, conditions, equipment, rolls and public tactical intent. Enemy exact captain levels and raw mastery are not displayed.
 
-## Explicit boundary
+## Capture Resolution update
+
+[Capture Resolution](capture-resolution.md) now implements settlement and recovery for the single-ship game. The original boundary below describes the initial combat release and is superseded by that document.
+
+## Original release boundary
 
 The specifications defer **Capture Resolution**. Surrender, sinking, incapacitation, collapse and death retain the complete combatant state and outcome. The voyage pauses at this boundary rather than inventing rewards, prize crews, imprisonment or transfer rules. Escape can resume the voyage. Church checkpoints remain the recovery mechanism.
 

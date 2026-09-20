@@ -37,6 +37,8 @@ export function shipPerformance(g:Game,ship:OwnedShip=resolveShip(g)){
 }
 export function sailingProblems(g:Game):string[]{
  const ship=resolveShip(g),spec=shipDefinition(ship.configurationId),performance=shipPerformance(g,ship),problems:string[]=[];
+ if((g.captainState?.injury??0)>=5)problems.push('Your captain needs recovery at the tavern before sailing.');
+ if((g.captainState?.fatigue??0)>=4)problems.push('Your captain must rest before sailing.');
  if(cargoSpaceUsed(g)>spec.capacity+1e-8)problems.push('Reduce your hold load before sailing.');
  if((g.crewState?.fit??g.crew)<spec.minCrew)problems.push(`You need at least ${spec.minCrew} sailors.`);
  if(ship.hullPoints<=0)problems.push('Repair your hull before sailing.');

@@ -1,3 +1,4 @@
+import {returnFee} from './battle/capture';
 import {contacts,beginEncounter,resolveEncounter,type EncounterChoice} from './battle/encounter';
 import {createBattle} from './battle/naval';
 import {battleAct,type BattleAction} from './battle/reducer';
@@ -121,7 +122,23 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
     if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
-  if(action.type.startsWith('battle-')){battleAct(g,action as BattleAction);if(action.type==='battle-resume')arrive();finishAccounting(g);return g;}
+  if(action.type.startsWith('battle-')){
+    if(action.type==='battle-resume'&&g.battle?.phase==='ended'&&sailingProblems(g).length)throw Error('Your ship or captain cannot continue. Arrange return to port.');
+    battleAct(g,action as BattleAction);
+    if(action.type==='battle-return'){
+      const b=g.battle!;if(g.ship!.hullPoints<=0||(g.captainState?.injury??0)>=6)throw Error('A lost ship or dead captain requires a checkpoint.');
+      const fee=returnFee(g),wages=wageFor(g,12);g.silver-=fee+wages;record(g,'recovery',-fee);record(g,'wages',-wages);
+      const fruit=g.cargo.fruit??0;recordConsumption(g,'spoilage','fruit',fruit-fruitAfter(fruit,12));spoilCargo(g,12);g.hours+=12;
+      // Rescue passage includes food and medical stabilization; existing stores and hull damage are retained.
+      if(g.captainState){g.captainState.fatigue=0;g.captainState.injury=Math.min(4,g.captainState.injury);}
+      const account=g.finances?.voyages.find(v=>v.id===g.finances?.active);if(account){account.plannedTo=account.to;account.to=g.port;}
+      g.voyage=null;g.battleHistory=[structuredClone(b),...(g.battleHistory??[])].slice(0,5);delete g.battle;delete g.encounter;
+      note(g,`Returned to ${port(g.port).name} under tow after 12 hours. Rescue and stabilization: ${fee} silver; wages: ${wages.toFixed(2)}. Damage and crew injuries remain; unpaid costs become debt.`);
+      observeMarket(g);observeMarket(g,'smuggler');
+    }else if(action.type==='battle-resume'&&g.voyage)arrive();
+    if(!g.voyage){observeMarket(g);observeMarket(g,'smuggler');}
+    finishAccounting(g);return g;
+  }
   switch(action.type) {
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
@@ -161,8 +178,8 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(advance(g,q.hours)){if(action.kind==='hull')ship.hullPoints=spec.maxHull;else ship.sailCondition=100;note(g,`Repaired ${action.kind} using cargo materials. Paid ${q.silver} silver; material credit ${q.discount} silver. ${q.hours} hours of work.`);}break;
     }
     case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;if(g.crewState)g.crewState.fit++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
-    case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
-    case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;if(g.crewState)g.crewState.fit=Math.max(0,g.crewState.fit-1);advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
+    case 'sleep':pay(8);if(advance(g,8)){if(g.captainState){g.captainState.fatigue=0;g.captainState.injury=Math.max(0,g.captainState.injury-1);}if(g.crewState){const healed=Math.min(g.crewState.injured,Math.max(1,Math.ceil(g.crew*.1)));g.crewState.injured-=healed;g.crewState.fit+=healed;}note(g,'You rested at the tavern for eight hours. Fatigue cleared, one captain Injury step healed, and up to 10% of living crew recovered from injuries.');}break;
+    case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;if(g.crewState){if(g.crewState.injured>0)g.crewState.injured--;else g.crewState.fit=Math.max(0,g.crewState.fit-1);}advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
     case 'repair':{
       const cost=hullRepairQuote(ship);if(!cost)throw new Error('Your hull needs no repairs.');
       pay(cost);if(advance(g,Math.ceil((spec.maxHull-ship.hullPoints)/5))){ship.hullPoints=spec.maxHull;note(g,`The shipyard repaired ${ship.name}'s hull for ${cost} silver.`);}break;

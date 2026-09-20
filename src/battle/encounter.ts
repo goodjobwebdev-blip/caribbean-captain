@@ -34,7 +34,7 @@ export function generateNpc(g:Game):Npc{
  const copy=structuredClone(g);copy.port=origin;copy.voyage=null;observeMarket(copy);
  const quality=clamp(35+level*2,0,100),playerPower=totalCannons(resolveShip(g).cannons)+g.crew*.2;
  const perceivedStrength=playerPower*(1+(rng(g)-.5)*(1-level/25))*(1-mastery(g,'deception')*.025);
- return {role,faction,temperament,level,origin,departed:g.hours,market:copy.economy!.memories[origin]!,ship,crew:crew(spec.optimalCrew,quality),perceivedStrength};
+ return {silver:50+25*Math.floor(rng(g)*(level+3)),role,faction,temperament,level,origin,departed:g.hours,market:copy.economy!.memories[origin]!,ship,crew:crew(spec.optimalCrew,quality),perceivedStrength};
 }
 export function opening(g:Game,n:Npc):Posture{
  const hostile=standing(g,n.faction)<-50,ratio=(totalCannons(n.ship.cannons)+n.crew.fit*.2)/Math.max(.1,n.perceivedStrength);

@@ -131,3 +131,7 @@ input[type=radio]{accent-color:var(--primary)}
 .battle-map text { font-size:16px;fill:currentColor; }
 .battle-model { padding:1rem;border:1px solid var(--border); }
 @media(max-width:600px){.battle-status{grid-template-columns:1fr}.battle-panel table{font-size:.8rem}}
+.capture-loot { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.75rem; }
+.capture-loot label { min-width:0; }
+.capture-loot input { width:100%; }
+.capture-panel small { display:block; }
