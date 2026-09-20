@@ -570,6 +570,12 @@ Typical conditional terms include personal safety or honorable treatment. Boardi
 
 Boarding uses the same mandatory LLM boundary as Naval Engagement. There is no deterministic Boarding-AI fallback.
 
+## Model selection
+
+Settings provides separate **Prose model** and **Battle model** selectors backed by the same NanoGPT API key and loaded model list.
+
+Boarding uses only the Battle model. Changing the Prose model does not affect combat decisions. If no Battle model is configured, Boarding suspends and directs the player to Settings; it does not use the Prose model or a deterministic fallback.
+
 The LLM chooses:
 
 - Assault, Guard, or Breakthrough during Deck Battle;
