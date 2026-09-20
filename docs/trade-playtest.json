@@ -1,5 +1,5 @@
 {
-  "assumptions": "Normal winds, no pirates, starting sloop and crew, 100 silver purchase reserve, finite stocks, real actions and skill/event rules. One-way net values subtract provision consumption at 1.15 silver/unit. Routes use perfect knowledge for balance testing, not player-visible forecasts. Repeated route refills to 120 provisions each departure. Upgrade threshold is Merchant Schooner exchange plus 1000 cash reserve; the simulation keeps the sloop.",
+  "assumptions": "Normal winds, no pirates, starting sloop and crew, 100 silver purchase reserve, finite stocks, real actions and skill/event rules. One-way net values subtract provision consumption at 1.15 silver/unit. Routes use perfect knowledge for balance testing, not player-visible forecasts. Perishable losses are applied by the engine; only remaining whole units are sold, with leftover fractional cargo excluded from net income. Repeated route refills to 120 provisions each departure. Upgrade threshold is Merchant Schooner exchange plus 1000 cash reserve; the simulation keeps the sloop.",
   "routes": [
     {
       "cash": 800,
@@ -9,18 +9,21 @@
         {
           "good": "Sugar",
           "quantity": 86,
+          "sold": 86,
           "net": 236.81,
           "hours": 55
         },
         {
           "good": "Molasses",
           "quantity": 107,
+          "sold": 107,
           "net": 230.81,
           "hours": 55
         },
         {
           "good": "Hides",
           "quantity": 54,
+          "sold": 54,
           "net": -34.94,
           "hours": 51
         }
@@ -34,18 +37,21 @@
         {
           "good": "Hides",
           "quantity": 54,
+          "sold": 54,
           "net": 205.69,
           "hours": 241
         },
         {
           "good": "Cotton",
           "quantity": 72,
+          "sold": 72,
           "net": -2.31,
           "hours": 241
         },
         {
           "good": "Sugar",
           "quantity": 86,
+          "sold": 86,
           "net": -36.19,
           "hours": 263
         }
@@ -59,18 +65,21 @@
         {
           "good": "Coffee",
           "quantity": 30,
+          "sold": 30,
           "net": 248.06,
           "hours": 51
         },
         {
           "good": "Timber",
           "quantity": 60,
+          "sold": 60,
           "net": 103.81,
           "hours": 55
         },
         {
           "good": "Tobacco",
           "quantity": 27,
+          "sold": 27,
           "net": -31.94,
           "hours": 51
         }
@@ -84,18 +93,21 @@
         {
           "good": "Tobacco",
           "quantity": 27,
+          "sold": 27,
           "net": 29.69,
           "hours": 225
         },
         {
           "good": "Cocoa",
           "quantity": 36,
+          "sold": 36,
           "net": 27.69,
           "hours": 225
         },
         {
           "good": "Coffee",
           "quantity": 30,
+          "sold": 30,
           "net": 19.69,
           "hours": 225
         }
@@ -109,18 +121,21 @@
         {
           "good": "Common Cloth",
           "quantity": 36,
+          "sold": 36,
           "net": 6.69,
           "hours": 241
         },
         {
           "good": "Books",
           "quantity": 17,
+          "sold": 17,
           "net": 6.69,
           "hours": 241
         },
         {
           "good": "Fine Cloth",
           "quantity": 13,
+          "sold": 13,
           "net": 4.69,
           "hours": 241
         }
@@ -134,18 +149,21 @@
         {
           "good": "Common Cloth",
           "quantity": 36,
+          "sold": 36,
           "net": 27.69,
           "hours": 225
         },
         {
           "good": "Ceramics",
           "quantity": 34,
+          "sold": 34,
           "net": 22.69,
           "hours": 225
         },
         {
           "good": "Glassware",
           "quantity": 21,
+          "sold": 21,
           "net": 22.69,
           "hours": 225
         }
@@ -159,18 +177,21 @@
         {
           "good": "Sugar",
           "quantity": 180,
+          "sold": 180,
           "net": 518.31,
           "hours": 63
         },
         {
           "good": "Molasses",
           "quantity": 180,
+          "sold": 180,
           "net": 403.56,
           "hours": 59
         },
         {
           "good": "Rum",
           "quantity": 180,
+          "sold": 180,
           "net": -5.44,
           "hours": 59
         }
@@ -184,18 +205,21 @@
         {
           "good": "Hides",
           "quantity": 90,
+          "sold": 90,
           "net": 532.44,
           "hours": 245
         },
         {
           "good": "Molasses",
           "quantity": 180,
+          "sold": 180,
           "net": 112.19,
           "hours": 281
         },
         {
           "good": "Cotton",
           "quantity": 90,
+          "sold": 90,
           "net": 70.37,
           "hours": 242
         }
@@ -209,18 +233,21 @@
         {
           "good": "Coffee",
           "quantity": 127,
+          "sold": 127,
           "net": 1174.75,
           "hours": 52
         },
         {
           "good": "Timber",
           "quantity": 60,
+          "sold": 60,
           "net": 103.81,
           "hours": 55
         },
         {
           "good": "Tobacco",
           "quantity": 111,
+          "sold": 111,
           "net": 42.06,
           "hours": 51
         }
@@ -234,18 +261,21 @@
         {
           "good": "Tobacco",
           "quantity": 111,
+          "sold": 111,
           "net": 959.06,
           "hours": 227
         },
         {
           "good": "Coffee",
           "quantity": 127,
+          "sold": 127,
           "net": 937.19,
           "hours": 233
         },
         {
           "good": "Cocoa",
           "quantity": 148,
+          "sold": 148,
           "net": 911.56,
           "hours": 235
         }
@@ -259,18 +289,21 @@
         {
           "good": "Fine Cloth",
           "quantity": 55,
+          "sold": 55,
           "net": 1004.69,
           "hours": 241
         },
         {
           "good": "Books",
           "quantity": 71,
+          "sold": 71,
           "net": 977.06,
           "hours": 243
         },
         {
           "good": "Common Cloth",
           "quantity": 148,
+          "sold": 148,
           "net": 897.13,
           "hours": 246
         }
@@ -284,18 +317,21 @@
         {
           "good": "Glassware",
           "quantity": 89,
+          "sold": 89,
           "net": 976.5,
           "hours": 232
         },
         {
           "good": "Tools",
           "quantity": 119,
+          "sold": 119,
           "net": 920,
           "hours": 256
         },
         {
           "good": "Common Cloth",
           "quantity": 148,
+          "sold": 148,
           "net": 918.12,
           "hours": 230
         }

@@ -2,7 +2,7 @@
 
 This document defines the planned trade system: goods, port markets, stock, access restrictions, pricing, and market information.
 
-The playable core is documented in [trade release](trade-release.md). The next release adds [planning tools, permits, reputation, smugglers and events](trade-phase-two.md). This document retains the broader design, including deferred operational uses and spoilage.
+The playable core is documented in [trade release](trade-release.md). The next release adds [planning tools, permits, reputation, smugglers and events](trade-phase-two.md). The following [supply mechanics release](trade-phase-three.md) adds fruit spoilage, food conversion and repairs using cargo materials. This document retains the broader design, including other deferred operational uses.
 
 ## Design goals
 
@@ -415,7 +415,7 @@ Any future narrative treatment should be deliberate and handled in a separate de
 
 ## Design parameters and remaining decisions
 
-The core numerical values, inventories, bulk pricing, permits, smuggler rules and initial events below now have initial implementations in the linked release documents. Unimplemented operational uses and spoilage remain deferred; balance values can still be revised.
+The core numerical values, inventories, bulk pricing, permits, smuggler rules and initial events below now have initial implementations in the linked release documents. Other operational uses and additional perishable goods remain deferred; balance values can still be revised.
 
 The following details will be defined separately:
 

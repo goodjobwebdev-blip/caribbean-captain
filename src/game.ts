@@ -1,3 +1,4 @@
+import {spoilCargo,prepareProvisions,supplyRepairMaterials,type FoodGood,type RepairKind} from './operations';
 import {PERMIT_PRICE,nationOf,attitude,hasPermit,changeStanding,type Channel} from './commerce';
 import {ALL_GOODS,type GoodId} from './goods';
 import {ensureEconomy,observeMarket,consumeLots,settleBasket,type Economy,type BasketLine} from './trade';
@@ -18,7 +19,7 @@ export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; 
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice };
 export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Action = {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -61,14 +62,16 @@ export function duration(hours: number) { if(!Number.isFinite(hours))return 'Una
 export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { const game:Game = { version:2, ship:createShip(STARTER_ID,'The Wayfarer'), skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; ensureEconomy(game); return game; }
 function note(g:Game,text:string) { g.log.unshift({hours:g.hours,text}); g.log = g.log.slice(0,60); }
 function advance(g:Game,hours:number) {
+  const age=(elapsed:number)=>{const lost=spoilCargo(g,elapsed);if(lost>1e-8)note(g,`Cargo spoilage: ${lost<.01?'<0.01':lost.toFixed(2)} fruit units lost over ${elapsed} hours.`);};
   const food = foodFor(g,hours);
   if (food > g.provisions + 1e-8) {
     const available = Math.floor(g.provisions * 24 / (g.crew + passengers(g)));
     g.silver -= wageFor(g,available); g.hours += available; consumeLots(g,'provisions',g.provisions); g.provisions=0;
+    age(available);
     g.failed='Your provisions ran out. The voyage is over. Return to a church checkpoint.';
     note(g,g.failed); return false;
   }
-  consumeLots(g,'provisions',food); g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; return true;
+  consumeLots(g,'provisions',food); g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; age(hours); return true;
 }
 export const FREIGHT_SIZES=[40,200,800] as const;
 export function offers(g:Game):Contract[] {
@@ -136,6 +139,15 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(g.economy!.commerce!.contacts[g.port])throw new Error('You already have a local smuggler contact.');
       if(g.provisions<foodFor(g,1))throw new Error('Keep provisions for one hour.');
       pay(50);g.economy!.commerce!.contacts[g.port]=true;advance(g,1);observeMarket(g,'smuggler');note(g,'A discreet introduction cost 50 silver. Smuggler deals are now available at the trading counter when the contact is in town.');break;
+    }
+    case 'prepare-provisions':{
+      if(action.expected!==JSON.stringify([original,'prepare-provisions',action.good,action.quantity]))throw new Error('The preparation quote changed. Review it again.');
+      const q=prepareProvisions(g,action.good,action.quantity);advance(g,q.hours);note(g,`Prepared ${q.output} provisions from ${q.quantity} ${action.good} for ${q.fee} silver in ${q.hours} hours. Crew consumption: ${q.food.toFixed(2)} provisions.`);break;
+    }
+    case 'material-repair':{
+      if(action.expected!==JSON.stringify([original,'material-repair',action.kind]))throw new Error('The repair quote changed. Review it again.');
+      const q=supplyRepairMaterials(g,action.kind);
+      if(advance(g,q.hours)){if(action.kind==='hull')ship.hullPoints=spec.maxHull;else ship.sailCondition=100;note(g,`Repaired ${action.kind} using cargo materials. Paid ${q.silver} silver; material credit ${q.discount} silver. ${q.hours} hours of work.`);}break;
     }
     case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;

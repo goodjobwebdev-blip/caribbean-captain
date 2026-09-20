@@ -1,5 +1,7 @@
 # Trade planning, access and changing markets
 
+[Phase three](trade-phase-three.md) now adds fruit spoilage, food conversion and optional cargo-supplied repairs; its rules supersede those entries in the deferred list below.
+
 Implemented as the next trade release. These are initial gameplay values for iteration, not historical economic claims. The core finite-stock and basket rules in `trade-release.md` still apply unless superseded below.
 
 ## Planning and usability
