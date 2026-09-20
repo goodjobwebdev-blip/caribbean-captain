@@ -144,3 +144,15 @@ input[type=radio]{accent-color:var(--primary)}
 .capture-loot label { min-width:0; }
 .capture-loot input { width:100%; }
 .capture-panel small { display:block; }
+
+/* Planned town buildings are descriptive previews, not interactive controls. */
+.nav-tbd,.tbd-badge{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:2px 7px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.port-nav nav button .nav-tbd{margin-left:auto}
+.port-nav nav button .nav-tbd+span{margin-left:0}
+.planned-notice{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+.planned-notice p{margin:0;color:var(--muted);font-size:13px}
+.building-capabilities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin-top:20px}
+.building-capabilities>section{border:1px solid var(--line);border-radius:6px;padding:20px}
+.building-capabilities h2{font-size:21px}
+.building-capabilities ul{margin:14px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.6}
+@media(max-width:720px){.building-capabilities{grid-template-columns:1fr}.planned-notice{align-items:flex-start}.port-nav nav button .nav-tbd{display:none}}
