@@ -556,6 +556,15 @@ The LLM may not invent actions, calculate authoritative costs, make rolls, alter
 
 This design intentionally changes the current project's AI boundary: LLM access becomes mandatory for Naval Engagement even though dialogue AI remains optional elsewhere. There is no deterministic combat-AI fallback.
 
+## Model selection
+
+Settings provides two independent model selectors:
+
+- **Prose model** — optional narration and NPC dialogue;
+- **Battle model** — NPC planning for Naval Engagement and Boarding.
+
+Both selectors use the same loaded NanoGPT model list and API key, but changing one does not change the other. Naval Engagement uses only the Battle model. If no Battle model is configured, combat suspends and directs the player to Settings; it never substitutes the Prose model or a deterministic combat planner.
+
 ## Behavioral hierarchy
 
 1. Role defines the strategic objective.
