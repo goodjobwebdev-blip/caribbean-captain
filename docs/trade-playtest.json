@@ -508,5 +508,55 @@
       "sailingTier": 2
     }
   ],
-  "upgradeLeg": 12
+  "upgradeLeg": 12,
+  "tierCases": [
+    {
+      "tier": 1,
+      "ship": "Merchant Tartana",
+      "capital": 1350,
+      "quantity": 55,
+      "net": 534.92,
+      "hours": 63
+    },
+    {
+      "tier": 2,
+      "ship": "Merchant Schooner",
+      "capital": 4800,
+      "quantity": 206,
+      "net": 1831.25,
+      "hours": 44
+    },
+    {
+      "tier": 3,
+      "ship": "Merchant Fluyt",
+      "capital": 10800,
+      "quantity": 463,
+      "net": 3189.8,
+      "hours": 62
+    },
+    {
+      "tier": 4,
+      "ship": "Merchant Merchantman",
+      "capital": 22500,
+      "quantity": 948,
+      "net": 3027.83,
+      "hours": 61
+    },
+    {
+      "tier": 5,
+      "ship": "Merchant Galleon",
+      "capital": 48000,
+      "quantity": 1000,
+      "net": 2676.67,
+      "hours": 61
+    },
+    {
+      "tier": 6,
+      "ship": "Merchant Grand Merchantman",
+      "capital": 90000,
+      "quantity": 1000,
+      "net": 2638.22,
+      "hours": 63
+    }
+  ]
 }

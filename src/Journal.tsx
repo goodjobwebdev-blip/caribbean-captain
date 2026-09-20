@@ -1,3 +1,4 @@
+import {FinanceJournal} from './FinanceJournal';
 import {CargoLedger} from './CargoLedger';
 import {spread} from './trade';
 import {MarketsJournal} from './MarketsJournal';
@@ -14,7 +15,7 @@ export function Icon({name}:{name:Screen|'log'}){
  const paths={game:<><circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6Z"/></>,journal:<><path d="M3 4h6a4 4 0 0 1 3 2 4 4 0 0 1 3-2h6v16h-6a4 4 0 0 0-3 1 4 4 0 0 0-3-1H3Z"/><path d="M12 6v15"/></>,profiles:<><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2M8 3l4-1 4 1"/></>,settings:<><path d="m9 3 1-1h4l1 3 3 1 3-1 1 4-2 2v3l2 2-2 4-3-1-3 2-1 2H9l-1-3-3-1-2 1-1-4 2-2v-3L2 8l2-3 3 1Z"/><circle cx="12" cy="12" r="3"/></>,log:<><path d="M5 3h14v18H5Z M8 7h8 M8 11h8 M8 15h5"/></>};
  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
-const TABS=['Ship','Skills','Crew','Cargo','Passengers','Quests','Markets'] as const;
+const TABS=['Ship','Skills','Crew','Cargo','Passengers','Quests','Markets','Finance'] as const;
 type Tab=typeof TABS[number];
 function tabKeys(event:KeyboardEvent<HTMLDivElement>){
  if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
@@ -40,6 +41,7 @@ export function Journal({game:g}:{game:Game}){
  ]}/><PerformanceBreakdown game={g}/><h2>Design and armament</h2><Details items={[["Deadweight capacity",`${spec.deadweight} weight units`],['Base maneuverability',`${spec.maneuverability} / 100`],['Hull protection',`${spec.protection} / 100`],['Crew min / optimal / max',`${spec.minCrew} / ${spec.optimalCrew} / ${spec.maxCrew}`],['Passenger berths',String(spec.passengerCapacity)],['Total cannons',`${totalCannons(ship.cannons)} / ${totalCannons(spec.cannonCapacity)}`],...BATTERIES.map(b=>[`${b[0].toUpperCase()+b.slice(1)} cannons`,`${ship.cannons[b]} / ${spec.cannonCapacity[b]}`] as [string,string])]}/><p className="ship-spec-note muted">Hull protection and cannon firepower effects are reserved for future combat. Cannons already contribute their weight to sailing performance.</p><h2>Captain’s record</h2><Details items={[
  ['Captain',g.captain],['Treasury',`${cash(g.silver)} silver${g.silver<0?' (wages owed)':''}`],['Calendar',date(g.hours)],['Completed commissions',String(archived.length)]
  ]}/></>}
+ {tab==='Finance'&&<FinanceJournal game={g}/>}
  {tab==='Markets'&&<MarketsJournal game={g}/>}
  {tab==='Skills'&&<><article className="skill-card"><h2>Trade</h2><p>Tier {tradeProgress(g.skills).tier} / 10 · {tradeProgress(g.skills).points.toFixed(2)} / {nextTierRequirement(tradeProgress(g.skills).tier)??'Maximum'} points</p><p>Market spread: {(spread(g)*100).toFixed(1)}%. Each tier improves both buying and selling prices. Local attitude and reputation also affect legal terms.</p><p className="muted">Earn 1 point per 100 silver of profitable resale of goods purchased at another port, before voyage expenses. Learning follows each acquired portion of cargo; unprofitable portions earn nothing. Fractions carry forward. Starting cargo and purchases of unknown origin earn no points.</p></article><p className="eyebrow">PLAYER SKILLS</p><article className="skill-card"><div className="section-line"><h2>Sailing &amp; Navigation</h2><span className="quest-status">Tier {sailing.tier} / 10</span></div><p>Ship handling, sail and rigging work, route planning, weather judgment, and avoiding maritime hazards.</p><Details items={[
  ['Mastery tier',`${sailing.tier} / 10`],['Sailing speed bonus',`+${Math.round(sailingBonus(g)*100)}%`],['Effective sailing speed',`${effectiveSpeed(g).toFixed(2)} units/hour`],['Progress to next tier',target===null?'Maximum mastery':`${sailing.points} / ${target} points`],['Practice toward next point',target===null?'Maximum mastery':`${sailing.sailingHours??0} / 24 sailing hours`]

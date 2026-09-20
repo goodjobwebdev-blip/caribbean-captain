@@ -40,6 +40,19 @@ Normal winds, no pirates, starting sloop and crew, 100 silver purchase reserve, 
 
 Merchant Schooner exchange plus a 1,000-silver reserve is reached at leg **12**. This is a capital threshold, not an automatic purchase.
 
+## Ship-tier comparison
+
+Coffee: Saint-Pierre → Bridgetown; optimal crew, five days of food, capital equal to 30% of ship price, and quantities limited by origin stock, destination storage, capital and ship capacities. Ship purchase costs are excluded. Net includes wages and replacement value of consumed provisions. Each case also verifies cash-ledger reconciliation.
+
+| Tier | Ship | Capital | Coffee | Net silver | Hours |
+| ---: | --- | ---: | ---: | ---: | ---: |
+| 1 | Merchant Tartana | 1350 | 55 | 534.92 | 63 |
+| 2 | Merchant Schooner | 4800 | 206 | 1831.25 | 44 |
+| 3 | Merchant Fluyt | 10800 | 463 | 3189.8 | 62 |
+| 4 | Merchant Merchantman | 22500 | 948 | 3027.83 | 61 |
+| 5 | Merchant Galleon | 48000 | 1000 | 2676.67 | 61 |
+| 6 | Merchant Grand Merchantman | 90000 | 1000 | 2638.22 | 63 |
+
 ## Limits
 
-This is deterministic economic playtesting, not browser interaction testing or a guarantee of earnings with weather and pirate losses. Large-ship balance and player decision quality need further play sessions. Smuggling is deliberately costly and risky: inspections have 15/36 caught, 15/36 fined and 6/36 undetected outcomes, and are intended as access to restricted goods rather than a superior routine route. Event modifiers are bounded to 0.85–1.25 and leave provisions unchanged.
+This is deterministic economic playtesting, not browser interaction testing or a guarantee of earnings with weather and pirate losses. These tier comparisons cover one route; broader fleet progression and player decision quality need further play sessions. Smuggling is deliberately costly and risky: inspections have 15/36 caught, 15/36 fined and 6/36 undetected outcomes, and are intended as access to restricted goods rather than a superior routine route. Event modifiers are bounded to 0.85–1.25 and leave provisions unchanged.

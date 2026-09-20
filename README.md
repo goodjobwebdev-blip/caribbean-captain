@@ -14,6 +14,8 @@ Optional NanoGPT dialogue can be enabled in Settings with your own API key and m
 
 Trade 45 goods through a basket with exact totals, finite stock, supply/demand pricing, and Trade skill progression. The Journal’s Markets tab remembers dated prices from visited ports. Provisions can be bought and sold. Buy national permits at the Harbour Master for Controlled goods, or meet a smuggler contact at the tavern. Local events and reputation affect prices. Compare remembered prices and cargo costs in the Journal. Fruit spoils over game time; prepare provisions from food cargo at the Store or supply your own repair materials at the Shipyard. See [implemented trade rules](docs/trade-release.md), [planning/access/events](docs/trade-phase-two.md), [spoilage and supplies](docs/trade-phase-three.md), and [engine playtests](docs/trade-playtest.md).
 
+Journal → Finance now records automatic port-to-port voyage accounts and trade history, separating cash flow from cargo profit. Departure review adds a forecast using remembered prices. See [voyage finances](docs/voyage-finances.md).
+
 ## Development
 
 Node.js 22.12+ (CI uses Node 24).

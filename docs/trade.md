@@ -442,6 +442,10 @@ The following details will be defined separately:
 - Naval-combat ammunition consumption
 - Permits and inspections
 
+## Financial records
+
+[Voyage accounts and departure estimates](voyage-finances.md) provide automatic port-to-port records, trade history, recognized cargo costs and cash-flow summaries.
+
 ## First release planning
 
 See [confirmed release decisions and draft balance](trade-release-draft.md) for the agreed initial scope, large finite provision stocks, and proposed deal/price/stock rules. The multi-good basket deal is agreed: one combined quote and confirmation for purchases and sales. The core trade system and the subsequent planning/access/event phase are implemented. See [current additions and rules](trade-phase-two.md) and [game-engine playtest results](trade-playtest.md).
