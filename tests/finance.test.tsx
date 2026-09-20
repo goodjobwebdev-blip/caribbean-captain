@@ -1,3 +1,4 @@
+import {legacyVoyage} from './legacy-voyage';
 import 'fake-indexeddb/auto';
 import {describe,it,expect} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -48,7 +49,7 @@ describe('automatic port-to-port accounts',()=>{
   g=step(g,{type:'sail',to:'bridgetown'});expect(g.finances!.voyages).toHaveLength(2);expect(g.finances!.voyages[0].status).toBe('closed');expect(g.finances!.voyages[0].currentSilver).toBe(first.currentSilver);expect(g.finances!.entries.filter(e=>e.account===1)).toEqual(firstEntries);
  });
  it('records rewards after arrival and correctly reconciles encounter payments',()=>{
-  let g=rich();g=step(g,{type:'accept',contract:offers(g).find(c=>c.to==='saint-pierre'&&c.type==='Letter')!});g=step(g,{type:'sail',to:'saint-pierre'},()=>0);expect(g.finances!.voyages[0].status).toBe('at-sea');g=step(g,{type:'encounter',choice:'negotiate'},()=>0);g=step(g,{type:'deliver'});
+  let g=rich();g=step(g,{type:'accept',contract:offers(g).find(c=>c.to==='saint-pierre'&&c.type==='Letter')!});g=legacyVoyage(g,.85);expect(g.finances!.voyages[0].status).toBe('at-sea');g=step(g,{type:'encounter',choice:'negotiate'},()=>0);g=step(g,{type:'deliver'});
   expect(g.finances!.entries.find(e=>e.kind==='ransom')?.cash).toBe(-150);expect(g.finances!.entries.find(e=>e.kind==='quest')?.account).toBe(1);
  });
  it('keeps a failed sea leg and does not invent history for legacy ongoing voyages',()=>{

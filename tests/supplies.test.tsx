@@ -1,3 +1,4 @@
+import {legacyVoyage} from './legacy-voyage';
 import 'fake-indexeddb/auto';
 import {it,expect,describe} from 'vitest';
 import {renderToStaticMarkup} from 'react-dom/server';
@@ -22,7 +23,7 @@ describe('perishable cargo',()=>{
  });
  it('counts successful voyage hours and extra encounter delay without changing the departure estimate',()=>{
   const g=rich();buy(g,'fruit',40);const hours=hoursTo(g.port,'saint-pierre',g);
-  const atSea=act(g,{type:'sail',to:'saint-pierre'},()=>0);expect(atSea.voyage).not.toBeNull();const departureHours=atSea.voyage!.hours;
+  const atSea=legacyVoyage(g,.85);expect(atSea.voyage).not.toBeNull();const departureHours=atSea.voyage!.hours;
   const arrived=act(atSea,{type:'encounter',choice:'flee'},()=>0);
   expect(arrived.cargo.fruit).toBeCloseTo(fruitAfter(40,departureHours+24));expect(departureHours).toBe(Math.ceil(hours*.85));
  });

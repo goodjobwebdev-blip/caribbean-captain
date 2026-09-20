@@ -1,3 +1,4 @@
+import {legacyVoyage} from './legacy-voyage';
 import {it,expect} from 'vitest';
 import {creditSailing} from '../src/skills';
 import {act,newGame} from '../src/game';
@@ -18,7 +19,7 @@ it('supports multiple tiers and stops progression at mastery ten',()=>{
 });
 it('awards once on arrival, excludes escape delays, and does not shorten the current voyage on promotion',()=>{
  const initial=newGame('Anne',42);initial.skills={sailing:{tier:0,points:9}};
- const midway=act(initial,{type:'sail',to:'saint-pierre'},rng(.5,0,0));
+ const midway=legacyVoyage(initial);
  expect(midway.skills?.sailing.points).toBe(9);
  const arrived=act(midway,{type:'encounter',choice:'flee'},rng(0,0));
  expect(arrived.hours-initial.hours).toBe(73);

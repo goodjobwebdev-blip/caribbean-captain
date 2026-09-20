@@ -117,3 +117,17 @@ input[type=radio]{accent-color:var(--primary)}
  .trade-filters .check-label{display:flex;align-items:center;gap:.5rem}
  .basket>ul>li{flex-wrap:wrap}
 }
+
+.battle-panel { min-width:0; }
+.battle-status { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem; }
+.battle-status article { padding:1rem;border:1px solid var(--border);border-radius:8px; }
+.battle-status h2 { font-size:1.1rem; }
+.battle-panel select { width:100%;padding:.7rem;margin:.5rem 0; }
+.battle-panel li small { display:block; }
+.battle-panel table { width:100%;text-align:left;border-collapse:collapse; }
+.battle-panel th,.battle-panel td { padding:.5rem;border-bottom:1px solid var(--border); }
+.battle-panel details { margin:1rem 0; }
+.battle-map { width:100%;height:230px;background:rgba(44,131,139,.1);border-radius:8px; }
+.battle-map text { font-size:16px;fill:currentColor; }
+.battle-model { padding:1rem;border:1px solid var(--border); }
+@media(max-width:600px){.battle-status{grid-template-columns:1fr}.battle-panel table{font-size:.8rem}}
