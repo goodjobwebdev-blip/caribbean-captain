@@ -12,6 +12,7 @@ export function PerformanceBreakdown({game:g}:{game:Game}){
  <tr><th scope="row">Hull condition</th><td>{factorLabel(f.hull)}</td><td>{factorLabel(f.hull)}</td></tr>
  <tr><th scope="row">Sail condition</th><td>{factorLabel(f.sails)}</td><td>{factorLabel(f.sails)}</td></tr>
  <tr><th scope="row">Crew · {g.crew} / {spec.optimalCrew} optimal</th><td>{factorLabel(f.crew)}</td><td>{factorLabel(f.crew)}</td></tr>
+<tr><th scope="row">Crew sailing experience</th><td>{factorLabel(f.experience)}</td><td>{factorLabel(f.experience)}</td></tr><tr><th scope="row">Morale and discipline</th><td>{factorLabel(f.readiness)}</td><td>{factorLabel(f.readiness)}</td></tr>
  <tr><th scope="row">Captain’s Sailing mastery</th><td>{factorLabel(f.mastery)}</td><td>No change</td></tr>
  <tr className="performance-total"><th scope="row">Current performance</th><td>{p.speed.toFixed(2)} units/hour</td><td>{p.maneuverability.toFixed(1)}</td></tr>
  </tbody></table></div><p className="muted">Modifiers multiply together. The first 20% of deadweight is free of load penalties. Extra crew beyond optimal adds weight and upkeep, with no further speed bonus. Weather is applied separately to each voyage.</p>

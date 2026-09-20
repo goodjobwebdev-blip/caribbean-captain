@@ -51,7 +51,7 @@ At the first naval planning window, select **Apply prepared loadout**. The reduc
 
 Existing version-1/2 saves remain compatible. An old captain's weapon class/quality, loaded pistol, spyglass and injuries are retained; a non-catalogue weapon becomes an owned legacy weapon. Owning a pistol survives firing its last loaded shot. New fields are optional and persist in the existing profile/checkpoint system. No mastery, money, spare cartridges or historical practice are retroactively granted.
 
-Training officers, Naval Tactics, Training, Logistics, Stealth, Luck and other mechanics without current action hooks remain future work; this update does not fabricate passive rewards for them.
+Captain Training and crew specialties are now covered by [crew development](crew-development.md). Officers, Naval Tactics, Logistics, Stealth, Luck and other mechanics without current action hooks remain future work; this update does not fabricate passive rewards for them.
 
 ## Validation
 

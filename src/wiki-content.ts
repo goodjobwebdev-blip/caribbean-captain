@@ -15,7 +15,7 @@ export const WIKI:WikiArticle[]=[
   'Time advances when you confirm game actions. Reading the Journal or Wiki, browsing shops, changing settings and closing the browser do not advance the calendar. Months have 30 days; years have 12 months.',
   'Each sailor costs 2 silver in wages per day. Each sailor and passenger consumes 1 provision per day, including time spent in port. The captain does not add a separate food or wage charge. Costs are proportional to the hours that pass.',
   'A trade basket, crew hire or dismissal, contract acceptance or delivery, permit purchase, and smuggler introduction each take one hour. Tavern rest takes eight hours and costs 8 silver, plus upkeep. Repair and food-preparation times appear in their quotes. Ship exchanges take no time.',
-  'Running out of provisions ends the run; use a church checkpoint to recover. Wages and inspection fines can leave negative silver, shown as debt. Debt has no interest or separate bankruptcy system in this version.'
+  'Running out of provisions ends the run; use a church checkpoint to recover. Wages and inspection fines can leave negative silver, shown as debt. Debt has no interest or separate bankruptcy system in this version. Unpaid wages gradually reduce morale and discipline; see Crew development and care.'
  ]},
  {id:'checkpoints',category:'Getting started',title:'Captains, saves and church checkpoints',paragraphs:[
   'Each captain has an independent world, including markets, contacts, reputation and financial records. Progress resumes when you reopen that captain. Resuming is not an undo: a failed run stays failed.',
@@ -37,7 +37,7 @@ export const WIKI:WikiArticle[]=[
  {id:'load',category:'Sailing and ships',title:'Hold space, deadweight and performance',paragraphs:[
   'Hold space and deadweight are separate limits. Goods, provisions and contract freight occupy the hold. Weight also includes crew, passengers, the captain and mounted cannons. One person weighs 1 unit; each mounted cannon weighs 5 units. Trade cannons are cargo until an installation system is added.',
   'At up to 20% of maximum deadweight, there is no load penalty. Above that, penalties rise continuously: at full deadweight the load factor reduces speed by 25% and maneuverability by 35%. Exceeding hold space or deadweight blocks departure.',
-  'Effective speed = base speed × load factor × hull factor × sail factor × crew factor × Sailing bonus. Positive hull condition gives a factor from just above 0.5 to 1; positive sail condition gives just above 0.2 to 1. Zero hull or sails blocks sailing.',
+  'Effective speed = base speed × load factor × hull factor × sail factor × crew factor × crew sailing experience × morale/discipline readiness × Sailing bonus. Positive hull condition gives a factor from just above 0.5 to 1; positive sail condition gives just above 0.2 to 1. Zero hull or sails blocks sailing.',
   'Below minimum crew you cannot sail. From minimum to optimal crew, the crew factor rises from 0.6 to 1; if minimum and optimal are equal it is 1. Extra crew beyond optimal adds weight, food and wages without another performance bonus. Maneuverability uses the same condition and crew factors, but no Sailing bonus.',
   'The Journal’s Ship tab shows the actual factors and weight breakdown for your current command.'
  ]},
@@ -70,6 +70,13 @@ export const WIKI:WikiArticle[]=[
   'Pirate defeat costs exposed silver and trade goods; other captors charge 25% of positive silver and confiscate controlled cargo. All active commissions fail, passengers are repatriated, and surviving crew return with you.',
   'Return service costs 100 silver per ship tier plus 12 hours of wages. It includes food, tow and captain stabilization, and can create debt. Damage and crew injuries remain; fruit spoils. No Sailing practice or delivery reward is granted for the aborted voyage.',
   'Eight hours of tavern rest clear captain fatigue, heal one Injury step and restore up to 10% of living crew from injured to fit. Death and ship loss still require a church checkpoint.'
+ ]},
+ {id:'crew-development',category:'Work and skills',title:'Crew development and care',paragraphs:[
+  'Crew sailing, gunnery and fighting experience range from 0 to 100. Old collective experience supplies any missing specialty. Sailing affects speed and maneuverability; gunnery affects cannon accuracy and reload costs; fighting affects boarding strength. New recruits join at 50 and change the living crew average.',
+  'Successful arrival grants up to 3 crew sailing experience, at 1 per 48 voyage hours. Valid volleys, timed reloads, grappling and deck rounds grant their corresponding specialty practice, up to 2 per battle. Rewards apply once at resolution and do not change active orders. Free preloads, NPC actions and invalid actions earn nothing.',
+  'At the Tavern, an eight-hour training session costs at least 20 silver or 2 per sailor, plus wages and provisions. The selected specialty gains up to 2 + 0.2 per captain Training tier, scaled by the fit share of the crew, capped at 75. The captain gains 0.5 Training point; discipline rises by 1. Training requires a functioning captain and fit sailors.',
+  'Four-hour medical care heals up to 25% of living crew, rounded up and improved by Doctoring mastery, plus one captain Injury step. The fee is 10 per healed sailor and 50 for the captain, plus upkeep. Dead sailors cannot recover. Eight-hour shore leave costs 5 per sailor (minimum 10), plus upkeep, and restores up to 10 morale, stopping at 80.',
+  'Battle victory gives +4 morale and +1 discipline; defeat gives −6 and −2. Net fit-crew losses impose up to 10 additional morale loss. Each equivalent day of unpaid wages costs 4 morale and 2 discipline, proportional to the unpaid share. Incoming silver offsets treasury debt but does not restore lost morale. Morale and discipline influence sailing, boarding and morale checks; there is no desertion or mutiny yet.'
  ]},
  {id:'contracts',category:'Work and skills',title:'Harbour Master commissions',paragraphs:[
   `Carry up to three active commissions. Letters take no hold space. Freight jobs provide ${FREIGHT_SIZES.join(', ')} units of cargo to transport; you do not buy it yourself. Passenger jobs take three berths, and passengers eat provisions.`,

@@ -1,3 +1,4 @@
+import {ensureCrew,recruitCrew,sailingCrewPractice,crewWages,resolveCrewBattle,crewServiceQuote,completeCrewService,type CrewAction} from './crew';
 import {equipmentAct,type Equipment,type EquipmentAction} from './equipment';
 import {awardBattlePractice} from './battle/progression';
 import {returnFee} from './battle/capture';
@@ -27,7 +28,7 @@ export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; 
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
 export type Game = { equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Action = CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -44,7 +45,7 @@ export const currentShip=(g:Game)=>shipDefinition(ownedShip(g).configurationId);
 export const hullPercent=(g:Game)=>100*ownedShip(g).hullPoints/currentShip(g).maxHull;
 export function normalizeGame(original:Game):Game {
  if(original.version!==1&&original.version!==2)throw new Error('Unsupported captain save version.');
- const g=structuredClone(original);g.ship=ownedShip(g);g.version=2;delete g.condition;ensureEconomy(g);ensureFinances(g);return g;
+ const g=structuredClone(original);g.ship=ownedShip(g);g.version=2;delete g.condition;ensureEconomy(g);ensureFinances(g);if(g.crewState)ensureCrew(g);if(g.battle&&['capture','ended'].includes(g.battle.phase)&&g.battle.crewResolved===undefined)g.battle.crewResolved=true;return g;
 }
 export function shipPurchaseQuote(g:Game,configurationId:string){
  const target=shipDefinition(configurationId),sale=shipSaleValue(ownedShip(g)),balance=target.price-sale;
@@ -74,12 +75,12 @@ function advance(g:Game,hours:number) {
   const food = foodFor(g,hours);
   if (food > g.provisions + 1e-8) {
     const available = Math.floor(g.provisions * 24 / (g.crew + passengers(g)));
-    record(g,'wages',-wageFor(g,available));recordConsumption(g,'provisions-used','provisions',g.provisions);g.silver -= wageFor(g,available); g.hours += available; consumeLots(g,'provisions',g.provisions); g.provisions=0;
+    record(g,'wages',-wageFor(g,available));recordConsumption(g,'provisions-used','provisions',g.provisions);g.silver -= wageFor(g,available);crewWages(g,available,wageFor(g,available)); g.hours += available; consumeLots(g,'provisions',g.provisions); g.provisions=0;
     age(available);
     g.failed='Your provisions ran out. The voyage is over. Return to a church checkpoint.';
     note(g,g.failed); return false;
   }
-  record(g,'wages',-wageFor(g,hours));recordConsumption(g,'provisions-used','provisions',food);consumeLots(g,'provisions',food); g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; age(hours); return true;
+  record(g,'wages',-wageFor(g,hours));recordConsumption(g,'provisions-used','provisions',food);consumeLots(g,'provisions',food); g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours);crewWages(g,hours,wageFor(g,hours)); g.hours+=hours; age(hours); return true;
 }
 export const FREIGHT_SIZES=[40,200,800] as const;
 export function offers(g:Game):Contract[] {
@@ -116,22 +117,23 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   const random=()=>{ if(randomOverride) return randomOverride(); g.seed=(g.seed+0x6D2B79F5)>>>0; let t=g.seed; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; };
   const roll=():Dice=>[Math.floor(random()*6)+1,Math.floor(random()*6)+1];
   const allowWeight=(added:number)=>{if(loadBreakdown(g).total+added>spec.deadweight+1e-8)throw new Error('Not enough available deadweight. Sell cargo or reduce your load first.');};
-  const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;const kinds:Partial<Record<Action['type'],EntryKind>>={hire:'recruiting',sleep:'lodging',repair:'repairs','repair-sails':'repairs','replace-cannons':'repairs','buy-permit':'permit','meet-smuggler':'contact'};record(g,kinds[action.type]??'repairs',-cost);};
+  const pay=(cost:number)=>{if(g.silver<cost)throw new Error('Not enough silver.');g.silver-=cost;const kinds:Partial<Record<Action['type'],EntryKind>>={'shore-leave':'shore-leave','train-crew':'training','medical-care':'medical',hire:'recruiting',sleep:'lodging',repair:'repairs','repair-sails':'repairs','replace-cannons':'repairs','buy-permit':'permit','meet-smuggler':'contact'};record(g,kinds[action.type]??'repairs',-cost);};
   const arrive=()=>{const v=g.voyage!;
     const next=v.contacts?.shift();
     if(next){const elapsed=v.elapsed??0,step=Math.max(0,next.at-elapsed);v.remaining=Math.max(0,v.remaining-step);v.elapsed=next.at;if(advance(g,step))beginEncounter(g,next.npc);return;}
     if(advance(g,v.remaining)){g.port=v.to;g.voyage=null;delete g.encounter;
+    sailingCrewPractice(g,v.hours);
     const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
     if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
   if(action.type.startsWith('battle-')){
     if(action.type==='battle-resume'&&g.battle?.phase==='ended'&&sailingProblems(g).length)throw Error('Your ship or captain cannot continue. Arrange return to port.');
-    awardBattlePractice(g);
+    awardBattlePractice(g);resolveCrewBattle(g);
     battleAct(g,action as BattleAction);
-    awardBattlePractice(g);
+    awardBattlePractice(g);resolveCrewBattle(g);
     if(action.type==='battle-return'){
       const b=g.battle!;if(g.ship!.hullPoints<=0||(g.captainState?.injury??0)>=6)throw Error('A lost ship or dead captain requires a checkpoint.');
-      const fee=returnFee(g),wages=wageFor(g,12);g.silver-=fee+wages;record(g,'recovery',-fee);record(g,'wages',-wages);
+      const fee=returnFee(g),wages=wageFor(g,12);g.silver-=fee+wages;crewWages(g,12,wages);record(g,'recovery',-fee);record(g,'wages',-wages);
       const fruit=g.cargo.fruit??0;recordConsumption(g,'spoilage','fruit',fruit-fruitAfter(fruit,12));spoilCargo(g,12);g.hours+=12;
       // Rescue passage includes food and medical stabilization; existing stores and hull damage are retained.
       if(g.captainState){g.captainState.fatigue=0;g.captainState.injury=Math.min(4,g.captainState.injury);}
@@ -144,6 +146,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     finishAccounting(g);return g;
   }
   switch(action.type) {
+    case 'train-crew':case 'medical-care':case 'shore-leave':{const quote=crewServiceQuote(g,action);if(quote.errors.length)throw Error(quote.errors.join(' '));pay(quote.fee);if(advance(g,quote.hours))completeCrewService(g,action,quote);break;}
     case 'buy-equipment': case 'equip-weapon': case 'load-pistol': case 'unload-pistol': case 'prepare-battery':equipmentAct(g,action);break;
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
@@ -182,7 +185,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const q=supplyRepairMaterials(g,action.kind);record(g,'repairs',-q.silver);record(g,'materials-used',0,{cost:q.knownCost});
       if(advance(g,q.hours)){if(action.kind==='hull')ship.hullPoints=spec.maxHull;else ship.sailCondition=100;note(g,`Repaired ${action.kind} using cargo materials. Paid ${q.silver} silver; material credit ${q.discount} silver. ${q.hours} hours of work.`);}break;
     }
-    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;if(g.crewState)g.crewState.fit++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
+    case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);recruitCrew(g);advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8)){if(g.captainState){g.captainState.fatigue=0;g.captainState.injury=Math.max(0,g.captainState.injury-1);}if(g.crewState){const healed=Math.min(g.crewState.injured,Math.max(1,Math.ceil(g.crew*.1)));g.crewState.injured-=healed;g.crewState.fit+=healed;}note(g,'You rested at the tavern for eight hours. Fatigue cleared, one captain Injury step healed, and up to 10% of living crew recovered from injuries.');}break;
     case 'dismiss':if(g.crew<=spec.minCrew)throw new Error(`Keep at least ${spec.minCrew} sailors to operate this ship.`);g.crew--;if(g.crewState){if(g.crewState.injured>0)g.crewState.injured--;else g.crewState.fit=Math.max(0,g.crewState.fit-1);}advance(g,1);note(g,'One sailor left your crew at the tavern.');break;
     case 'repair':{
