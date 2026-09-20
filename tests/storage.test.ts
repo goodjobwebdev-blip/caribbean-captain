@@ -22,3 +22,16 @@ it('preserves player skill metrics in checkpoints and supports older skill-less 
  const legacy=structuredClone(saved);delete legacy.game.skills;
  expect(restoreCheckpoint(p,legacy).game.captain).toBe('Mary');
 });
+
+it('restores market stock, remembered prices, purchase provenance and Trade progress together',async()=>{
+ const p:Profile={id:'trade-captain',name:'Trader',game:newGame('Trader',3),updated:1};
+ p.game=act(p.game,{type:'buy',good:'sugar',quantity:10});
+ p.game.skills!.trade={tier:2,points:3.25};
+ const saved=await saveCheckpoint(p,'Before trading voyage','Church');
+ p.game=act(p.game,{type:'sell',good:'sugar',quantity:5});
+ const restored=restoreCheckpoint(p,saved);
+ expect(restored.game.economy).toEqual(saved.game.economy);
+ expect(restored.game.skills!.trade).toEqual({tier:2,points:3.25});
+ expect(restored.game.cargo.sugar).toBe(10);
+ expect((await checkpoints(p.id))[0].game.economy).toEqual(saved.game.economy);
+});

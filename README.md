@@ -12,6 +12,8 @@ Failure is recoverable only from a church checkpoint. Profiles and checkpoints a
 
 Optional NanoGPT dialogue can be enabled in Settings with your own API key and model. Keys stay in tab memory and clear on refresh. The game works with predefined text when AI is disabled or unavailable. AI never determines prices, rewards, rolls, or actions.
 
+Trade 45 goods through a basket with exact totals, finite stock, supply/demand pricing, and Trade skill progression. The Journal’s Markets tab remembers dated prices from visited ports. Provisions can be bought and sold. Controlled goods are listed, with access reserved for a later release. See [implemented trade rules](docs/trade-release.md).
+
 ## Development
 
 Node.js 22.12+ (CI uses Node 24).

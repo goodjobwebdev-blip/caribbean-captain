@@ -94,9 +94,9 @@ describe('ship performance',()=>{
  });
 });
 describe('larger freight',()=>{
- it('offers distinct 40/200/800-unit jobs while preserving existing small-job terms',()=>{
+ it('offers distinct 40/200/800-unit jobs with rebalanced new-job rewards',()=>{
   const g=rich(),jobs=offers(g).filter(c=>c.type==='Freight'&&c.to==='saint-pierre');
-  expect(jobs.map(c=>c.amount)).toEqual([40,200,800]);expect(jobs.map(c=>c.reward)).toEqual([305,1285,4960]);
+  expect(jobs.map(c=>c.amount)).toEqual([40,200,800]);expect(jobs.map(c=>c.reward)).toEqual([120,519,2018]);
   expect(jobs[0].id).toBe('bridgetown:saint-pierre:0:Freight');expect(new Set(jobs.map(c=>c.id)).size).toBe(3);
   g.ship=createShip('fluyt-merchant');g.crew=16;g.skills={sailing:{tier:10,points:0}};expect(offers(g).filter(c=>c.type==='Freight'&&c.to==='saint-pierre')).toEqual(jobs);
  });
@@ -106,9 +106,9 @@ describe('larger freight',()=>{
   g.ship=createShip('fluyt-merchant');g.crew=16;g.provisions=90;
   const job=offers(g).find(c=>c.amount===800&&c.to==='saint-pierre')!;
   g=act(g,{type:'accept',contract:{...job,reward:999999,amount:1}});
-  expect(g.contracts[0].amount).toBe(800);expect(g.contracts[0].reward).toBe(4960);
+  expect(g.contracts[0].amount).toBe(800);expect(g.contracts[0].reward).toBe(2018);
   g=act(g,{type:'sail',to:'saint-pierre'},rng(.5,.5,.5));expect(g.failed).toBeNull();
-  const before=g.silver;g=act(g,{type:'deliver'});expect(g.silver).toBeCloseTo(before+4960-32/24);expect(g.archive![0].amount).toBe(800);
+  const before=g.silver;g=act(g,{type:'deliver'});expect(g.silver).toBeCloseTo(before+2018-32/24);expect(g.archive![0].amount).toBe(800);
   expect(()=>act(g,{type:'deliver'})).toThrow();
  });
 });

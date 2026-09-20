@@ -1,6 +1,6 @@
 /** Player-only skill progress. Sailing practice is credited on successful arrival. */
 export type SkillProgress = { tier: number; points: number; sailingHours?: number };
-export type PlayerSkills = { sailing: SkillProgress };
+export type PlayerSkills = { sailing: SkillProgress; trade?:SkillProgress };
 export const initialSkills = ():PlayerSkills => ({sailing:{tier:0,points:0}});
 export function sailingProgress(skills?:PlayerSkills):SkillProgress {
   return skills?.sailing ?? {tier:0,points:0};
@@ -30,4 +30,14 @@ export function creditSailing(skills:PlayerSkills|undefined,hours:number){
   const total=(next.sailing.sailingHours??0)+hours;
   next.sailing.sailingHours=total%24;
   return creditSailingPoints(next,Math.floor(total/24));
+}
+
+export const tradeProgress=(skills?:PlayerSkills):SkillProgress=>skills?.trade??{tier:0,points:0};
+export function creditTrade(skills:PlayerSkills|undefined,points:number):PlayerSkills{
+ const next=structuredClone(skills??initialSkills()),trade={...tradeProgress(next)};next.trade=trade;
+ if(trade.tier>=10)return next;
+ trade.points+=points;
+ while(trade.tier<10&&trade.points+1e-10>=nextTierRequirement(trade.tier)!){trade.points=Math.max(0,trade.points-nextTierRequirement(trade.tier)!);trade.tier++;}
+ if(trade.tier===10)trade.points=0;
+ return next;
 }

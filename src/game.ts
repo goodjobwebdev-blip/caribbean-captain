@@ -1,4 +1,6 @@
-import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,GOODS_LOAD,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
+import {ALL_GOODS,type GoodId} from './goods';
+import {ensureEconomy,observeMarket,consumeLots,settleBasket,type Economy,type BasketLine} from './trade';
+import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
 import {resolveShip,createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
 import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
 export const PORTS = [
@@ -7,15 +9,15 @@ export const PORTS = [
   { id: 'willemstad', name: 'Willemstad', island: 'Curaçao', nation: 'Dutch', x: -285, y: -25, prices: { sugar: 17, rum: 20, cloth: 14 }, description: 'A sheltered harbour opens between busy quays. Cargo from distant shores changes hands beneath the fort’s watchful guns.' },
 ] as const;
 export type PortId = typeof PORTS[number]['id'];
-export type Good = 'sugar' | 'rum' | 'cloth';
-export const GOODS: Good[] = ['sugar', 'rum', 'cloth'];
+export type Good = Exclude<GoodId,'provisions'>;
+export const GOODS: Good[] = ALL_GOODS.filter((id):id is Good=>id!=='provisions');
 // Fixed baseline is retained only for contract pricing and legacy callers.
 export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
 export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice };
-export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; cargo: Record<Good, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Game = { version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
+export type Action = {type:'trade';lines:BasketLine[];expected:string} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
@@ -32,7 +34,7 @@ export const currentShip=(g:Game)=>shipDefinition(ownedShip(g).configurationId);
 export const hullPercent=(g:Game)=>100*ownedShip(g).hullPoints/currentShip(g).maxHull;
 export function normalizeGame(original:Game):Game {
  if(original.version!==1&&original.version!==2)throw new Error('Unsupported captain save version.');
- const g=structuredClone(original);g.ship=ownedShip(g);g.version=2;delete g.condition;return g;
+ const g=structuredClone(original);g.ship=ownedShip(g);g.version=2;delete g.condition;ensureEconomy(g);return g;
 }
 export function shipPurchaseQuote(g:Game,configurationId:string){
  const target=shipDefinition(configurationId),sale=shipSaleValue(ownedShip(g)),balance=target.price-sale;
@@ -55,26 +57,26 @@ export const wageFor = (g: Game, hours: number) => g.crew * 2 * hours / 24;
 export const cash = (n: number) => Math.floor(n).toLocaleString('en');
 export function date(hours: number) { const day = Math.floor(hours / 24); const months = ['January','February','March','April','May','June','July','August','September','October','November','December']; return `${day % 30 + 1} ${months[Math.floor(day / 30) % 12]}, Year ${Math.floor(day / 360) + 1} · ${String(hours % 24).padStart(2,'0')}:00`; }
 export function duration(hours: number) { if(!Number.isFinite(hours))return 'Unavailable'; return `${Math.floor(hours / 24)}d ${hours % 24}h`; }
-export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { return { version:2, ship:createShip(STARTER_ID,'The Wayfarer'), skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; }
+export function newGame(captain: string, seed = crypto.getRandomValues(new Uint32Array(1))[0]): Game { const game:Game = { version:2, ship:createShip(STARTER_ID,'The Wayfarer'), skills:initialSkills(), captain:captain.trim().slice(0,40) || 'Captain', port:'bridgetown', hours:8, silver:800, provisions:120, crew:10, cargo:{sugar:0,rum:0,cloth:0},contracts:[],archive:[],accepted:[],log:[{hours:8,text:'Your command begins in Bridgetown. Visit the church to make your first checkpoint before sailing.'}],seed, voyage:null,failed:null,lastRoll:null }; ensureEconomy(game); return game; }
 function note(g:Game,text:string) { g.log.unshift({hours:g.hours,text}); g.log = g.log.slice(0,60); }
 function advance(g:Game,hours:number) {
   const food = foodFor(g,hours);
   if (food > g.provisions + 1e-8) {
     const available = Math.floor(g.provisions * 24 / (g.crew + passengers(g)));
-    g.silver -= wageFor(g,available); g.hours += available; g.provisions=0;
+    g.silver -= wageFor(g,available); g.hours += available; consumeLots(g,'provisions',g.provisions); g.provisions=0;
     g.failed='Your provisions ran out. The voyage is over. Return to a church checkpoint.';
     note(g,g.failed); return false;
   }
-  g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; return true;
+  consumeLots(g,'provisions',food); g.provisions=Math.max(0,g.provisions-food); g.silver-=wageFor(g,hours); g.hours+=hours; return true;
 }
 export const FREIGHT_SIZES=[40,200,800] as const;
 export function offers(g:Game):Contract[] {
  return PORTS.filter(p=>p.id!==g.port).flatMap(p=>{
-  const normalHours=hoursTo(g.port,p.id);
+  const d=distance(g.port,p.id);
   const base=(type:Contract['type'],amount:number):Contract=>({
    id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}${type==='Freight'&&amount!==40?`:${amount}`:''}`,
    type,from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,
-   reward:Math.round(normalHours*(type==='Letter'?3:type==='Freight'?5*amount/40:4)+60),amount,
+   reward:Math.round(type==='Letter'?20+d*1.04:type==='Freight'?20+d*amount*.0432:30+d*amount*.69),amount,
   });
   // Keep original offer IDs and ordering for saved commissions.
   return [base('Letter',0),base('Freight',40),base('Passengers',3),...FREIGHT_SIZES.filter(n=>n!==40).map(n=>base('Freight',n))];
@@ -106,21 +108,12 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
     note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
   switch(action.type) {
-    case 'buy': case 'sell': {
-      const q=action.quantity;if(!Number.isInteger(q)||q<1||q>1000) throw new Error('Choose a valid quantity.');
-      if(![...GOODS,'provisions'].includes(action.good)) throw new Error('Unknown goods.');
-      if(action.type==='buy') {
-        if(cargoUsed(g)+q>spec.capacity+1e-8)throw new Error('Not enough room in the hold.');
-        allowWeight(q*GOODS_LOAD[action.good].weight);
-        const price=action.good==='provisions'?1:port(g.port).prices[action.good];pay(q*price);
-        if(action.good==='provisions')g.provisions+=q;else g.cargo[action.good]+=q;
-        note(g,`Bought ${q} ${action.good} for ${q*price} silver.`);
-      } else {
-        if(action.good==='provisions')throw new Error('Provisions cannot be sold.');
-        if(g.cargo[action.good]<q)throw new Error('You do not have that much cargo.');
-        const price=Math.floor(port(g.port).prices[action.good]*0.85);g.cargo[action.good]-=q;g.silver+=q*price;note(g,`Sold ${q} ${action.good} for ${q*price} silver.`);
-      }
-      advance(g,1);break;
+    case 'trade': case 'buy': case 'sell': {
+      const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
+      // Verify against the original state before lazy migration changes its representation.
+      if(action.type==='trade'&&action.expected!==JSON.stringify([original,lines]))throw new Error('The deal changed. Review the updated basket.');
+      const q=settleBasket(g,lines);advance(g,1);
+      note(g,`Trade deal: paid ${q.buys}, received ${q.sales} silver. ${q.lines.length} cargo line(s).${q.xp?` +${q.xp.toFixed(2)} Trade points.`:''}`);break;
     }
     case 'hire':if(g.crew>=spec.maxCrew)throw new Error('Your crew is already full.');allowWeight(PERSON_WEIGHT);pay(25);g.crew++;advance(g,1);note(g,'One sailor joined your crew for 25 silver.');break;
     case 'sleep':pay(8);if(advance(g,8))note(g,'You rested at the tavern for eight hours.');break;
@@ -173,5 +166,6 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       if(ship.hullPoints<=0||g.crew<spec.minCrew){g.failed=ship.hullPoints<=0?'Your ship was lost. Load a church checkpoint.':'Too few sailors survived to bring the ship home. Load a church checkpoint.';note(g,g.failed);}else arrive();break;
     }
   }
+  if(!g.voyage)observeMarket(g);
   return g;
 }

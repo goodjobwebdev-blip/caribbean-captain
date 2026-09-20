@@ -1,10 +1,8 @@
 import type {Game,Good} from './game';
 import {resolveShip,shipDefinition,totalCannons,type OwnedShip} from './ships';
 import {sailingProgress} from './skills';
-/** Fictional units. These extend the current goods, not the future market system. */
-export const GOODS_LOAD:Record<Good|'provisions',{space:number;weight:number}>={
- sugar:{space:1,weight:2},rum:{space:1,weight:1.5},cloth:{space:1,weight:.5},provisions:{space:1,weight:.25},
-};
+import {CATALOGUE} from './goods';
+export const GOODS_LOAD=CATALOGUE;
 export const PERSON_WEIGHT=1;
 export const CANNON_WEIGHT=5;
 export const FREIGHT_WEIGHT=1;
