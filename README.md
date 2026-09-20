@@ -42,4 +42,4 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 - [Remaining decisions](docs/open-decisions.md)
 - [Deployment](docs/deployment.md)
 
-Trade implementation planning: [confirmed decisions and draft balance](docs/trade-release-draft.md).
+Trade implementation planning: [confirmed decisions and draft balance](docs/trade-release-draft.md), [balance validation](docs/trade-validation.md).

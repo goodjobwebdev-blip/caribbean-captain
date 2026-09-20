@@ -198,3 +198,13 @@ No changes to battle, encounter chance, or Sailing rewards are part of this work
 The basket model is agreed. Validate the proposed rounding and test route profits, working
 capital, cargo/weight limits, stock movement, and upgrade pace against these
 draft values. Do not treat the draft price and stock tables as validated balance.
+
+## Validation findings
+
+The [offline validation report](trade-validation.md) records reproducible results
+and recommended adjustments: Coffee imports in Bridgetown, smaller luxury
+stocks (2% rather than 10%), and FIFO per-unit Trade-learning attribution that
+is independent of deal splitting. The original draft tables above are retained
+as the tested baseline; the report distinguishes original and recommended cases.
+The basket model, finite provision stocks, and preserved accepted quest rewards
+remain agreed. This is design validation, not a deployed trade implementation.
