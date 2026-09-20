@@ -2,7 +2,7 @@ import {useEffect, useId, useRef, useState} from 'react';
 import type {Model} from './nanogpt';
 
 type Props = {label?:string; models:Model[]; value:string; loading:boolean; onChange:(id:string)=>void};
-export function ModelPicker({label='Model',models,value,loading,onChange}:Props){
+export function ModelPicker({label:pickerLabel='Model',models,value,loading,onChange}:Props){
   const id=useId();
   const input=useRef<HTMLInputElement>(null);
   const list=useRef<HTMLDivElement>(null);
@@ -18,7 +18,7 @@ export function ModelPicker({label='Model',models,value,loading,onChange}:Props)
   function select(model:Model){onChange(model.id);close();input.current?.focus();}
   useEffect(()=>{if(open)list.current?.querySelector('[data-active="true"]')?.scrollIntoView({block:'nearest'});},[index,open,query]);
   return <div className="model-picker" onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))close();}}>
-    <label htmlFor={id}>{label}</label>
+    <label htmlFor={id}>{pickerLabel}</label>
     <div className="model-picker-field">
       <input ref={input} id={id} role="combobox" aria-autocomplete="list" aria-expanded={open}
         aria-controls={`${id}-list`} aria-activedescendant={open&&matches.length?`${id}-option-${index}`:undefined}
@@ -38,7 +38,7 @@ export function ModelPicker({label='Model',models,value,loading,onChange}:Props)
         onMouseDown={event=>event.preventDefault()} onClick={()=>{input.current?.focus();if(open)close();else show();}}><span aria-hidden="true">{open?'▴':'▾'}</span></button>
     </div>
     {open&&<div className="model-picker-popup">
-      <div ref={list} id={`${id}-list`} className="model-picker-list" role="listbox" aria-label={`Available ${label.toLowerCase()} options`} aria-busy={loading}>
+      <div ref={list} id={`${id}-list`} className="model-picker-list" role="listbox" aria-label={`Available ${pickerLabel.toLowerCase()} options`} aria-busy={loading}>
         {matches.map((model,i)=><div key={model.id} id={`${id}-option-${i}`} role="option" aria-selected={value===model.id} data-active={i===index}
           className="model-picker-option" onMouseDown={event=>event.preventDefault()} onMouseMove={()=>setActive(i)} onClick={()=>select(model)}>
           <strong>{model.name||model.id}{value===model.id&&<span aria-hidden="true"> ✓</span>}</strong>
