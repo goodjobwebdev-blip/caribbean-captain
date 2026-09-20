@@ -4,7 +4,7 @@ Status: agreed design. Numerical balance values are provisional unless stated ot
 
 This document defines the tactical **Naval Engagement** phase that follows the Encounter system. Encounter determines whether ships fight, flee, pursue, surrender, or avoid one another. Naval Engagement begins when ships enter tactical combat. A successful pursuit enters Naval Engagement at normal range.
 
-The first implementation supports one ship against one ship. State and relationships must use ship IDs so later fleet combat can reuse the model. Detailed Boarding, Capture Resolution, deliberate Ramming, and multi-ship execution are deferred.
+The first implementation supports one ship against one ship. State and relationships must use ship IDs so later fleet combat can reuse the model. Detailed Boarding is defined in the [Boarding System](boarding-system.md). Capture Resolution, deliberate Ramming, and multi-ship execution remain deferred.
 
 ## Design goals
 
@@ -32,11 +32,11 @@ Naval Engagement ends or changes phase when:
 
 - no hostile ships remain: end the battle;
 - a ship surrenders: enter future Capture Resolution;
-- Grapple succeeds: cancel Naval Engagement schedules and enter future Boarding with a fresh Action Pool;
+- Grapple succeeds: cancel Naval Engagement schedules and enter the [Boarding System](boarding-system.md);
 - separation exceeds 1,000 combat-distance units at a window boundary: the fleeing ship escapes;
 - otherwise: begin another Naval Engagement planning window.
 
-After Boarding, return to Naval Engagement with a fresh Action Pool if hostile ships remain. If none remain, end the battle.
+After [Boarding](boarding-system.md), return to Naval Engagement with a fresh Action Pool if hostile ships remain. If none remain, end the battle.
 
 ## Core state
 
@@ -448,9 +448,9 @@ Grapple may begin while the target is in Close range.
 
 The modifier compares attacker Boarding Strength and Maneuverability with defender Boarding Strength and Maneuverability and includes relative position and crew state.
 
-Success immediately transitions to Boarding after all other effects completing at that same unit resolve. Cancel every unfinished and later Naval Engagement action without applying its effect. Completion-consumed resources for cancelled actions remain unspent or are released. Boarding begins with a fresh Action Pool.
+Success immediately transitions to the [Boarding System](boarding-system.md) after all other effects completing at that same unit resolve. Cancel every unfinished and later Naval Engagement action without applying its effect. Completion-consumed resources for cancelled actions remain unspent or are released. Boarding begins with a fresh phase state.
 
-Cut Grapples is not a Naval Engagement action; it belongs to the future Boarding design.
+Cut Grapples is not a Naval Engagement action and is deferred beyond the first Boarding implementation.
 
 # Support actions
 
@@ -724,7 +724,7 @@ Idle has no action object; it is unused schedule space.
 
 The following are explicit later phases or extensions:
 
-- Boarding actions, its fresh Action Pool, and Cut Grapples;
+- Cut Grapples and voluntary Boarding disengagement;
 - Capture Resolution, prizes, prisoners, cargo transfer, and ship ownership;
 - deliberate Ramming and collision damage;
 - execution details for multiple simultaneous ships and fleets;
