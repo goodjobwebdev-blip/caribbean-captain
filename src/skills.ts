@@ -42,7 +42,7 @@ export function creditTrade(skills:PlayerSkills|undefined,points:number):PlayerS
  return next;
 }
 
-export const COMBAT_SKILLS = ['lookout','deception','diplomacy','intimidation','boarding','aiming','reloading','demolitions','carpentry','sailmaking','doctoring','leadership','lightWeapons','mediumWeapons','heavyWeapons','athletics','shooting'] as const;
+export const COMBAT_SKILLS = ['training','lookout','deception','diplomacy','intimidation','boarding','aiming','reloading','demolitions','carpentry','sailmaking','doctoring','leadership','lightWeapons','mediumWeapons','heavyWeapons','athletics','shooting'] as const;
 export const skillName=(id:string)=>id.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase());
 export function creditSkillPoints(skills:PlayerSkills|undefined,id:import('./battle/types').Skill,points:number):PlayerSkills {
  if(!Number.isFinite(points)||points<0)throw Error('Practice must be finite and nonnegative.');

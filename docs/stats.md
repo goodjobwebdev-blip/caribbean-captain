@@ -207,6 +207,8 @@ An optional future calculated stat is **Draft**, representing how deeply the loa
 
 # Crew stats
 
+Current implementation: [Crew development](crew-development.md) defines specialty progression, port services, readiness, morale and unpaid-wage consequences. It supersedes the corresponding deferred decisions below.
+
 The crew is represented as one collective pool. Individual crew members do not have separate records or player skills.
 
 The collective crew has separate experience values for sailing, gunnery, and fighting.

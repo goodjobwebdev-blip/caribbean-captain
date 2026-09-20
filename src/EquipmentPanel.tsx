@@ -5,7 +5,7 @@ import {captain,crew,injuryNames,fatigueNames,type Ammo} from './battle/types';
 import {COMBAT_SKILLS,skillName,nextTierRequirement} from './skills';
 type Controls={game:Game;busy:boolean;perform:(a:Action)=>void};
 export function CombatSkills({game:g}:{game:Game}){
- return <><h2>Encounter and combat practice</h2><p>Completed actions earn practice. Battles award it once at resolution: up to 3 points per skill and 10 total. Mastery remains fixed during a battle.</p><div className="table-wrap"><table><thead><tr><th>Skill</th><th>Mastery</th><th>Progress to next tier</th></tr></thead><tbody>{COMBAT_SKILLS.map(id=>{const s=g.skills?.[id]??{tier:0,points:0};return <tr key={id}><th scope="row">{skillName(id)}</th><td>{s.tier} / 10</td><td>{s.tier===10?'Maximum mastery':`${s.points.toFixed(2)} / ${nextTierRequirement(s.tier)}`}</td></tr>;})}</tbody></table></div></>;
+ return <><h2>Training, encounter and combat practice</h2><p>Paid crew training earns 0.5 Training point per session. Completed encounter and combat actions also earn practice. Battles award it once at resolution: up to 3 points per skill and 10 total. Mastery remains fixed during a battle.</p><div className="table-wrap"><table><thead><tr><th>Skill</th><th>Mastery</th><th>Progress to next tier</th></tr></thead><tbody>{COMBAT_SKILLS.map(id=>{const s=g.skills?.[id]??{tier:0,points:0};return <tr key={id}><th scope="row">{skillName(id)}</th><td>{s.tier} / 10</td><td>{s.tier===10?'Maximum mastery':`${s.points.toFixed(2)} / ${nextTierRequirement(s.tier)}`}</td></tr>;})}</tbody></table></div></>;
 }
 export function CaptainEquipment({game:g}:{game:Game}){
  const e=equipment(g),c=g.captainState??captain(),company=g.crewState??crew(g.crew);
@@ -16,7 +16,7 @@ export function CaptainEquipment({game:g}:{game:Game}){
  <div><dt>Pistol</dt><dd>{c.pistol?'Loaded':e.pistol?'Owned, unloaded':'Not owned'}</dd></div><div><dt>Spare cartridges</dt><dd>{e.cartridges}</dd></div>
  <div><dt>Spyglass</dt><dd>{g.spyglass?'Owned · early sightings':'Not owned'}</dd></div>
  <div><dt>Crew fit / injured / dead</dt><dd>{company.fit} / {company.injured} / {company.dead}</dd></div>
- <div><dt>Morale / discipline / experience / equipment</dt><dd>{company.morale} / {company.discipline} / {company.experience} / {company.equipment}</dd></div>
+ <div><dt>Morale / discipline / equipment</dt><dd>{company.morale.toFixed(1)} / {company.discipline.toFixed(1)} / {company.equipment}</dd></div>
  </dl><p>Living captains can rest at the tavern to clear fatigue and heal one Injury step. Rest also helps injured crew recover. Dead crew cannot recover.</p></>;
 }
 export function Outfitter({game:g,busy,perform}:Controls){

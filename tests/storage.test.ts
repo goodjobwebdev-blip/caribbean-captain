@@ -56,3 +56,9 @@ it('restores owned equipment, loaded pistol, presets and combat mastery together
  p.game=act(p.game,{type:'unload-pistol'});p.game.skills!.shooting.points=5;await saveProfile(p);
  const restored=restoreCheckpoint(p,saved);expect(restored.game.captainState!.pistol).toBe(true);expect(restored.game.equipment).toEqual(saved.game.equipment);expect(restored.game.equipment!.cartridges).toBe(4);expect(restored.game.skills!.shooting).toEqual({tier:1,points:.5});expect((await profiles()).find(x=>x.id===p.id)!.game.captainState!.pistol).toBe(false);
 });
+it('restores crew specialties, conditions and unpaid wage exposure with a checkpoint',async()=>{
+ const p:Profile={id:'crew-development',name:'Anne',game:newGame('Anne',7),updated:1};
+ p.game=act(p.game,{type:'train-crew',domain:'gunnery'});p.game.crewState!.morale=42;p.game.crewState!.unpaidWageHours=12;
+ const saved=await saveCheckpoint(p,'Trained crew','Church');p.game=act(p.game,{type:'shore-leave'});p.game=act(p.game,{type:'hire'});
+ const restored=restoreCheckpoint(p,saved);expect(restored.game.crewState).toEqual(saved.game.crewState);expect(restored.game.skills!.training).toEqual(saved.game.skills!.training);expect(restored.game.crew).toBe(10);expect(restored.game.silver).toBe(saved.game.silver);
+});

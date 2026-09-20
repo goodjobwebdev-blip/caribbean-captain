@@ -1,8 +1,9 @@
+import {crewPractice,CREW_DOMAINS} from '../crew';
 import {practice} from './progression';
 import type {Game} from '../game';
 import {BATTERIES,shipDefinition,totalCannons,type Battery} from '../ships';
 import {shipPerformance} from '../performance';
-import {clamp,rng,weighted,mastery,crew,captain,roll,casualties,strength,ratioEdge,report,recordRoll,finish,type Battle,type Combatant,type Npc,type Skill,type Ammo,type Order,type Scheduled,type Condition} from './types';
+import {clamp,rng,weighted,mastery,crewExperience,crew,captain,roll,casualties,strength,ratioEdge,report,recordRoll,finish,type Battle,type Combatant,type Npc,type Skill,type Ammo,type Order,type Scheduled,type Condition} from './types';
 import {enterBoarding} from './boarding';
 export const AMMO:Ammo[]=['round-shot','chain-shot','grapeshot','bombs'];
 const skills:Skill[]=['sailing','lookout','deception','diplomacy','intimidation','boarding','aiming','reloading','demolitions','carpentry','sailmaking','doctoring','leadership','lightWeapons','mediumWeapons','heavyWeapons','athletics','shooting'];
@@ -15,7 +16,7 @@ export const range=(d:number)=>d<100?'Close':d<300?'Medium':d<600?'Long':d<=1000
 export const norm=(a:number)=>(a%360+360)%360;
 export const bearing=(a:Combatant,b:{x:number;y:number})=>norm(Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI-a.heading);
 export const arc=(a:Combatant,b:{x:number;y:number}):Battery=>{const d=Math.round(bearing(a,b)*1e9)/1e9;return d<45||d>=315?'bow':d<135?'starboard':d<225?'stern':'port';};
-export function performance(s:Combatant){return shipPerformance({ship:s.ship,crew:s.crew.fit,cargo:s.cargo,provisions:s.provisions,contracts:[{type:'Freight',amount:s.freight},{type:'Passengers',amount:s.passengers}],skills:{sailing:{tier:s.skills.sailing??0,points:0}}} as Game);}
+export function performance(s:Combatant){return shipPerformance({ship:s.ship,crew:s.crew.fit+s.crew.injured,crewState:s.crew,cargo:s.cargo,provisions:s.provisions,contracts:[{type:'Freight',amount:s.freight},{type:'Passengers',amount:s.passengers}],skills:{sailing:{tier:s.skills.sailing??0,points:0}}} as Game);}
 const stateFactor=(v:number)=>[1,.9,.75,.5][v];
 const statePenalty=(v:number)=>[0,.1,.25,.5][v];
 export function speed(s:Combatant,b:Battle){const sector=Math.round(norm(s.heading-b.wind)/45)%8;return performance(s).speed*[0,.5,1][s.sails]*[0,.6,1,1.1,.9,1.1,1,.6][sector]*[.25,.75,1,1.2][b.windStrength]*stateFactor(s.states.flooding)*stateFactor(s.states.rigging);}
@@ -25,7 +26,7 @@ export function orderCatalogue(b:Battle,id:string):Order[]{
  for(const angle of [-180,-135,-90,-45,45,90,135,180])add(`turn_${angle}`,'turn',100*Math.abs(angle)/45,'sailing',{}, {angle},{Maneuverability:(50-performance(s).maneuverability)/100,'Full Sail':s.sails===2?.2:0,'Through wind':Math.abs(norm(b.wind-s.heading+180)-180)<=Math.abs(angle)?.2:0,Rigging:statePenalty(s.states.rigging)});
  for(const setting of [0,1,2])if(setting!==s.sails)add(`sails_${setting}`,'sails',150*Math.abs(setting-s.sails),'sailing',{}, {setting},{'Sail damage':(100-s.ship.sailCondition)/200,Rigging:statePenalty(s.states.rigging)});
  for(const battery of BATTERIES){const count=s.ship.cannons[battery];if(!count)continue;
-  const penalties={'Gunnery experience':(50-s.crew.experience)/200,'Battery damage':Math.max(0,1-count/Math.max(1,spec.defaultCannons[battery]))*.25};
+  const penalties={'Gunnery experience':(50-crewExperience(s.crew,'gunnery'))/200,'Battery damage':Math.max(0,1-count/Math.max(1,spec.defaultCannons[battery]))*.25};
   add(`fire_${battery}`,'fire',150,'aiming',{}, {battery,target:enemy},penalties);
   for(const h of b.hazards)add(`fire_${battery}_${h.id}`,'fire',150,'aiming',{}, {battery,target:h.id},penalties);
   add(`unload_${battery}`,'unload',200,'reloading',{}, {battery},penalties);
@@ -73,7 +74,7 @@ function volley(g:Game,b:Battle,id:string,o:Order,pre:Battle){
  const d=Math.hypot(shooter.x-target.x,shooter.y-target.y),rangeMod=accuracy(gun.ammo,d);if(rangeMod===null){report(b,`${o.id}: target outside ammunition range; load retained.`);return;}
  const shipTarget='ship' in target?target:null,tier=shipTarget?shipDefinition(shipTarget.ship.configurationId).tier:1;
  const transverse=shipTarget?Math.abs(Math.sin((shipTarget.heading-Math.atan2(target.y-shooter.y,target.x-shooter.x)*180/Math.PI)*Math.PI/180)*speed(shipTarget,pre)*250):0;
- const r=roll(g,'Cannon volley',{'Cannon Aiming':Math.floor((shooter.skills.aiming??0)/3),'Ammunition range':rangeMod,'Target size':shipTarget?tier<=2?-1:tier>=5?1:0:-2,'Transverse movement':transverse<25?1:transverse<100?0:transverse<200?-1:-2,'Gunnery experience':Math.floor((shooter.crew.experience-50)/25)});recordRoll(g,b,r);
+ const r=roll(g,'Cannon volley',{'Cannon Aiming':Math.floor((shooter.skills.aiming??0)/3),'Ammunition range':rangeMod,'Target size':shipTarget?tier<=2?-1:tier>=5?1:0:-2,'Transverse movement':transverse<25?1:transverse<100?0:transverse<200?-1:-2,'Gunnery experience':Math.floor((crewExperience(shooter.crew,'gunnery')-50)/25)});recordRoll(g,b,r);
  practice(b,id,'aiming',r.band===0?.25:.5);
  const natural=r.dice[0]+r.dice[1],out=natural===2?0:natural===12?3:r.total<=6?0:r.total<=8?1:r.total<=10?2:3,mult=[0,.5,1,1.5][out];
  s.batteries[o.battery!].loaded=0;s.batteries[o.battery!].ammo=null;report(b,`${id} ${o.battery}: ${['Miss','Glancing hit','Solid hit','Critical hit'][out]}.`);if(!out)return;
@@ -120,8 +121,9 @@ export function mergeCompletions(b:Battle,pre:Battle,events:Battle[]){
  }
  for(const skill of skills){
   const earned=events.reduce((sum,event)=>sum+Math.max(0,(event.practice?.[skill]??0)-(pre.practice?.[skill]??0)),0);
-  if(earned>0)practice(b,b.playerId,skill,earned);
+  if(earned>0)practice(b,b.playerId,skill,earned,false);
  }
+ for(const domain of CREW_DOMAINS){const earned=events.reduce((sum,e)=>sum+Math.max(0,(e.crewPractice?.[domain]??0)-(pre.crewPractice?.[domain]??0)),0);if(earned>0)crewPractice(b,b.playerId,domain,earned);}
  const removed=new Set(pre.hazards.filter(h=>events.some(e=>!e.hazards.some(v=>v.id===h.id))).map(h=>h.id));
  b.hazards=[...pre.hazards.filter(h=>!removed.has(h.id)),...events.flatMap(e=>e.hazards.filter(h=>!pre.hazards.some(v=>v.id===h.id)))];
  for(const e of events){for(const line of [...e.log].reverse())report(b,line);b.rolls=[...e.rolls,...b.rolls].slice(0,40);b.deception={...b.deception,...e.deception};}
