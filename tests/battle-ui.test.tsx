@@ -11,5 +11,5 @@ it('renders the encounter and every battle stage with model suspension and expli
  expect(render()).toContain(npc.faction);g.battle=createBattle(g,npc);expect(render()).toContain('Naval Engagement');expect(render()).toContain('Projected course');
  g.battle.status='waiting';expect(render()).toContain('Combat is suspended');expect(render()).toContain('Change Model');
  enterBoarding(g.battle,g.battle.playerId);expect(render()).toContain('Deck Battle');g.battle.phase='duel';g.battle.duel={initiative:g.battle.npcId,exchange:3,control:-1,firstRoll:true,demandedAt:[],npcAttack:'pistol'};g.battle.status='planning';const duel=render();expect(duel).toContain('Captain Duel');expect(duel).toContain('dodge');expect(duel).not.toContain('>block<');
- g.battle.phase='capture';g.battle.status='finished';expect(render()).toContain('voyage remains paused here');
+ g.battle.phase='capture';g.battle.status='finished';expect(render()).toContain('Confirm settlement');
 });

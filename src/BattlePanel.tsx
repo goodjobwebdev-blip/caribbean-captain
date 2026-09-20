@@ -1,3 +1,6 @@
+import {CapturePanel} from './CapturePanel';
+import {returnFee} from './battle/capture';
+import {sailingProblems} from './performance';
 import {useEffect,useRef,useState} from 'react';
 import type {Action,Game} from './game';
 import {shipDefinition,BATTERIES} from './ships';
@@ -54,8 +57,8 @@ export function BattlePanel({game:g,busy,apiKey,model,onAction,onSettings}:Props
  {b.accepted&&b.status!=='waiting'&&<details open><summary>NPC tactical intent</summary><p>{b.accepted.intent} · Risk: {b.accepted.risk}</p><ul>{b.accepted.assessment.map((a,i)=><li key={i}>{a}</li>)}</ul></details>}
  {b.status==='reveal'&&<><h2>Orders revealed</h2><p>You: {b.committed?.map(label).join(' → ')||'Idle'}</p><p>Opponent: {b.accepted?.action_ids.map(label).join(' → ')||'Existing orders retained'}</p><button className="primary" disabled={disabled} onClick={()=>act({type:'battle-reveal'})}>Resolve {b.phase==='naval'?'timeline':'exchange'}</button></>}
  {b.status==='playback'&&<><div className="button-row"><button onClick={()=>setPlay(0)}>Pause</button><button onClick={()=>setPlay(1)}>Normal</button><button onClick={()=>setPlay(2)}>Fast</button><button disabled={busy} onClick={()=>act({type:'battle-step'})}>Next event</button><button disabled={busy} onClick={()=>act({type:'battle-instant'})}>Resolve instantly</button></div><table><thead><tr><th>Ship</th><th>Action</th><th>Start</th><th>Complete</th></tr></thead><tbody>{Object.entries(b.plans).flatMap(([id,plan])=>plan.map((o,i)=><tr key={`${id}-${i}`}><td>{id===b.playerId?'You':'Opponent'}</td><td>{label(o.id)}</td><td>{o.start}</td><td>{o.end}</td></tr>))}</tbody></table></>}
- {b.phase==='capture'&&<><h2>{b.winner===b.playerId?'Victory':b.winner===b.npcId?'Defeat':'Mutual loss'}</h2><p>{b.reason}</p>{b.terms&&<p>Accepted terms: {b.terms}</p>}<p>The complete battle outcome is saved. Capture Resolution—prizes, prisoners, and ship transfer—is a future phase in the design documents. This voyage remains paused here.</p><button onClick={onSettings}>Settings</button></>}
- {b.phase==='ended'&&<><p>{b.reason}</p><button disabled={busy} onClick={()=>act({type:'battle-resume'})}>Continue voyage</button></>}
+ {b.phase==='capture'&&<CapturePanel key={b.id} game={g} busy={disabled} onAction={onAction}/>}
+ {b.phase==='ended'&&<><p>{b.reason}</p><p>Commanding: {g.ship?.name}.</p>{b.settlement?.route!=='return'&&<button disabled={busy||!!sailingProblems(g).length} onClick={()=>act({type:'battle-resume'})}>Continue voyage</button>}{sailingProblems(g).length>0&&<p role="status">{sailingProblems(g).join(' ')}</p>}<button disabled={busy} onClick={()=>act({type:'battle-return'})}>Return to departure port — {returnFee(g)} silver + wages, 12 hours</button></>}
  {error&&<p role="alert">{error}</p>}
  {b.rolls[0]&&<RollDetails roll={b.rolls[0]}/>}<details><summary>Battle log ({b.log.length})</summary><ol>{b.log.map((l,i)=><li key={i}>{l}</li>)}</ol></details>
  </section>;

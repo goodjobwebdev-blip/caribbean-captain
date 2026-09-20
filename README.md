@@ -10,7 +10,7 @@ Create a captain in Bridgetown. Visit the church to make your first checkpoint, 
 
 Failure is recoverable only from a church checkpoint. Profiles and checkpoints are local to your browser. Current-session resume includes failed voyages; it is not an undo button. There is no artificial profile/checkpoint limit, but browser storage capacity applies.
 
-Optional NanoGPT dialogue can be enabled in Settings with your own API key and model. Keys stay in tab memory and clear on refresh. Port dialogue works with predefined text when prose AI is disabled. Naval Engagement and Boarding require the separate Battle model: it selects validated NPC actions while the engine controls costs, rolls, and outcomes. Missing or unavailable models suspend combat with Retry / Change Model. Capture Resolution remains deferred; surrender and duel outcomes are saved at that boundary. See [battle release scope and validation](docs/battle-release.md).
+Optional NanoGPT dialogue can be enabled in Settings with your own API key and model. Keys stay in tab memory and clear on refresh. Port dialogue works with predefined text when prose AI is disabled. Naval Engagement and Boarding require the separate Battle model: it selects validated NPC actions while the engine controls costs, rolls, and outcomes. Missing or unavailable models suspend combat with Retry / Change Model. Capture Resolution now supports loot, release/ransom, a single-ship exchange, defeat losses, and return-to-port recovery. See [aftermath rules](docs/capture-resolution.md). See [battle release scope and validation](docs/battle-release.md).
 
 Trade 45 goods through a basket with exact totals, finite stock, supply/demand pricing, and Trade skill progression. The Journal’s Markets tab remembers dated prices from visited ports. Provisions can be bought and sold. Buy national permits at the Harbour Master for Controlled goods, or meet a smuggler contact at the tavern. Local events and reputation affect prices. Compare remembered prices and cargo costs in the Journal. Fruit spoils over game time; prepare provisions from food cargo at the Store or supply your own repair materials at the Shipyard. See [implemented trade rules](docs/trade-release.md), [planning/access/events](docs/trade-phase-two.md), [spoilage and supplies](docs/trade-phase-three.md), and [engine playtests](docs/trade-playtest.md).
 
@@ -35,6 +35,7 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 
 ## Documentation
 
+- [Capture Resolution and recovery](docs/capture-resolution.md)
 - [Battle release](docs/battle-release.md)
 - [Encounters](docs/encounter-system.md)
 - [Naval Engagement](docs/naval-engagement-system.md)
