@@ -20,6 +20,7 @@ export const WIKI:WikiArticle[]=[
  {id:'checkpoints',category:'Getting started',title:'Captains, saves and church checkpoints',paragraphs:[
   'Each captain has an independent world, including markets, contacts, reputation and financial records. Progress resumes when you reopen that captain. Resuming is not an undo: a failed run stays failed.',
   'Recovery checkpoints can only be created at a Church, while in port and before failure. They are free. Restoring one replaces current progress with its exact captain, ship, cargo, skills, calendar, markets, quests and financial history. Other checkpoints remain available.',
+  'Use Delete beside a checkpoint to remove it permanently, then confirm in the dialog. Keep checkpoint or Escape cancels. Deleting a checkpoint does not change your current progress or other checkpoints; even the last checkpoint can be removed.',
   'Profiles and checkpoints live in this browser on this device. There is no game-imposed count limit, but browser storage is finite. Clearing site data removes these local records; they do not automatically sync to another browser.',
   'Old saves remain playable. Newly introduced histories are not invented retroactively: old goods may have unknown purchase costs and old voyages may have only partial financial records.'
  ]},

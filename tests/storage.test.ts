@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto';
 import {it,expect} from 'vitest';
 import {newGame, act} from '../src/game';
-import {saveProfile,profiles,saveCheckpoint,checkpoints,restoreCheckpoint,type Profile} from '../src/storage';
+import {saveProfile,profiles,saveCheckpoint,checkpoints,restoreCheckpoint,deleteCheckpoint,type Profile} from '../src/storage';
 it('persists profiles and separate church checkpoints, restores complete state, and isolates captains',async()=>{
  const p:Profile={id:'captain-one',name:'Anne',game:newGame('Anne',12),updated:1};await saveProfile(p);
  await expect(saveCheckpoint(p,'Forbidden','Tavern')).rejects.toThrow('church');
@@ -34,4 +34,17 @@ it('restores market stock, remembered prices, purchase provenance and Trade prog
  expect(restored.game.skills!.trade).toEqual({tier:2,points:3.25});
  expect(restored.game.cargo.sugar).toBe(10);
  expect((await checkpoints(p.id))[0].game.economy).toEqual(saved.game.economy);
+});
+
+it('deletes only the selected checkpoint and preserves current progress, sibling saves and other captains',async()=>{
+ const p:Profile={id:'delete-captain',name:'Anne',game:newGame('Anne',51),updated:1};await saveProfile(p);
+ const first=await saveCheckpoint(p,'Delete this','Church'),keep=await saveCheckpoint(p,'Keep this','Church');
+ const other:Profile={...p,id:'other-delete-captain'};const foreign=await saveCheckpoint(other,'Other captain','Church');
+ await expect(deleteCheckpoint(p.id,foreign.id)).rejects.toThrow('does not belong');
+ await deleteCheckpoint(p.id,first.id);
+ expect((await checkpoints(p.id)).map(c=>c.id)).toEqual([keep.id]);expect((await checkpoints(other.id)).map(c=>c.id)).toEqual([foreign.id]);
+ expect((await profiles()).find(x=>x.id===p.id)?.game).toEqual(p.game);
+ await deleteCheckpoint(p.id,first.id); // Repeated deletion is harmless.
+ await deleteCheckpoint(p.id,keep.id);expect(await checkpoints(p.id)).toEqual([]);
+ expect((await profiles()).find(x=>x.id===p.id)?.game).toEqual(p.game);
 });
