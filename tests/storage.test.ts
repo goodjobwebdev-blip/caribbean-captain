@@ -48,3 +48,11 @@ it('deletes only the selected checkpoint and preserves current progress, sibling
  await deleteCheckpoint(p.id,keep.id);expect(await checkpoints(p.id)).toEqual([]);
  expect((await profiles()).find(x=>x.id===p.id)?.game).toEqual(p.game);
 });
+
+it('restores owned equipment, loaded pistol, presets and combat mastery together',async()=>{
+ const p:Profile={id:'equipment-captain',name:'Anne',game:newGame('Anne',12),updated:1};
+ p.game=act(p.game,{type:'buy-equipment',id:'pistol'});p.game=act(p.game,{type:'buy-equipment',id:'cartridges'});p.game=act(p.game,{type:'load-pistol'});p.game=act(p.game,{type:'prepare-battery',battery:'port',ammo:'round-shot'});p.game.skills!.shooting={tier:1,points:.5};
+ const saved=await saveCheckpoint(p,'Ready for battle','Church');
+ p.game=act(p.game,{type:'unload-pistol'});p.game.skills!.shooting.points=5;await saveProfile(p);
+ const restored=restoreCheckpoint(p,saved);expect(restored.game.captainState!.pistol).toBe(true);expect(restored.game.equipment).toEqual(saved.game.equipment);expect(restored.game.equipment!.cartridges).toBe(4);expect(restored.game.skills!.shooting).toEqual({tier:1,points:.5});expect((await profiles()).find(x=>x.id===p.id)!.game.captainState!.pistol).toBe(false);
+});

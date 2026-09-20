@@ -16,6 +16,10 @@ Boarding replaces the timeline with secret crew orders, casualties, Boarding Con
 
 [Capture Resolution](capture-resolution.md) now implements settlement and recovery for the single-ship game. The original boundary below describes the initial combat release and is superseded by that document.
 
+## Progression and equipment update
+
+[Combat progression and captain equipment](combat-progression-equipment.md) now implements bounded action practice, a personal outfitter, pre-departure loadouts and Journal views. This supersedes the equipment/training deferrals in the original release boundary below.
+
 ## Original release boundary
 
 The specifications defer **Capture Resolution**. Surrender, sinking, incapacitation, collapse and death retain the complete combatant state and outcome. The voyage pauses at this boundary rather than inventing rewards, prize crews, imprisonment or transfer rules. Escape can resume the voyage. Church checkpoints remain the recovery mechanism.

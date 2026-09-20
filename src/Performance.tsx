@@ -16,7 +16,7 @@ export function PerformanceBreakdown({game:g}:{game:Game}){
  <tr className="performance-total"><th scope="row">Current performance</th><td>{p.speed.toFixed(2)} units/hour</td><td>{p.maneuverability.toFixed(1)}</td></tr>
  </tbody></table></div><p className="muted">Modifiers multiply together. The first 20% of deadweight is free of load penalties. Extra crew beyond optimal adds weight and upkeep, with no further speed bonus. Weather is applied separately to each voyage.</p>
  {p.overloaded&&<p className="warning">Overloaded by {(-p.availableDeadweight).toFixed(1)} weight units. Departure is blocked until the load is reduced.</p>}
- <p className="muted">Maneuverability is calculated for reference; battle effects will be defined later.</p>
+ <p className="muted">Maneuverability affects turning costs and grappling in naval combat.</p>
  {g.voyage&&<p className="muted">This voyage keeps the duration fixed at departure{g.voyage.departureSpeed!==undefined?` (${g.voyage.departureSpeed.toFixed(2)} units/hour)`:''}. Current conditions apply to the next voyage.</p>}
  </section>;
 }
