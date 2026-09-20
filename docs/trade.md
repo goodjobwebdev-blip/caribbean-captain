@@ -442,4 +442,4 @@ The following details will be defined separately:
 
 ## First release planning
 
-See [confirmed release decisions and draft balance](trade-release-draft.md) for the agreed initial scope, large finite provision stocks, and proposed deal/price/stock rules. Numerical tables and the deal interface remain drafts; the trade system is not yet implemented.
+See [confirmed release decisions and draft balance](trade-release-draft.md) for the agreed initial scope, large finite provision stocks, and proposed deal/price/stock rules. The multi-good basket deal is agreed: one combined quote and confirmation for purchases and sales. Numerical balance tables remain drafts; the trade system is not yet implemented.

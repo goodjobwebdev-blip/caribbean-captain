@@ -18,7 +18,7 @@ income before implementation.
   port, proportional to trading profit before voyage expenses. Purchases alone
   grant nothing. Fractional progress accumulates across transactions.
 - Prices should move during large transactions, with batching and deals.
-  The precise meaning of a deal is still to be settled.
+  A deal is confirmed as one basket containing multiple purchases and sales.
 - Merchants respect available stock and remaining storage, and show limits.
 - Provisions use ordinary finite stock, starting in huge quantities so shortages
   are extremely unlikely but still possible. There is no emergency supply
@@ -26,13 +26,13 @@ income before implementation.
 - Rebalance future contract rewards alongside trade while preserving the
   rewards of already accepted contracts.
 
-## Proposed deal interaction — awaiting clarification
+## Confirmed basket interaction
 
 A deal is one basket of buy and sell lines with the current merchant.
 The player adjusts quantities, sees each line total, stock effects, resulting
 cargo space/weight, and the final silver balance, then confirms once.
 
-Suggested rules:
+Basket rules:
 - One good has either a buy line or a sell line in a basket, not both.
 - Buying/selling prices change as quantity moves stock within the quote.
 - All lines settle together, or none do. No partial execution.
@@ -43,8 +43,8 @@ Suggested rules:
 - Batching is how the price is calculated; it should not require the player
   to split a purchase into many clicks.
 
-Alternative: a deal contains just one good and quantity. Confirm which meaning
-is intended before implementing the interface.
+The user confirmed the multi-good basket model. There is no need to ask again
+whether each deal should be limited to one good.
 
 ## Draft pricing and skill settings
 
@@ -167,7 +167,7 @@ remembered prices; restoring a checkpoint restores that economic timeline too.
 ## Draft port specializations
 
 These are fictional game assignments, with no claim of historical accuracy.
-Final per-good role/access matrices will be specified after the deal model.
+Final per-good role/access matrices remain to be specified.
 
 | Port | Proposed export emphasis | Proposed import emphasis |
 | --- | --- | --- |
@@ -195,6 +195,6 @@ No changes to battle, encounter chance, or Sailing rewards are part of this work
 
 ## Next review
 
-Settle the deal/basket meaning and rounding, then test route profits, working
+The basket model is agreed. Validate the proposed rounding and test route profits, working
 capital, cargo/weight limits, stock movement, and upgrade pace against these
 draft values. Do not treat the draft price and stock tables as validated balance.
