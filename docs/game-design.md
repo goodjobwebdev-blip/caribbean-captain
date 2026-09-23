@@ -18,6 +18,8 @@ The player starts in Bridgetown with The Wayfarer, a Universal Sloop, 10 crew, 1
 | Martinique | Saint-Pierre | Agreed first town |
 | Curaçao | Willemstad | Agreed first town |
 
+The world has since expanded to 15 colonial towns across 13 island groups; see [world expansion](world-expansion.md) for the agreed catalogue and [port data](world-port-data.md) for coordinates and trade profiles. The three rows above remain the original starting world.
+
 Use real islands. The historical year has not been chosen; the calendar uses a fictional Year 1. The broader concept includes England, France, the Dutch, Spain, and pirates; national reputation and flag-changing mechanics are not part of the agreed initial feature set.
 
 ## Port services
@@ -95,6 +97,6 @@ The game remains playable using predefined text without an API key or when gener
 - Treasure maps bought in taverns, found in captured-ship chests, or awarded by rare quests; treasure expeditions.
 - A visual Caribbean map.
 - Business opening hours and sleeping aboard the ship.
-- More islands and towns, richer encounters, and distinct NPC personalities.
+- Further islands, non-town locations, and pirate settlements beyond the agreed world expansion; distinct NPC personalities.
 
 These preserve the broader vision without making them requirements for the first playable version.
