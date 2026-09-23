@@ -1,9 +1,10 @@
+import {PORT_IDS,port} from './world';
 import type {Game,PortId} from './game';
 import {CATALOGUE,type GoodId} from './goods';
 export type Nation='England'|'France'|'Dutch'|'Spain'|'Pirates';
 export type Channel='legal'|'smuggler';
 export type Commerce={seed:number;started:number;permits:Partial<Record<Nation,boolean>>;attitude:Partial<Record<Nation,number>>;reputation:number;contacts:Partial<Record<PortId,boolean>>};
-export const nationOf=(p:PortId):Nation=>({bridgetown:'England','saint-pierre':'France',willemstad:'Dutch'} as const)[p];
+export const nationOf=(p:PortId):Nation=>port(p).nation;
 export const PERMIT_PRICE=750;
 export const clamp=(n:number,min:number,max:number)=>Math.max(min,Math.min(max,n));
 export const attitude=(g:Game,p:PortId=g.port)=>g.economy?.commerce?.attitude[nationOf(p)]??0;
@@ -38,7 +39,7 @@ const EVENTS=[
 export function localEvent(g:Game,p:PortId=g.port):MarketEvent|null{
  const c=g.economy?.commerce;if(!c)return null;
  const period=Math.floor((g.hours-c.started)/240);if(period<1)return null;
- let hash=(c.seed^Math.imul(period,2654435761)^Math.imul(['bridgetown','saint-pierre','willemstad'].indexOf(p)+1,1597334677))>>>0;
+ let hash=(c.seed^Math.imul(period,2654435761)^Math.imul(PORT_IDS.indexOf(p)+1,1597334677))>>>0;
  hash=Math.imul(hash^(hash>>>16),2246822507)>>>0;
  if(hash%4===0)return null;
  const start=c.started+period*240,end=start+120;if(g.hours>=end)return null;

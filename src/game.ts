@@ -14,12 +14,8 @@ import {ensureEconomy,observeMarket,consumeLots,settleBasket,type Economy,type B
 import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
 import {resolveShip,createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
 import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
-export const PORTS = [
-  { id: 'bridgetown', name: 'Bridgetown', island: 'Barbados', nation: 'England', x: 0, y: 0, prices: { sugar: 8, rum: 16, cloth: 22 }, description: 'Sunlight falls across the quays. Barrels roll toward waiting ships, and the harbour bell marks another hour of business.' },
-  { id: 'saint-pierre', name: 'Saint-Pierre', island: 'Martinique', nation: 'France', x: -29, y: 50, prices: { sugar: 12, rum: 10, cloth: 25 }, description: 'Green slopes rise behind the waterfront. Boatmen call across the roadstead while merchants inspect the morning cargo.' },
-  { id: 'willemstad', name: 'Willemstad', island: 'Curaçao', nation: 'Dutch', x: -285, y: -25, prices: { sugar: 17, rum: 20, cloth: 14 }, description: 'A sheltered harbour opens between busy quays. Cargo from distant shores changes hands beneath the fort’s watchful guns.' },
-] as const;
-export type PortId = typeof PORTS[number]['id'];
+import {PORTS,port,type PortId} from './world';
+export {PORTS,port,type PortId} from './world';
 export type Good = Exclude<GoodId,'provisions'>;
 export const GOODS: Good[] = ALL_GOODS.filter((id):id is Good=>id!=='provisions');
 // Fixed baseline is retained only for contract pricing and legacy callers.
@@ -29,7 +25,6 @@ export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
 export type Game = { equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
 export type Action = CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
-export const port = (id: PortId) => PORTS.find(p => p.id === id)!;
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
 export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);

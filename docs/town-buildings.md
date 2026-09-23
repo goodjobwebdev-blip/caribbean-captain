@@ -1,6 +1,6 @@
 # Town buildings
 
-This document defines the intended commercial, service, and quest identity of town locations. The three current towns—Bridgetown, Saint-Pierre, and Willemstad—share the same location list for now.
+This document defines the intended commercial, service, and quest identity of town locations. All 15 current colonial towns share the same location list for now. See [world expansion](world-expansion.md) for the town catalogue and deferred pirate settlements.
 
 Anything marked **TBD** is design information only. It is not an implemented action, reward, inventory system, or quest.
 

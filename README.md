@@ -6,7 +6,7 @@ A single-player text-based browser game about sailing, trading, and keeping a sm
 
 ## First playable version
 
-Create a captain in Bridgetown. Visit the church to make your first checkpoint, buy provisions and trade goods, take a Harbour Master contract, and sail to Saint-Pierre or Willemstad. Seeded ship contacts may be peaceful or hostile. Encounters can lead to naval schedules, crew Deck Battle, and Captain Duels. Compare 28 ship configurations across six tiers at the shipyard, sell your current ship toward a replacement, and repair hull, sails, or missing default cannons. Hire or release crew at the tavern. Load, hull, sails, and crew now affect sailing; check the Journal breakdown and carry 40, 200, or 800-unit freight jobs.
+Create a captain in Bridgetown. Visit the church to make your first checkpoint, buy provisions and trade goods, take a Harbour Master contract, and sail to any of 14 other colonial towns. Routes are grouped by island and searchable by town, island, or nation. Seeded ship contacts may be peaceful or hostile. Encounters can lead to naval schedules, crew Deck Battle, and Captain Duels. Compare 28 ship configurations across six tiers at the shipyard, sell your current ship toward a replacement, and repair hull, sails, or missing default cannons. Hire or release crew at the tavern. Load, hull, sails, and crew now affect sailing; check the Journal breakdown and carry 40, 200, or 800-unit freight jobs.
 
 Failure is recoverable only from a church checkpoint. Profiles and checkpoints are local to your browser. Current-session resume includes failed voyages; it is not an undo button. There is no artificial profile/checkpoint limit, but browser storage capacity applies.
 
@@ -54,3 +54,5 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 - [Deployment](docs/deployment.md)
 
 Trade implementation planning: [confirmed decisions and draft balance](docs/trade-release-draft.md), [balance validation](docs/trade-validation.md).
+
+The world now includes 15 colonial towns across 13 island groups, with independent markets and Spanish national permits. See [world expansion and deferred locations](docs/world-expansion.md) and [port coordinates and market profiles](docs/world-port-data.md).
