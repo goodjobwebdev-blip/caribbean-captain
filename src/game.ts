@@ -147,7 +147,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
   }
   switch(action.type) {
     case 'train-crew':case 'medical-care':case 'shore-leave':{const quote=crewServiceQuote(g,action);if(quote.errors.length)throw Error(quote.errors.join(' '));pay(quote.fee);if(advance(g,quote.hours))completeCrewService(g,action,quote);break;}
-    case 'buy-equipment': case 'equip-weapon': case 'load-pistol': case 'unload-pistol': case 'prepare-battery':equipmentAct(g,action);break;
+    case 'buy-equipment': case 'sell-equipment': case 'buy-apparel': case 'sell-apparel': case 'equip-apparel': case 'unequip-apparel': case 'equip-weapon': case 'load-pistol': case 'unload-pistol': case 'prepare-battery':equipmentAct(g,action);break;
     case 'trade': case 'buy': case 'sell': {
       const lines=action.type==='trade'?action.lines:[{good:action.good,side:action.type,quantity:action.quantity}];
       const channel=action.type==='trade'?(action.channel??'legal'):'legal';

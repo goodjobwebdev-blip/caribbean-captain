@@ -3,7 +3,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import {BuildingPlaceholder,PLANNED_BUILDINGS} from '../src/buildings';
 
 it('renders every planned building as a non-actionable TBD preview',()=>{
- expect(PLANNED_BUILDINGS).toHaveLength(9);
+ expect(PLANNED_BUILDINGS).toHaveLength(7);
  for(const building of PLANNED_BUILDINGS){
   const html=renderToStaticMarkup(<BuildingPlaceholder building={building}/>);
   expect(html).toContain(`${building.name.replace('&','&amp;')} planned features`);

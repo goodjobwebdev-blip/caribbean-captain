@@ -18,7 +18,7 @@ The harbour remains the place for voyage preparation and departure rather than a
 
 The Store is the legal commercial market and the source of ordinary freight work.
 
-- **Buy and sell — current:** Legal market goods.
+- **Buy and sell — current:** Legal market goods. Personal weapons have moved to the Blacksmith.
 - **Buy and sell — TBD:** Remove smuggled goods from the Store. Contraband will be available only through a Tavern smuggler contact.
 - **Services — TBD:** Store unwanted goods locally for a recurring fee. Stored goods remain in that town.
 - **Quests — TBD:** Small and medium freight commissions moved from the Harbour Master; rare contracts to sink commercial competitors.
@@ -35,7 +35,7 @@ The Tavern remains the social and crew-services centre. It also becomes the gate
 
 The Harbour Master provides official civilian commissions and permits.
 
-- **Buy and sell — current:** National trade permits.
+- **Buy and sell — current:** National trade permits and a spyglass.
 - **Services — current:** Accept commissions, deliver completed work, and collect rewards.
 - **Quests — current:** Letters, freight, and passenger contracts.
 - **Quests — TBD target:** Keep letters and passengers; move small and medium freight to Stores; retain large freight; add medium and large escorts; find and capture stolen ships.
@@ -61,7 +61,7 @@ The Church records recovery checkpoints and later offers religious or diplomatic
 
 ## Planned buildings
 
-The following buildings are present in the town interface as non-actionable previews. All listed capabilities are **TBD**.
+The following buildings are present in the town interface. Blacksmith and Weaver are now actionable; the other listed buildings remain non-actionable previews with **TBD** capabilities.
 
 ### Brothel
 
@@ -81,10 +81,10 @@ The Pharmacy supplies medicine and treats conditions beyond ordinary rest.
 
 ### Blacksmith
 
-The Blacksmith is the dedicated market for personal combat equipment.
+The Blacksmith is the dedicated market for personal combat equipment. See [shops and equipment](shops-and-equipment.md).
 
-- **Buy and sell:** Weapons and armour.
-- **Services:** None planned.
+- **Buy and sell — current:** Weapons, pistol and cartridges, and armour. Used weapons sell for 50% and armour for 60% of listed price, subject to equipment restrictions.
+- **Services — current:** Equip owned melee weapons and armour.
 - **Quests:** None planned.
 
 ### Fort & Garrison
@@ -121,10 +121,10 @@ The Bank handles finance, valuables, and the recovery of unpaid debts.
 
 ### Weaver
 
-The Weaver is the dedicated clothing market.
+The Weaver is the dedicated clothing market. See [shops and equipment](shops-and-equipment.md).
 
-- **Buy and sell:** Clothing.
-- **Services:** None planned.
+- **Buy and sell — current:** Clothing, with 15% buyback for eligible unworn pieces.
+- **Services — current:** Equip owned clothing.
 - **Quests:** None planned.
 
 ### Customs House

@@ -23,7 +23,7 @@ export function resolveDeck(g:Game,b:Battle){
  for(const [s,order,side] of [[p,pa,1],[n,na,-1]] as const){let rate=winner===0?.025:winner===side?0:decisive?.1:.05;if(order==='guard')rate*=.5;if(order==='breakthrough'&&winner===-side)rate*=1.5;casualties(g,s.crew,s.crew.fit*rate);}
  report(b,`Round ${b.round}: ${pa} / ${na}. Control ${b.control}. Player casualties ${before[0]-p.crew.fit} (${p.crew.injured-injured[0]} injured, ${p.crew.dead-dead[0]} dead); enemy ${before[1]-n.crew.fit} (${n.crew.injured-injured[1]} injured, ${n.crew.dead-dead[1]} dead).`);
  if(checkDefeat(b))return;
- if(b.round>=b.rounds){b.control=clamp(b.control,-2,2);b.phase='duel';b.duel={initiative:b.control>0?b.playerId:b.control<0?b.npcId:b.attacker,exchange:0,control:b.control,firstRoll:true,demandedAt:[]};b.status='transition';report(b,'Deck Battle ends. The captains meet.');}else{b.round++;b.status='planning';}
+ if(b.round>=b.rounds){b.control=clamp(b.control,-2,2);b.phase='duel';b.duel={initiative:b.control>0?b.playerId:b.control<0?b.npcId:b.attacker,exchange:0,control:b.control,firstRoll:true,demandedAt:[]};if(b.playerArmour)b.playerArmour.remaining=b.playerArmour.points;b.status='transition';report(b,'Deck Battle ends. The captains meet.');}else{b.round++;b.status='planning';}
  clearDecision(b);
 }
 export function clearDecision(b:Battle){delete b.accepted;delete b.committed;b.decisionKey++;}
@@ -43,7 +43,7 @@ export function resolveDuel(g:Game,b:Battle){
   const skill=attacking?(attack==='pistol'?'shooting':p.captain.weapon):defense==='dodge'?'athletics':p.captain.weapon;
   const actionMod=attack==='quick'?1:attack==='heavy'?-2:0;
   const defenseMod=defense==='block'?1:defense==='parry'&&attack==='heavy'?-1:0;
-  const r=roll(g,attacking?`Attack: ${attack} against ${defense}`:`Defend: ${defense} against ${attack}`,{'Mastery edge':masteryEdge((p.skills[skill]??0)-Math.floor(b.npc.level/2)),'Action':attacking?actionMod:-actionMod,'Reaction':attacking?-defenseMod:defenseMod,'Player conditions':condition(p),'Opponent condition advantage':-condition(n),'Weapon quality':weaponQuality(p,attacking?attack:defense)-weaponQuality(n,attacking?defense:attack),'Boarding Control':d.firstRoll?d.control:0});recordRoll(g,b,r);practice(b,b.playerId,skill,r.band===0?.25:.5);d.firstRoll=false;
+  const r=roll(g,attacking?`Attack: ${attack} against ${defense}`:`Defend: ${defense} against ${attack}`,{'Mastery edge':masteryEdge((p.skills[skill]??0)-Math.floor(b.npc.level/2)),'Action':attacking?actionMod:-actionMod,'Reaction':attacking?-defenseMod:defenseMod,'Player conditions':condition(p),'Opponent condition advantage':-condition(n),'Weapon quality':weaponQuality(p,attacking?attack:defense)-weaponQuality(n,attacking?defense:attack),'Armour mobility':!attacking&&defense==='dodge'?(b.playerArmour?.dodgePenalty??0):0,'Boarding Control':d.firstRoll?d.control:0});recordRoll(g,b,r);practice(b,b.playerId,skill,r.band===0?.25:.5);d.firstRoll=false;
   const natural=r.dice[0]+r.dice[1];let toPlayer=0,toNpc=0;
   if(attacking){
    if(natural===2){toPlayer=attack==='pistol'?0:1;d.initiative=b.npcId;}
@@ -62,7 +62,8 @@ export function resolveDuel(g:Game,b:Battle){
    else if(defense==='parry')d.initiative=b.playerId;
    else d.initiative=attack==='quick'?b.playerId:b.npcId;
   }
-  p.captain.injury=clamp(p.captain.injury+toPlayer,0,6);n.captain.injury=clamp(n.captain.injury+toNpc,0,6);report(b,`${attack} vs ${defense}: player suffers ${toPlayer} Injury step(s), opponent ${toNpc}.`);
+  const absorbed=attacking?0:Math.min(toPlayer,b.playerArmour?.remaining??0);if(b.playerArmour)b.playerArmour.remaining-=absorbed;
+  p.captain.injury=clamp(p.captain.injury+toPlayer-absorbed,0,6);n.captain.injury=clamp(n.captain.injury+toNpc,0,6);report(b,`${attack} vs ${defense}: player suffers ${toPlayer-absorbed} Injury step(s)${absorbed?` (${absorbed} stopped by armour; ${b.playerArmour?.remaining} protection remains)`:''}, opponent ${toNpc}.`);
  }
  d.exchange++;delete d.npcAttack;
  if(checkDefeat(b))return;
