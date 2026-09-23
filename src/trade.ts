@@ -10,34 +10,60 @@ export type Snapshot={event?:MarketEvent|null;channel?:Channel;hour:number;tier:
 export type Lot={quantity:number;port?:PortId;stock?:number;target?:number;factor?:number;paidPerUnit?:number};
 export type Economy={commerce?:Commerce;blackMarkets?:Record<PortId,Record<GoodId,Listing>>;blackMemories?:Partial<Record<PortId,Snapshot>>;markets:Record<PortId,Record<GoodId,Listing>>;memories:Partial<Record<PortId,Snapshot>>;lots:Partial<Record<GoodId,Lot[]>>};
 export type BasketLine={good:GoodId;side:'buy'|'sell';quantity:number};
-const PORT_IDS:PortId[]=['bridgetown','saint-pierre','willemstad'];
-const roles:Record<PortId,{Export:string[];Import:string[]}>= {
+import {PORT_IDS} from './world';
+const roles:Record<PortId,{Export:GoodId[];Import:GoodId[]}>= {
  bridgetown:{Export:['sugar','molasses','rum','cotton','salted-fish','hides'],Import:['tools','cloth','timber','medicine','coffee','fine-cloth','iron','paper','books','tea','porcelain']},
  'saint-pierre':{Export:['coffee','cocoa','tobacco','fruit','timber','planks','pitch-and-tar','wine'],Import:['sugar','molasses','cloth','iron','tools','salt','copper','ceramics','glassware','silverware']},
  willemstad:{Export:['cloth','fine-cloth','tools','iron','copper','salt','sailcloth','rope','paper','books','glassware','ceramics','tea','perfume','porcelain','jewelry','silverware','spices'],Import:['coffee','cocoa','tobacco','sugar','molasses','cotton','fruit','hides','timber','planks','grain','salted-meat']},
+ "basse-terre":{"Export": ["fruit", "cocoa", "timber", "planks", "rum"], "Import": ["grain", "medicine", "tools", "wine", "cloth"]},
+ "capsterville":{"Export": ["sugar", "salted-meat", "salted-fish", "cloth", "gunpowder"], "Import": ["coffee", "cocoa", "tobacco", "cotton", "timber", "pitch-and-tar"]},
+ "st-johns":{"Export": ["sailcloth", "tobacco", "rope"], "Import": ["grain", "medicine", "wine", "rum", "tools"]},
+ "philipsburg":{"Export": ["cotton", "sailcloth", "salt", "sugar", "rum", "cloth"], "Import": ["grain", "medicine", "wine", "tools", "iron"]},
+ "san-juan":{"Export": ["tobacco", "spices", "sailcloth", "rum"], "Import": ["grain", "gunpowder", "medicine", "wine", "tools"]},
+ "santo-domingo":{"Export": ["hides", "tobacco", "planks", "salted-meat"], "Import": ["medicine", "wine", "rum", "tools", "iron"]},
+ "port-au-prince":{"Export": ["coffee", "hides", "timber", "tobacco"], "Import": ["medicine", "wine", "rum", "cloth", "paper"]},
+ "havana":{"Export": ["coffee", "sugar", "cloth", "silverware"], "Import": ["timber", "pitch-and-tar", "cocoa", "hides", "cotton"]},
+ "santiago":{"Export": ["tobacco", "hides", "planks", "salted-meat"], "Import": ["gunpowder", "medicine", "wine", "rum", "tools"]},
+ "port-royal":{"Export": ["tools", "medicine", "planks", "rum", "rope"], "Import": ["cotton", "hides", "coffee", "cocoa", "sugar", "tobacco"]},
+ "tortuga":{"Export": ["tobacco", "fruit", "sugar", "rum", "sailcloth"], "Import": ["grain", "gunpowder", "medicine", "wine", "iron"]},
+ "san-jose":{"Export": ["coffee", "cocoa", "pitch-and-tar", "timber"], "Import": ["grain", "gunpowder", "medicine", "wine", "rum", "cloth"]},
 };
-export function marketRule(port:PortId,good:GoodId,channel:Channel='legal'){
+function defineMarketRule(port:PortId,good:GoodId,channel:Channel){
  const role:Role=roles[port].Export.includes(good)?'Export':roles[port].Import.includes(good)?'Import':'Neutral';
  const normalTarget=good==='provisions'?100000:({Export:4000,Neutral:2000,Import:1000}[role])*(CATALOGUE[good].category==='Luxury'?.02:1);
  const target=normalTarget*(channel==='smuggler'?.05:1);
  return {role,target,max:target*2,tau:good==='provisions'?20:({Export:5,Neutral:7,Import:10}[role]),factor:CATALOGUE[good].base*({Export:.7,Neutral:1,Import:1.4}[role]),controlled:['weapons','gunpowder','cannons','bombs'].includes(good)};
 }
+// Rules are static: cache them once instead of rebuilding them for every saved listing.
+const MARKET_RULES=Object.fromEntries(PORT_IDS.map(p=>[p,Object.fromEntries(ALL_GOODS.map(id=>[id,{
+ legal:Object.freeze(defineMarketRule(p,id,'legal')),smuggler:Object.freeze(defineMarketRule(p,id,'smuggler'))
+}]))])) as Record<PortId,Record<GoodId,Record<Channel,Readonly<ReturnType<typeof defineMarketRule>>>>>;
+export const marketRule=(p:PortId,id:GoodId,channel:Channel='legal')=>MARKET_RULES[p][id][channel==='smuggler'?'smuggler':'legal'];
 export const aboard=(g:Game,id:GoodId)=>id==='provisions'?g.provisions:(g.cargo[id]??0);
 function setAboard(g:Game,id:GoodId,n:number){if(id==='provisions')g.provisions=n;else g.cargo[id]=n;}
+function initialMarket(p:PortId,hour:number,channel:Channel='legal'){
+ const market={} as Record<GoodId,Listing>;
+ for(const id of ALL_GOODS)market[id]={stock:marketRule(p,id,channel).target,hour};
+ return market;
+}
 export function ensureEconomy(g:Game){
- if(g.economy){
-  g.economy.commerce??={seed:g.seed,started:g.hours,permits:{},attitude:{},reputation:0,contacts:{}};
-  g.economy.blackMemories??={};
-  g.economy.blackMarkets??=Object.fromEntries(PORT_IDS.map(p=>[p,Object.fromEntries(ALL_GOODS.map(id=>[id,{stock:marketRule(p,id,'smuggler').target,hour:g.hours}]))])) as Economy['markets'];
-  return;
+ const fresh=!g.economy;
+ g.economy??={markets:{} as Economy['markets'],memories:{},lots:{}};
+ const e=g.economy;
+ e.commerce??={seed:g.seed,started:g.hours,permits:{},attitude:{},reputation:0,contacts:{}};
+ e.blackMemories??={};e.blackMarkets??={} as Economy['markets'];
+ // Populate only missing ports; never rewrite saved stocks or observations.
+ for(const p of PORT_IDS){
+  e.markets[p]??=initialMarket(p,g.hours);
+  e.blackMarkets[p]??=initialMarket(p,g.hours,'smuggler');
  }
- const markets=Object.fromEntries(PORT_IDS.map(p=>[p,Object.fromEntries(ALL_GOODS.map(id=>[id,{stock:marketRule(p,id).target,hour:g.hours}]))])) as Economy['markets'];
- g.economy={markets,memories:{},lots:{}};ensureEconomy(g);
- for(const id of ALL_GOODS)if(aboard(g,id)>0)g.economy.lots[id]=[{quantity:aboard(g,id)}];
- if(!g.voyage)observeMarket(g);
+ if(fresh){
+  for(const id of ALL_GOODS)if(aboard(g,id)>0)e.lots[id]=[{quantity:aboard(g,id)}];
+  if(!g.voyage)observeMarket(g);
+ }
 }
 export function stockAt(g:Game,id:GoodId,p:PortId=g.port,channel:Channel='legal'){
- const rule=marketRule(p,id,channel),entry=(channel==='legal'?g.economy?.markets:g.economy?.blackMarkets)?.[p][id];
+ const rule=marketRule(p,id,channel),entry=(channel==='legal'?g.economy?.markets:g.economy?.blackMarkets)?.[p]?.[id];
  return entry?rule.target+(entry.stock-rule.target)*Math.exp(-Math.max(0,g.hours-entry.hour)/(24*rule.tau)):rule.target;
 }
 export const spread=(g:Game,channel:Channel='legal')=>channel==='legal'?Math.max(.05,Math.min(.22,.15-.01*tradeProgress(g.skills).tier-.02*attitude(g)/100-.01*reputation(g)/100)):Math.max(.15,.30-.01*tradeProgress(g.skills).tier-.02*Math.max(0,-reputation(g))/100);
@@ -50,8 +76,12 @@ export function integral(a:number,b:number,target:number){
 export function observeMarket(g:Game,channel:Channel='legal'){
  if(g.voyage)return;ensureEconomy(g);
  if(channel==='smuggler'&&(!g.economy!.commerce!.contacts[g.port]||!smugglerOpen(g)))return;
- const snapshot:Snapshot={hour:g.hours,tier:tradeProgress(g.skills).tier,event:localEvent(g),channel,goods:Object.fromEntries(ALL_GOODS.map(id=>{const r=marketRule(g.port,id,channel),stock=stockAt(g,id,g.port,channel),factor=r.factor*eventFactor(g,id),buyFactor=factor*(1+spread(g,channel)),sellFactor=factor*(1-spread(g,channel));return [id,{stock,buy:buyFactor*reference(stock,r.target),sell:sellFactor*reference(stock,r.target),role:r.role,controlled:r.controlled,available:!accessProblem(g,id,channel),target:r.target,buyFactor,sellFactor}];})) as Snapshot['goods']};
+ const snapshot=marketSnapshot(g,channel);
  if(channel==='legal')g.economy!.memories[g.port]=snapshot;else g.economy!.blackMemories![g.port]=snapshot;
+}
+/** Read-only market observation, also used for encounter intelligence. */
+export function marketSnapshot(g:Game,channel:Channel='legal'):Snapshot{
+ return {hour:g.hours,tier:tradeProgress(g.skills).tier,event:localEvent(g),channel,goods:Object.fromEntries(ALL_GOODS.map(id=>{const r=marketRule(g.port,id,channel),stock=stockAt(g,id,g.port,channel),factor=r.factor*eventFactor(g,id),buyFactor=factor*(1+spread(g,channel)),sellFactor=factor*(1-spread(g,channel));return [id,{stock,buy:buyFactor*reference(stock,r.target),sell:sellFactor*reference(stock,r.target),role:r.role,controlled:r.controlled,available:!accessProblem(g,id,channel),target:r.target,buyFactor,sellFactor}];})) as Snapshot['goods']};
 }
 /** FIFO consumption also removes the cost provenance of food eaten at sea or in port. */
 export function consumeLots(g:Game,id:GoodId,quantity:number){
