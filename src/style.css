@@ -160,3 +160,10 @@ input[type=radio]{accent-color:var(--primary)}
 .building-capabilities h2{font-size:21px}
 .building-capabilities ul{margin:14px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.6}
 @media(max-width:720px){.building-capabilities{grid-template-columns:1fr}.planned-notice{align-items:flex-start}.port-nav nav button .nav-tbd{display:none}}
+
+.npc-dialogue { margin-bottom: 1.5rem; }
+.npc-dialogue h2 { margin-top: .25rem; }
+.dialogue-choices { display: grid; gap: .65rem; margin: 1rem 0; }
+.dialogue-choices button { text-align: left; padding: 1rem; white-space: normal; }
+.dialogue-choices small { display: block; margin-top: .4rem; font-weight: normal; }
+.npc-dialogue blockquote { min-height: 5rem; }

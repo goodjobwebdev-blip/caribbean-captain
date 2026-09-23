@@ -56,3 +56,5 @@ Stack: React, TypeScript, Vite, plain CSS, IndexedDB. Game rules live in `src/ga
 Trade implementation planning: [confirmed decisions and draft balance](docs/trade-release-draft.md), [balance validation](docs/trade-validation.md).
 
 The world now includes 15 colonial towns across 13 island groups, with independent markets and Spanish national permits. See [world expansion and deferred locations](docs/world-expansion.md) and [port coordinates and market profiles](docs/world-port-data.md).
+
+Buildings now open with a named host and dialogue choices. Hosts remember visits and completed dealings; service panels stay open after transactions. Optional AI prose adds contextual greetings and reactions without blocking the authored fallback. See [NPC dialogue](docs/npc-dialogues.md).

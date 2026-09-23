@@ -77,15 +77,13 @@ A church in every town provides checkpoint creation. The player can continue fro
 
 Checkpoints are free and can only be created at church while alive and in port. The initial captain begins at the church, but no checkpoint is created automatically. Current-session progress is persisted separately after each action so reopening the browser resumes that state, including defeat; it is not an additional recovery checkpoint. Profiles and independent checkpoints use IndexedDB, without an artificial count limit. Checkpoints include the random generator state so restoring repeats the same future rolls for the same actions.
 
-## Optional LLM dialogue
+## NPC dialogue and optional LLM prose
 
-Settings allow the player to enter a nano-gpt.com API key and select a model from a searchable dropdown.
+The approved [NPC dialogue design](npc-dialogues.md) replaces generic greetings with fixed named hosts, dialogue choices leading to service panels, and lightweight per-captain memory. Services stay open after successful actions. Each town/building has its own predefined NPC and speaking style; unavailable buildings remain previews.
 
-The core dialogue, available actions, and underlying answers are predefined. The LLM dresses those answers in NPC prose, such as a trader's response, tavern keeper's greeting, or Harbour Master's offer. Distinct personalities and voices for individual NPCs are not required initially.
+The optional NanoGPT prose model receives the NPC identity, available services, current conversation phase, saved dealings and relevant conditions. It writes 2–4 sentences on arrival and 1–2 for service exchanges and reactions. Original fallback prose is visible immediately; model delays or failures never block gameplay. Requests are cancelled on navigation and AI setting changes. Keys and generated prose are not saved.
 
-The game, not the LLM, determines prices, contract terms, inventory, available actions, dice outcomes, and rewards. Fixed UI details remain authoritative. Generated text must not execute actions or change game state.
-
-The game remains playable using predefined text without an API key or when generation fails. The UI fetches available models and filters them by search. With AI enabled, entering an NPC location requests a short rephrasing with a timeout. Keys remain in tab memory only and are never persisted. Browser/API failures use the predefined text. A live authenticated response still needs verification with the player’s own key. Never put actual API keys into repository content or game checkpoints.
+The game determines all choices, prices, contract terms, inventory, dice outcomes and rewards. Generated text cannot execute actions or change game state. Memory stores visits and bounded successful-service summaries, not full chat transcripts. Checkpoints restore that memory. Live model quality still requires verification with a player's configured key.
 
 ## Deferred ideas
 
@@ -97,6 +95,6 @@ The game remains playable using predefined text without an API key or when gener
 - Treasure maps bought in taverns, found in captured-ship chests, or awarded by rare quests; treasure expeditions.
 - A visual Caribbean map.
 - Business opening hours and sleeping aboard the ship.
-- Further islands, non-town locations, and pirate settlements beyond the agreed world expansion; distinct NPC personalities.
+- Further islands, non-town locations, and pirate settlements beyond the agreed world expansion.
 
 These preserve the broader vision without making them requirements for the first playable version.
