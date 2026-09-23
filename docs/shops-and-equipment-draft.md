@@ -13,7 +13,7 @@ Status: **revised proposal for review, 23 September 2026**. This covers the firs
 
 ## Luxury tiers and outfit index
 
-Every wearable piece has one integer **luxury tier**, separate from combat stats and price. Weapon display uses the same labels, but weapons do not enter the outfit index.
+Every wearable piece and personal weapon has one integer **luxury tier**, separate from combat stats and price. The equipped melee weapon and an owned, visibly holstered pistol contribute to the outfit index; cartridges and the spyglass do not.
 
 | Tier | Label | What people can see |
 | ---: | --- | --- |
@@ -25,9 +25,9 @@ Every wearable piece has one integer **luxury tier**, separate from combat stats
 
 Price depends on material, protection, and luxury: a rough iron plate can cost more than a plain leather jerkin, while comparable workmanship becomes much dearer at higher tiers. Tier does not itself grant a roll modifier. Tiers 3–4 are aspirational purchases: the 14,000-silver tailored cuirass costs more than a 12,000-silver Universal Sloop, while the 28,000-silver jewelled cuirass approaches a 30,000-silver Brigantine. These are comparisons with current provisional ship catalogue prices, not promises of permanent balance.
 
-The captain has **Head, Body, and Feet** outfit slots, as anticipated by [stats.md](stats.md). Clothing and armour compete for a slot. Compute **outfit index = (equipped Head tier + equipped Body tier + equipped Feet tier) / 3**, preserving the fraction and showing one decimal in the Journal. A slot left empty scores 0. A new captain begins with three plain, non-resellable pieces at tier 1, so the initial index is **1.0**. Only the currently worn pieces count; owning luxury clothing in a trunk does nothing. Examples: rough head (0), fine body (3), working feet (1) = **1.3**; fine head/body/feet (3/3/3) = **3.0**. The later dialogue system can use the numeric index and also inspect individual piece tags. It should never infer status by reading item names or prose.
+The captain has **Head, Body, and Feet** outfit slots, as anticipated by [stats.md](stats.md), plus a **visible weapons** component. Clothing and armour compete for an outfit slot. The weapons component is the equipped melee weapon's tier when no pistol is owned; if a pistol is owned, it is treated as visibly holstered and the component is the average of the melee and pistol tiers. Pistol loading does not change its appearance. Compute **appearance index = (Head tier + Body tier + Feet tier + visible weapons component) / 4**, preserving the fraction and displaying one decimal in the Journal. An empty clothing slot scores 0. A new captain begins with three plain, non-resellable tier-1 pieces and a tier-1 cutlass, so the initial index is **1.0**. Only equipped clothing and the equipped melee weapon count; a fine sword kept in inventory has no effect. Examples: rough head (0), fine body (3), working feet (1), fine cutlass (3), no pistol = **1.75** (shown as 1.8); with the tier-2 pistol, the weapons component becomes 2.5 and the index becomes **1.625** (shown as 1.6). A complete fine outfit and fine weapon score **3.0**. Later dialogue can use the unrounded numeric index and inspect individual slots or tags. It should never infer status by reading item names or prose.
 
-Each item may carry authored tags such as `military-style` or `jewelled`. This feature has no national uniform items or current dialogue, trade, reputation, or access effects. Nation-specific colours, refusal, and bribes await the dialogue/national-attitude design. The player's outfit description and tier are visible in the Journal and the two shops; no portrait is required yet.
+Each item may carry authored tags such as `military-style` or `jewelled`. This feature has no national uniform items or current dialogue, trade, reputation, or access effects. Nation-specific colours, refusal, and bribes await the dialogue/national-attitude design. The player's outfit, visible weapons, item tiers, and resulting appearance index are visible in the Journal and the two shops; no portrait is required yet.
 
 ## Weaver catalogue
 
@@ -58,7 +58,7 @@ Clothing has no present mechanical effect. Its tier and tags are kept as structu
 
 ### Weapons and supplies
 
-Current weapons and prices remain unchanged; the three additional weapons offer identity and price choices within the existing light, medium, and heavy skill classes. Weapon quality still changes attacks and defenses exactly as before. A more luxurious standard weapon does not gain quality +1 merely because it looks better.
+Current weapons and prices remain unchanged; the three additional weapons offer identity and price choices within the existing light, medium, and heavy skill classes. Weapon quality still changes attacks and defenses exactly as before. A more luxurious standard weapon does not gain quality +1 merely because it looks better. The tier of the equipped weapon contributes to appearance; weapons in inventory do not.
 
 | Item | Tier | Silver | Combat meaning | Authored description |
 | --- | ---: | ---: | --- | --- |
@@ -118,12 +118,12 @@ Later dialogue can use the numeric outfit index and structured tags for delibera
 
 - The right shops display their assigned personal goods and fixed descriptions; the Store remains a cargo market.
 - Buying, swapping, and selling enforce ownership, affordability, slots, restrictions, and Finance entries.
-- The Journal shows the three equipped slots, item descriptions, luxury tiers, and the calculated outfit index.
+- The Journal shows the three equipped slots, equipped melee weapon, visible pistol, fixed item descriptions, luxury tiers, and the calculated appearance index.
 - Duel armour spends its capped pool once per duel, applies the specified Dodge penalty, and reports avoided injuries; deck/naval combat gets no armour bonus.
 - Old saves and checkpoints load; new gear survives reopening and checkpoint restoration. Keyboard and narrow-screen controls remain usable.
 
 ## Decisions to review
 
-1. Are the five tier names and three-slot average a good basis for later dialogue?
+1. Are the five tier names and four-component appearance average a good basis for later dialogue? In particular, should an owned pistol always count as visibly holstered?
 2. Is it right for tailored armour to remove the Dodge penalty at ship-level cost while protection stays capped at two?
 3. Which descriptions or item names feel out of place in Caribbean Captain's voice?
