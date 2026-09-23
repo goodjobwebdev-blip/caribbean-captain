@@ -11,6 +11,11 @@ export const WIKI:WikiArticle[]=[
   'You begin in Bridgetown with a Universal Sloop, 800 silver, 10 sailors and 120 provisions. Earn silver through commissions and trade, keep the crew supplied, and exchange your ship for a vessel that suits your plans.',
   'Gamespace is where you take actions. The Journal contains ship and crew statistics, skills, cargo, passengers, quests, market memories and financial records. The compact top strip and expandable bottom log belong to Gamespace. Settings and this Wiki are available even before creating a captain.'
  ],tips:['Visit the Church and create a checkpoint before sailing.','Use the Harbour Master for commissions and the Store for provisions and trade goods.','Review both hold space and weight, then use Plan voyage at the Harbour.','On arrival, sell cargo at the Store and collect completed commissions at the Harbour Master.']},
+ {id:'npc-dialogue',category:'Getting started',title:'Talking to townspeople',paragraphs:[
+  'Every town building has a fixed named host. On entry, choose a spoken reply to open trading, repairs, commissions or another supported service. Speak to the host returns to the conversation; Back to harbour leaves the building. Town navigation also remains available.',
+  'A purchase or service keeps its panel open. Each captain has separate memories of visits, successful dealings and completed commissions. Checkpoints restore those memories. Talking and navigating do not advance the clock.',
+  'Enable a prose model in Settings for contextual greetings and short reactions. Written dialogue appears immediately while the model works, and remains available if the request fails. Game controls and prices remain authoritative. Placeholder buildings do not offer services yet.'
+ ]},
  {id:'time',category:'Getting started',title:'Calendar, actions and upkeep',paragraphs:[
   'Time advances when you confirm game actions. Reading the Journal or Wiki, browsing shops, changing settings and closing the browser do not advance the calendar. Months have 30 days; years have 12 months.',
   'Each sailor costs 2 silver in wages per day. Each sailor and passenger consumes 1 provision per day, including time spent in port. The captain does not add a separate food or wage charge. Costs are proportional to the hours that pass.',
