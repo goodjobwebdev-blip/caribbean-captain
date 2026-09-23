@@ -9,7 +9,7 @@ const silver=(n:number)=>n.toLocaleString('en');
 function ApparelCard({item,game:g,busy,perform}:{item:Apparel}&Controls){
  const e=equipment(g),owned=e.wardrobe!.includes(item.id),worn=e.outfit?.[item.slot]===item.id;
  const sale=Math.floor(item.price*(item.kind==='clothing'?.15:.6));
- return <article className="shop-item"><div className="section-line"><h3>{item.name}</h3><strong>{silver(item.price)} silver</strong></div>
+ return <article className="shop-item"><div className="section-line"><h3>{item.name}</h3><strong>{item.starter?'Starter clothing':`${silver(item.price)} silver`}</strong></div>
   <small>{item.slot} · {TIER_NAMES[item.tier]} · tier {item.tier}{item.kind==='armour'&&` · ${item.protection} protection${item.dodgePenalty?` · Dodge ${item.dodgePenalty}`:''}`}</small>
   <p>{item.description}</p><div className="button-row">
   {!owned?<button disabled={busy||g.silver<item.price} onClick={()=>perform({type:'buy-apparel',id:item.id})}>Buy</button>:<><button disabled={busy||worn} onClick={()=>perform({type:'equip-apparel',id:item.id})}>{worn?'Equipped':'Equip'}</button>{worn&&<button disabled={busy} onClick={()=>perform({type:'unequip-apparel',slot:item.slot})}>Remove</button>}{!item.starter&&<button disabled={busy||worn} onClick={()=>perform({type:'sell-apparel',id:item.id})}>Sell · {silver(sale)} silver</button>}</>}
@@ -22,7 +22,7 @@ function Outfit({game:g}:{game:Game}){
   <p className="muted">Captain Duel: {armour.points} protection point{armour.points===1?'':'s'}{armour.dodgePenalty?` · Dodge ${armour.dodgePenalty}`:''}. Protection resets for each duel, up to two points.</p>
  </section>;
 }
-export function Weaver(props:Controls){return <><Outfit game={props.game}/><h2>Clothing</h2><p className="muted">Clothes shape your appearance but do not yet change prices or conversations. The weaver pays 15% of the original price for unworn pieces.</p><div className="shop-grid">{APPAREL.filter(item=>item.kind==='clothing'&&!item.starter).map(item=><ApparelCard key={item.id} item={item} {...props}/>)}</div></>;}
+export function Weaver(props:Controls){return <><Outfit game={props.game}/><h2>Clothing</h2><p className="muted">Clothes shape your appearance but do not yet change prices or conversations. The weaver pays 15% of the original price for unworn pieces.</p><div className="shop-grid">{APPAREL.filter(item=>item.kind==='clothing'&&(!item.starter||equipment(props.game).wardrobe!.includes(item.id))).map(item=><ApparelCard key={item.id} item={item} {...props}/>)}</div></>;}
 export function Blacksmith({game:g,busy,perform}:Controls){
  const e=equipment(g),c=g.captainState;
  return <><Outfit game={g}/><h2>Weapons</h2><p className="muted">Your equipped melee weapon counts toward appearance. Weapon quality affects combat; luxury tier describes how it looks. Unequipped weapons can be sold for half their listed price.</p>
