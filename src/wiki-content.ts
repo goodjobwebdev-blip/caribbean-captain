@@ -25,7 +25,9 @@ export const WIKI:WikiArticle[]=[
   'Old saves remain playable. Newly introduced histories are not invented retroactively: old goods may have unknown purchase costs and old voyages may have only partial financial records.'
  ]},
  {id:'world',category:'Sailing and ships',title:'Ports, islands and distance',paragraphs:[
-  'The current world has three towns. Each has a Harbour, Store, Tavern, Harbour Master, Shipyard and Church. National identity affects permits and local attitude.',
+  `The current world has ${PORTS.length} colonial towns across 13 islands or island groups. Cuba and Hispaniola each have two playable towns, with separate markets. Every town offers the existing services, including Blacksmith and Weaver. National identity affects permits and local attitude.`,
+  'Find destinations at the Harbour by town, island or nation. Routes are grouped by island; Harbour Master commissions are grouped by destination. Spain has its own national permit and reputation, shared across Spanish ports.',
+  'Geography follows the Sea Dogs reference catalogue. Pirate settlements, bays, coves, overland travel, and local shipyard or equipment specializations are deferred. Existing saves keep their markets and gain the new destinations.',
   'Ports have coordinates in fictional distance units. Bridgetown is the origin. Distance is a straight line: the square root of the sum of the squared horizontal and vertical differences. There are no sea waypoints or land-routing restrictions yet.'
  ],table:{headers:['Port','Island','Nation','Coordinates'],rows:PORTS.map(p=>[p.name,p.island,p.nation,`${p.x}, ${p.y}`])}},
  {id:'sailing',category:'Sailing and ships',title:'Sailing time and weather',paragraphs:[
