@@ -1,10 +1,11 @@
+import {PORT_IDS} from '../world';
 import {encounterPractice} from './progression';
 import type {Game,PortId} from '../game';
 import {SHIPS,createShip,resolveShip,shipDefinition,totalCannons} from '../ships';
 import {shipPerformance} from '../performance';
 import {CATALOGUE,type GoodId} from '../goods';
-import {observeMarket,consumeLots} from '../trade';
-import {contraband,type Nation} from '../commerce';
+import {marketSnapshot,consumeLots} from '../trade';
+import {contraband,nationOf,type Nation} from '../commerce';
 import {record} from '../finance';
 import {rng,weighted,mastery,clamp,crewExperience,crew,roll,rank,type Contact,type Encounter,type Role,type Temperament,type Posture,type Npc,type Demand} from './types';
 export const concealment=[0,.02,.04,.06,.08,.10,.12,.14,.25,.50,.95];
@@ -31,11 +32,11 @@ export function generateNpc(g:Game):Npc{
  const spec=weighted(g,available.map(s=>[s,1/(1+Math.abs(s.tier-tier))**3]));
  const ship=createShip(spec.id,`${role} ${spec.hullType}`,`contact-${g.seed}`);if(rng(g)<.2){ship.hullPoints=Math.round(spec.maxHull*(.65+rng(g)*.3));ship.sailCondition=Math.round(65+rng(g)*30);}
  const faction: Nation=role==='Pirate'?'Pirates':weighted(g,(['England','France','Dutch','Spain'] as Nation[]).map(n=>[n,1+Math.max(0,-standing(g,n))/50]));
- const origin=weighted<PortId>(g,[['bridgetown',1],['saint-pierre',1],['willemstad',1]]);
- const copy=structuredClone(g);copy.port=origin;copy.voyage=null;observeMarket(copy);
+ const origin=weighted<PortId>(g,PORT_IDS.map(id=>[id,1]));
+ const market=marketSnapshot({...g,port:origin,voyage:null});
  const quality=clamp(35+level*2,0,100),playerPower=totalCannons(resolveShip(g).cannons)+g.crew*.2;
  const perceivedStrength=playerPower*(1+(rng(g)-.5)*(1-level/25))*(1-mastery(g,'deception')*.025);
- return {silver:50+25*Math.floor(rng(g)*(level+3)),role,faction,temperament,level,origin,departed:g.hours,market:copy.economy!.memories[origin]!,ship,crew:crew(spec.optimalCrew,quality),perceivedStrength};
+ return {silver:50+25*Math.floor(rng(g)*(level+3)),role,faction,temperament,level,origin,departed:g.hours,market,ship,crew:crew(spec.optimalCrew,quality),perceivedStrength};
 }
 export function opening(g:Game,n:Npc):Posture{
  const hostile=standing(g,n.faction)<-50,ratio=(totalCannons(n.ship.cannons)+n.crew.fit*.2)/Math.max(.1,n.perceivedStrength);
@@ -74,9 +75,9 @@ function loss(g:Game,id:string,q:number){q=Math.min(g.cargo[id]??0,q);g.cargo[id
 function payDemand(g:Game,d:Demand){
  if(d.kind==='silver'||d.kind==='fine'){const q=Math.ceil(d.value*d.fraction);if(g.silver<q)throw Error('Not enough exposed silver for this payment.');g.silver-=q;record(g,'ransom',-q);}
  if(d.kind==='goods')for(const id of tradeGoods(g))loss(g,id,Math.ceil(g.cargo[id]*d.fraction));
- if(d.kind==='passengers'){const removed=g.contracts.filter(c=>c.type==='Passengers');g.contracts=g.contracts.filter(c=>c.type!=='Passengers');for(const c of removed){const nation=({bridgetown:'England','saint-pierre':'France',willemstad:'Dutch'} as const)[c.from];g.economy!.commerce!.attitude[nation]=clamp(standing(g,nation)-10,-100,100);}g.economy!.commerce!.reputation=clamp(g.economy!.commerce!.reputation-10,-100,100);}
+ if(d.kind==='passengers'){const removed=g.contracts.filter(c=>c.type==='Passengers');g.contracts=g.contracts.filter(c=>c.type!=='Passengers');for(const c of removed){const nation=nationOf(c.from);g.economy!.commerce!.attitude[nation]=clamp(standing(g,nation)-10,-100,100);}g.economy!.commerce!.reputation=clamp(g.economy!.commerce!.reputation-10,-100,100);}
 }
-export function rewardSafePassengers(g:Game){const c=g.economy!.commerce!;c.reputation=clamp(c.reputation+2,-100,100);for(const passenger of g.contracts.filter(c=>c.type==='Passengers')){const nation=({bridgetown:'England','saint-pierre':'France',willemstad:'Dutch'} as const)[passenger.from];c.attitude[nation]=clamp(standing(g,nation)+2,-100,100);}}
+export function rewardSafePassengers(g:Game){const c=g.economy!.commerce!;c.reputation=clamp(c.reputation+2,-100,100);for(const passenger of g.contracts.filter(c=>c.type==='Passengers')){const nation=nationOf(passenger.from);c.attitude[nation]=clamp(standing(g,nation)+2,-100,100);}}
 export type EncounterChoice={choice:string;confirmed?:boolean;dump?:'goods'|'gunpowder'};
 /** Mutates only the cloned reducer state; returns the phase transition for game.ts. */
 export function resolveEncounter(g:Game,a:EncounterChoice):'continue'|'naval'|'pursuit'|'capture'|null{
