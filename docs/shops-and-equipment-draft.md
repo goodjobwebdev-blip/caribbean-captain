@@ -13,7 +13,7 @@ Status: **revised proposal for review, 23 September 2026**. This covers the firs
 
 ## Luxury tiers and appearance index
 
-Every wearable piece and personal weapon has one integer **luxury tier**, separate from combat stats and price. The equipped melee weapon and an owned, visibly holstered pistol contribute to the appearance index; cartridges and the spyglass do not.
+Every wearable piece and personal weapon has one integer **luxury tier**, separate from combat stats and price. Only equipped items contribute to the appearance index. The equipped melee weapon counts; an owned pistol does not count because there is currently no separate pistol equip choice. Cartridges and the spyglass do not count.
 
 | Tier | Label | What people can see |
 | ---: | --- | --- |
@@ -25,9 +25,9 @@ Every wearable piece and personal weapon has one integer **luxury tier**, separa
 
 Price depends on material, protection, and luxury: a rough iron plate can cost more than a plain leather jerkin, while comparable workmanship becomes much dearer at higher tiers. Tier does not itself grant a roll modifier. Tiers 3–4 are aspirational purchases: the 14,000-silver tailored cuirass costs more than a 12,000-silver Universal Sloop, while the 28,000-silver jewelled cuirass approaches a 30,000-silver Brigantine. These are comparisons with current provisional ship catalogue prices, not promises of permanent balance.
 
-The captain has **Head, Body, and Feet** outfit slots, as anticipated by [stats.md](stats.md), plus a **visible weapons** component. Clothing and armour compete for an outfit slot. The weapons component is the equipped melee weapon's tier when no pistol is owned; if a pistol is owned, it is treated as visibly holstered and the component is the average of the melee and pistol tiers. Pistol loading does not change its appearance. Compute **appearance index = (Head tier + Body tier + Feet tier + visible weapons component) / 4**, preserving the fraction and displaying one decimal in the Journal. An empty clothing slot scores 0. A new captain begins with three plain, non-resellable tier-1 pieces and a tier-1 cutlass, so the initial index is **1.0**. Only equipped clothing, equipped melee weapon, and an owned pistol count; a fine sword kept in inventory has no effect. Examples: rough head (0), fine body (3), working feet (1), fine cutlass (3), no pistol = **1.75** (shown as 1.8); with the tier-2 pistol, the weapons component becomes 2.5 and the index becomes **1.625** (shown as 1.6). A complete fine outfit and fine weapon score **3.0**. Later dialogue can use the unrounded numeric index and inspect individual slots or tags. It should never infer status by reading item names or prose.
+The captain has **Head, Body, and Feet** outfit slots, as anticipated by [stats.md](stats.md), plus an equipped **melee weapon** component. Clothing and armour compete for an outfit slot. Compute **appearance index = (Head tier + Body tier + Feet tier + equipped melee tier) / 4**, preserving the fraction and displaying one decimal in the Journal. An empty clothing slot scores 0. A new captain begins with three plain, non-resellable tier-1 pieces and a tier-1 cutlass, so the initial index is **1.0**. A fine sword kept in inventory and an owned pistol have no effect. Example: rough head (0), fine body (3), working feet (1), fine cutlass (3) = **1.75** (shown as 1.8). A complete fine outfit and fine weapon score **3.0**. Later dialogue can use the unrounded numeric index and inspect individual slots or tags. It should never infer status by reading item names or prose.
 
-Each item may carry authored tags such as `military-style` or `jewelled`. This feature has no national uniform items or current dialogue, trade, reputation, or access effects. Nation-specific colours, refusal, and bribes await the dialogue/national-attitude design. The player's outfit, visible weapons, item tiers, and resulting appearance index are visible in the Journal and the two shops; no portrait is required yet.
+Each item may carry authored tags such as `military-style` or `jewelled`. This feature has no national uniform items or current dialogue, trade, reputation, or access effects. Nation-specific colours, refusal, and bribes await the dialogue/national-attitude design. The player's equipped outfit, melee weapon, item tiers, and resulting appearance index are visible in the Journal and the two shops; no portrait is required yet.
 
 ## Weaver catalogue
 
@@ -118,12 +118,12 @@ Later dialogue can use the numeric appearance index and structured tags for deli
 
 - The right shops display their assigned personal goods and fixed descriptions; the Store remains a cargo market.
 - Buying, swapping, and selling enforce ownership, affordability, slots, restrictions, and Finance entries.
-- The Journal shows the three equipped slots, equipped melee weapon, visible pistol, fixed item descriptions, luxury tiers, and the calculated appearance index.
+- The Journal shows the three equipped slots, equipped melee weapon, fixed item descriptions, luxury tiers, and the calculated appearance index.
 - Duel armour spends its capped pool once per duel, applies the specified Dodge penalty, and reports avoided injuries; deck/naval combat gets no armour bonus.
 - Old saves and checkpoints load; new gear survives reopening and checkpoint restoration. Keyboard and narrow-screen controls remain usable.
 
 ## Decisions to review
 
-1. Are the five tier names and four-component appearance average a good basis for later dialogue? In particular, should an owned pistol always count as visibly holstered?
+1. The four-component appearance average counts equipped Head, Body, Feet, and melee only. A future pistol equip choice can be designed separately.
 2. Is it right for tailored armour to remove the Dodge penalty at ship-level cost while protection stays capped at two?
 3. Which descriptions or item names feel out of place in Caribbean Captain's voice?
