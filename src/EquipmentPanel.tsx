@@ -1,7 +1,8 @@
 import type {Game,Action} from './game';
-import {equipment,WEAPONS,AMMUNITION,loadoutNeeds} from './equipment';
+import {equipment,appearanceIndex,WEAPONS,AMMUNITION,loadoutNeeds} from './equipment';
 import {BATTERIES} from './ships';
 import {captain,crew,injuryNames,fatigueNames,type Ammo} from './battle/types';
+import {apparel,TIER_NAMES,type OutfitSlot} from './apparel';
 import {COMBAT_SKILLS,skillName,nextTierRequirement} from './skills';
 type Controls={game:Game;busy:boolean;perform:(a:Action)=>void};
 export function CombatSkills({game:g}:{game:Game}){
@@ -17,12 +18,9 @@ export function CaptainEquipment({game:g}:{game:Game}){
  <div><dt>Spyglass</dt><dd>{g.spyglass?'Owned · early sightings':'Not owned'}</dd></div>
  <div><dt>Crew fit / injured / dead</dt><dd>{company.fit} / {company.injured} / {company.dead}</dd></div>
  <div><dt>Morale / discipline / equipment</dt><dd>{company.morale.toFixed(1)} / {company.discipline.toFixed(1)} / {company.equipment}</dd></div>
- </dl><p>Living captains can rest at the tavern to clear fatigue and heal one Injury step. Rest also helps injured crew recover. Dead crew cannot recover.</p></>;
+ </dl><h2>Outfit · appearance {appearanceIndex(g).toFixed(1)} / 4</h2><p>The index averages equipped head, body, feet, and melee weapon tiers. Owned gear left unworn does not count.</p><div className="outfit-slots">{(['head','body','feet'] as OutfitSlot[]).map(slot=>{const item=apparel(e.outfit?.[slot]??'');return <article key={slot}><small>{slot.toUpperCase()}</small><strong>{item?.name??'Bare'} · {item?TIER_NAMES[item.tier]:'Rough'}</strong><p>{item?.description??'Nothing worn in this slot.'}</p></article>;})}<article><small>MELEE</small><strong>{e.weapons.find(w=>w.id===e.equipped)?.name}</strong><p>{WEAPONS.find(w=>w.id===e.equipped)?.description??'A familiar weapon that has served its captain through earlier voyages.'}</p></article></div><p>Living captains can rest at the tavern to clear fatigue and heal one Injury step. Rest also helps injured crew recover. Dead crew cannot recover.</p></>;
 }
-export function Outfitter({game:g,busy,perform}:Controls){
- const e=equipment(g),c=g.captainState??captain();
- return <section aria-label="Captain outfitter"><details><summary>Captain’s outfitter</summary><h2>Personal equipment</h2><p>Personal equipment uses your captain’s baggage allowance. One of each weapon, one pistol and up to 20 cartridges. Purchases and preparation take no game time.</p><div className="table-wrap"><table><thead><tr><th>Equipment</th><th>Effect</th><th>Silver</th><th>Purchase</th></tr></thead><tbody>{WEAPONS.map(w=><tr key={w.id}><th scope="row">{w.name}</th><td>{skillName(w.skill)} · quality +{w.quality}</td><td>{w.price}</td><td><button disabled={busy||g.silver<w.price||e.weapons.some(item=>item.id===w.id)} onClick={()=>perform({type:'buy-equipment',id:w.id})}>{e.weapons.some(item=>item.id===w.id)?'Owned':`Buy ${w.name}`}</button></td></tr>)}{[{id:'pistol',name:'Pistol',effect:'One loaded shot per duel; reload in port',price:200,owned:e.pistol},{id:'spyglass',name:'Spyglass',effect:'Early sighting before a contact',price:150,owned:!!g.spyglass},{id:'cartridges',name:'5 pistol cartridges',effect:'Each contains one pistol ball and powder',price:25,owned:false}].map(item=><tr key={item.id}><th scope="row">{item.name}</th><td>{item.effect}</td><td>{item.price}</td><td><button disabled={busy||item.owned||g.silver<item.price||item.id==='cartridges'&&e.cartridges+(c.pistol?1:0)>15} onClick={()=>perform({type:'buy-equipment',id:item.id})}>{item.owned?'Owned':`Buy ${item.name}`}</button></td></tr>)}</tbody></table></div><Loadout game={g} busy={busy} perform={perform}/></details></section>;
-}
+export {Blacksmith as Outfitter} from './PersonalShops';
 export function Loadout({game:g,busy,perform}:Controls){
  const e=equipment(g),c=g.captainState??captain(),needs=loadoutNeeds(g);
  return <details className="performance-details"><summary>Prepare weapons and battery loadout</summary><p>Choose your weapon and load your pistol in port. Apply the saved battery loadout at the start of each naval battle; ammunition stays in the hold until then.</p><label>Melee weapon<select disabled={busy} value={e.equipped} onChange={event=>perform({type:'equip-weapon',id:event.target.value})}>{e.weapons.map(w=><option value={w.id} key={w.id}>{w.name} · quality +{w.quality}</option>)}</select></label><p>Pistol: {c.pistol?'Loaded':e.pistol?'Unloaded':'Not owned'} · {e.cartridges} spare cartridges</p><div className="button-row"><button disabled={busy||!e.pistol||c.pistol||!e.cartridges} onClick={()=>perform({type:'load-pistol'})}>Load pistol</button><button disabled={busy||!c.pistol} onClick={()=>perform({type:'unload-pistol'})}>Unload pistol</button></div>

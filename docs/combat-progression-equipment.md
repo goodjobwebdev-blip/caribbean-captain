@@ -27,7 +27,7 @@ Battle practice is collected during playback and credited once at capture/escape
 
 ## Phase 2: Purchases and preparation
 
-Open **Store → Captain’s outfitter** to buy equipment. Purchases cost silver, enter the Finance ledger as equipment expenses and take no game time. Prices do not fluctuate with commodity markets or Trade mastery; these are personal retail items, not resale cargo.
+Visit the **Blacksmith** to buy weapons, pistol supplies, and armour; the **Harbour Master** now sells the spyglass. The **Weaver** sells clothing. See [shops and equipment](shops-and-equipment.md) for the expanded catalogue and appearance index. Purchases cost silver, enter the Finance ledger as equipment expenses and take no game time. Prices do not fluctuate with commodity markets or Trade mastery; these are personal retail items, not resale cargo.
 
 | Item | Price in silver | Effect |
 | --- | ---: | --- |
@@ -37,9 +37,9 @@ Open **Store → Captain’s outfitter** to buy equipment. Purchases cost silver
 | Spyglass | 150 | Early sighting at contacts |
 | Five pistol cartridges | 25 | Five pistol balls with powder |
 
-A new captain already owns a standard cutlass. Purchases do not automatically equip weapons or load pistols. Choose an owned melee weapon and load/unload the pistol in the Store or Harbour preparation panel. Melee quality affects attacks and weapon defenses; it does not improve pistol shots or dodges. Pistol quality is standard. A shot, including a misfire, consumes the loaded cartridge. Reloading is port-only; an unfired cartridge can be unloaded and returned to your supply.
+A new captain already owns a standard cutlass. Purchases do not automatically equip weapons or load pistols. Choose an owned melee weapon and load/unload the pistol at the Harbour preparation panel; melee equipment can also be selected at the Blacksmith. Melee quality affects attacks and weapon defenses; it does not improve pistol shots or dodges. Pistol quality is standard. A shot, including a misfire, consumes the loaded cartridge. Reloading is port-only; an unfired cartridge can be unloaded and returned to your supply.
 
-Personal inventory permits one of each catalogue weapon, one pistol, one spyglass and at most 20 cartridges including the loaded shot. Equipment remains inside the captain's existing one-unit person/baggage allowance: no extra hold or deadweight is added. This is an explicit abstraction, not a new commodity conversion. Cargo weapons and cannon shot cannot be converted into personal weapons/cartridges. No resale, equipment theft or multiple pistols are implemented.
+Personal inventory permits one of each catalogue weapon, one pistol, one spyglass and at most 20 cartridges including the loaded shot. Equipment remains inside the captain's existing one-unit person/baggage allowance: no extra hold or deadweight is added. This is an explicit abstraction, not a new commodity conversion. Cargo weapons and cannon shot cannot be converted into personal weapons/cartridges. Eligible unworn clothing, armour and weapons can be resold at their respective shops under the rules in the shops document. Equipment theft and multiple pistols are not implemented.
 
 The Harbour preparation panel also saves ammunition choices per battery and shows required ammunition/powder against stores aboard. Each gun requires one ammunition unit and one gunpowder unit. Purchase cannon supplies through the existing market and its access rules.
 

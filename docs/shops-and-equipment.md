@@ -1,6 +1,6 @@
-# Blacksmith, Weaver, and personal equipment — draft
+# Blacksmith, Weaver, and personal equipment
 
-Status: **revised proposal for review, 23 September 2026**. This covers the first "more items and buildings" feature. Catalogue prices and armour numbers are proposed balance, not yet implemented.
+Status: **implemented, 23 September 2026**. This covers the first "more items and buildings" feature. Catalogue prices remain provisional balance.
 
 ## Agreed direction
 
@@ -58,7 +58,7 @@ Clothing has no present mechanical effect. Its tier and tags are kept as structu
 
 ### Weapons and supplies
 
-Current weapons and prices remain unchanged; the three additional weapons offer identity and price choices within the existing light, medium, and heavy skill classes. Weapon quality still changes attacks and defenses exactly as before. A more luxurious standard weapon does not gain quality +1 merely because it looks better. The tier of the equipped weapon contributes to appearance; weapons in inventory do not.
+Current weapons and prices remain unchanged; the four additional weapons offer identity and price choices within the existing light, medium, and heavy skill classes. Weapon quality still changes attacks and defenses exactly as before. A more luxurious standard weapon does not gain quality +1 merely because it looks better. The tier of the equipped weapon contributes to appearance; weapons in inventory do not.
 
 | Item | Tier | Silver | Combat meaning | Authored description |
 | --- | ---: | ---: | --- | --- |
@@ -71,6 +71,7 @@ Current weapons and prices remain unchanged; the three additional weapons offer 
 | Fine dagger | 3 | 300 | Light, quality +1 | A slim, balanced blade slips from a tooled sheath without a sound. |
 | Fine cutlass | 3 | 400 | Medium, quality +1 | The edge holds true from guard to tip, and the hilt has been shaped for one practiced hand. |
 | Fine boarding axe | 3 | 450 | Heavy, quality +1 | Polished steel and a fitted haft turn a rough shipboard tool into a captain's chosen weapon. |
+| Gold-inlaid sabre | 4 | 6,000 | Medium, quality +1 | Gold wire curls along the guard like a chart of imagined currents; the edge is no sharper than a fine cutlass. |
 | Pistol | 2 | 200 | Existing single-shot pistol | A flintlock with a reliable grip; one loaded shot may settle a duel before steel meets steel. |
 | Five cartridges | — | 25 | Existing ammunition pack | Five paper-wrapped charges, kept dry and counted twice before putting to sea. |
 
@@ -122,8 +123,6 @@ Later dialogue can use the numeric appearance index and structured tags for deli
 - Duel armour spends its capped pool once per duel, applies the specified Dodge penalty, and reports avoided injuries; deck/naval combat gets no armour bonus.
 - Old saves and checkpoints load; new gear survives reopening and checkpoint restoration. Keyboard and narrow-screen controls remain usable.
 
-## Decisions to review
+## Future review
 
-1. The four-component appearance average counts equipped Head, Body, Feet, and melee only. A future pistol equip choice can be designed separately.
-2. Is it right for tailored armour to remove the Dodge penalty at ship-level cost while protection stays capped at two?
-3. Which descriptions or item names feel out of place in Caribbean Captain's voice?
+Balance prices and resale after playtesting. A later dialogue design can decide how NPCs interpret the appearance index and specific outfit tags. A separate pistol equip choice would be needed before it could contribute to appearance.
