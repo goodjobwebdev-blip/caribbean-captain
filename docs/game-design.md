@@ -50,7 +50,7 @@ Silver is the currency. The player earns it by trading and completing contracts,
 
 Provisions are consumed according to crew size and elapsed game time. Crew wages create an additional ongoing expense. Trade cargo, provisions, and freight compete for limited hold capacity.
 
-Goods can be bought in one port and sold in another. Freight, letters, and passengers are distinct contract types offered by the Harbour Master. Exact prices, goods, wages, rewards, capacity rules for passengers, deadlines, and failure penalties are not yet agreed.
+Goods can be bought in one port and sold in another. Small and medium freight commissions are offered and delivered at Stores; large freight, letters, and passengers at Harbour Masters. Older accepted contracts remain at the Harbour Master. See [building commissions](building-commissions.md). Exact prices, goods, wages, rewards, capacity rules for passengers, deadlines, and failure penalties are not yet agreed.
 
 Economic decisions should revolve around expected earnings, hold space, provisions, travel time, and possible setbacks.
 

@@ -17,7 +17,7 @@ it('sails to every colonial port and delivers each kind of contract',()=>{
   const job=offers(g).find(c=>c.to===destination.id&&c.type===type)!;
   g=act(g,{type:'accept',contract:job});g=act(g,{type:'sail',to:destination.id},()=>.5);
   expect(g.failed,`${destination.name}: ${type}`).toBeNull();expect(g.port).toBe(destination.id);
-  g=act(g,{type:'deliver'});expect(g.archive![0].id).toBe(job.id);expect(g.contracts).toHaveLength(0);
+  g=act(g,{type:'deliver',building:job.building});expect(g.archive![0].id).toBe(job.id);expect(g.contracts).toHaveLength(0);
   expect(g.economy!.commerce!.attitude[destination.nation]).toBe(2);
  }
 });

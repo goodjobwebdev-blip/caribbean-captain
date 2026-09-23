@@ -21,7 +21,8 @@ The Store is the legal commercial market and the source of ordinary freight work
 - **Buy and sell — current:** Legal market goods. Personal weapons have moved to the Blacksmith.
 - **Buy and sell — TBD:** Remove smuggled goods from the Store. Contraband will be available only through a Tavern smuggler contact.
 - **Services — TBD:** Store unwanted goods locally for a recurring fee. Stored goods remain in that town.
-- **Quests — TBD:** Small and medium freight commissions moved from the Harbour Master; rare contracts to sink commercial competitors.
+- **Quests — current:** Accept and deliver small (40-unit) and medium (200-unit) freight commissions.
+- **Quests — TBD:** Rare contracts to sink commercial competitors.
 
 ### Tavern
 
@@ -37,8 +38,8 @@ The Harbour Master provides official civilian commissions and permits.
 
 - **Buy and sell — current:** National trade permits and a spyglass.
 - **Services — current:** Accept commissions, deliver completed work, and collect rewards.
-- **Quests — current:** Letters, freight, and passenger contracts.
-- **Quests — TBD target:** Keep letters and passengers; move small and medium freight to Stores; retain large freight; add medium and large escorts; find and capture stolen ships.
+- **Quests — current:** Letters, large (800-unit) freight, and passenger contracts. Previously accepted contracts without a recorded building still finish here.
+- **Quests — TBD target:** Add medium and large escorts; find and capture stolen ships.
 
 ### Shipyard
 

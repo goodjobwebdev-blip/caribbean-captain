@@ -10,7 +10,7 @@ export const WIKI:WikiArticle[]=[
  {id:'start',category:'Getting started',title:'Your first voyage',paragraphs:[
   'You begin in Bridgetown with a Universal Sloop, 800 silver, 10 sailors and 120 provisions. Earn silver through commissions and trade, keep the crew supplied, and exchange your ship for a vessel that suits your plans.',
   'Gamespace is where you take actions. The Journal contains ship and crew statistics, skills, cargo, passengers, quests, market memories and financial records. The compact top strip and expandable bottom log belong to Gamespace. Settings and this Wiki are available even before creating a captain.'
- ],tips:['Visit the Church and create a checkpoint before sailing.','Use the Harbour Master for commissions and the Store for provisions and trade goods.','Review both hold space and weight, then use Plan voyage at the Harbour.','On arrival, sell cargo at the Store and collect completed commissions at the Harbour Master.']},
+ ],tips:['Visit the Church and create a checkpoint before sailing.','Find small and medium freight at the Store; letters, passengers and large freight at the Harbour Master.','Review both hold space and weight, then use Plan voyage at the Harbour.','On arrival, check each commission’s delivery building in the Journal and collect payment there.']},
  {id:'npc-dialogue',category:'Getting started',title:'Talking to townspeople',paragraphs:[
   'Every town building has a fixed named host. On entry, choose a spoken reply to open trading, repairs, commissions or another supported service. Speak to the host returns to the conversation; Back to harbour leaves the building. Town navigation also remains available.',
   'A purchase or service keeps its panel open. Each captain has separate memories of visits, successful dealings and completed commissions. Checkpoints restore those memories. Talking and navigating do not advance the clock.',
@@ -31,7 +31,7 @@ export const WIKI:WikiArticle[]=[
  ]},
  {id:'world',category:'Sailing and ships',title:'Ports, islands and distance',paragraphs:[
   `The current world has ${PORTS.length} colonial towns across 13 islands or island groups. Cuba and Hispaniola each have two playable towns, with separate markets. Every town offers the existing services, including Blacksmith and Weaver. National identity affects permits and local attitude.`,
-  'Find destinations at the Harbour by town, island or nation. Routes are grouped by island; Harbour Master commissions are grouped by destination. Spain has its own national permit and reputation, shared across Spanish ports.',
+  'Find destinations at the Harbour by town, island or nation. Routes are grouped by island; Store and Harbour Master commissions are grouped by destination. Spain has its own national permit and reputation, shared across Spanish ports.',
   'Geography follows the Sea Dogs reference catalogue. Pirate settlements, bays, coves, overland travel, and local shipyard or equipment specializations are deferred. Existing saves keep their markets and gain the new destinations.',
   'Ports have coordinates in fictional distance units. Bridgetown is the origin. Distance is a straight line: the square root of the sum of the squared horizontal and vertical differences. There are no sea waypoints or land-routing restrictions yet.'
  ],table:{headers:['Port','Island','Nation','Coordinates'],rows:PORTS.map(p=>[p.name,p.island,p.nation,`${p.x}, ${p.y}`])}},
@@ -85,8 +85,9 @@ export const WIKI:WikiArticle[]=[
   'Four-hour medical care heals up to 25% of living crew, rounded up and improved by Doctoring mastery, plus one captain Injury step. The fee is 10 per healed sailor and 50 for the captain, plus upkeep. Dead sailors cannot recover. Eight-hour shore leave costs 5 per sailor (minimum 10), plus upkeep, and restores up to 10 morale, stopping at 80.',
   'Battle victory gives +4 morale and +1 discipline; defeat gives −6 and −2. Net fit-crew losses impose up to 10 additional morale loss. Each equivalent day of unpaid wages costs 4 morale and 2 discipline, proportional to the unpaid share. Incoming silver offsets treasury debt but does not restore lost morale. Morale and discipline influence sailing, boarding and morale checks; there is no desertion or mutiny yet.'
  ]},
- {id:'contracts',category:'Work and skills',title:'Harbour Master commissions',paragraphs:[
+ {id:'contracts',category:'Work and skills',title:'Store and Harbour Master commissions',paragraphs:[
   `Carry up to three active commissions. Letters take no hold space. Freight jobs provide ${FREIGHT_SIZES.join(', ')} units of cargo to transport; you do not buy it yourself. Passenger jobs take three berths, and passengers eat provisions.`,
+  'Small (40-unit) and medium (200-unit) freight is accepted and delivered at Stores. Large (800-unit) freight, letters and passengers belong to Harbour Masters. Contracts accepted before this change still finish at the Harbour Master. The Journal shows the delivery building.',
   'Offers refresh with the game day. There are no deadlines in these commissions. Accept a job at its origin and use Deliver completed tasks at the destination to collect payment; arrival alone does not pay you. Accepted rewards stay fixed.',
   'New letter rewards are round(20 + distance × 1.04). Freight rewards are round(20 + distance × quantity × 0.0432). Passenger rewards are round(30 + distance × passenger count × 0.69). Letters also award ceil(distance ÷ 100) Sailing points.',
   'Each delivered commission grants +2 attitude with the receiving nation and +1 global reputation. Completed commissions appear in the Journal archive. Restoring a checkpoint restores the quest history too.'

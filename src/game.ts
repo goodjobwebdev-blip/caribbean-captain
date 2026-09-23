@@ -21,11 +21,13 @@ export type Good = Exclude<GoodId,'provisions'>;
 export const GOODS: Good[] = ALL_GOODS.filter((id):id is Good=>id!=='provisions');
 // Fixed baseline is retained only for contract pricing and legacy callers.
 export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
-export type Contract = { id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
+export type CommissionBuilding = 'Store' | 'Harbour Master';
+export const contractBuilding = (c:Contract):CommissionBuilding => c.building ?? 'Harbour Master';
+export type Contract = { building?: CommissionBuilding; id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
 export type Game = { npcMemories?:NpcMemories; equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' | 'deliver' } | {type:'buy-ship';configurationId:string} | { type: 'accept'; contract: Contract } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Action = CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' } | {type:'buy-ship';configurationId:string} | {type:'deliver'; building?:CommissionBuilding} | { type: 'accept'; contract: Contract; building?:CommissionBuilding } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
 export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);
@@ -84,7 +86,7 @@ export function offers(g:Game):Contract[] {
   const d=distance(g.port,p.id);
   const base=(type:Contract['type'],amount:number):Contract=>({
    id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}${type==='Freight'&&amount!==40?`:${amount}`:''}`,
-   type,from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,
+   type,building:type==='Freight'&&amount<800?'Store':'Harbour Master',from:g.port,to:p.id,sailingReward:type==='Letter'?letterReward(g.port,p.id):0,
    reward:Math.round(type==='Letter'?20+d*1.04:type==='Freight'?20+d*amount*.0432:30+d*amount*.69),amount,
   });
   // Keep original offer IDs and ordering for saved commissions.
@@ -121,7 +123,7 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     sailingCrewPractice(g,v.hours);
     const practice=creditSailing(g.skills,v.hours);g.skills=practice.skills;
     if(practice.earned)note(g,`Sailing practice: +${practice.earned} point(s) for ${v.hours} hours at sea.${practice.tiers?` Mastery increased to tier ${g.skills.sailing.tier}.`:''}`);
-    note(g,`Arrived at ${port(g.port).name}. Visit the Harbour Master to collect completed contract payments.`);}};
+    note(g,`Arrived at ${port(g.port).name}. Check your Journal for each commission’s delivery building and collect payment there.`);}};
   if(action.type.startsWith('battle-')){
     if(action.type==='battle-resume'&&g.battle?.phase==='ended'&&sailingProblems(g).length)throw Error('Your ship or captain cannot continue. Arrange return to port.');
     awardBattlePractice(g);resolveCrewBattle(g);
@@ -207,10 +209,11 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
     }
     case 'accept': {
       const c=offers(g).find(c=>c.id===action.contract.id);if(!c)throw new Error('That offer is no longer available.');
+      if(action.building&&action.building!==contractBuilding(c))throw new Error('That commission is offered at another building.');
       const problems=contractProblems(g,c);if(problems.length)throw new Error(problems.join(' '));
-      g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery.`);break;
+      g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery at the ${contractBuilding(c)}.`);break;
     }
-    case 'deliver':{const delivered=g.contracts.filter(c=>c.to===g.port);if(!delivered.length)throw new Error('No contracts to deliver at this port.');const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;record(g,'quest',reward);g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>c.to!==g.port);changeStanding(g,2*delivered.length,delivered.length);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
+    case 'deliver':{const building=action.building??'Harbour Master';const delivered=g.contracts.filter(c=>c.to===g.port&&contractBuilding(c)===building);if(!delivered.length)throw new Error(`No contracts to deliver at the ${building} in this port.`);const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;record(g,'quest',reward);g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>!delivered.includes(c));changeStanding(g,2*delivered.length,delivered.length);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {
       if(!PORTS.some(p=>p.id===action.to)||action.to===g.port)throw new Error('Choose another port.');
       const problems=sailingProblems(g);if(problems.length)throw new Error(problems.join(' '));
