@@ -2,7 +2,7 @@ import type {Game} from './game';
 import {captain,type Captain,type Ammo} from './battle/types';
 import {BATTERIES,type Battery} from './ships';
 import {record} from './finance';
-import {STARTER_OUTFIT,apparel,type OutfitSlot} from './apparel';
+import {STARTER_OUTFIT,apparel,apparelResaleValue,type OutfitSlot} from './apparel';
 export type Weapon={id:string;name:string;skill:Captain['weapon'];quality:number;price:number;tier:number;description:string};
 export const WEAPONS:Weapon[]=[
  {id:'knife',name:"Sailor's knife",skill:'lightWeapons',quality:0,price:45,tier:0,description:'Its narrow blade has opened more rope knots than throats, though it can do either.'},
@@ -58,7 +58,7 @@ export function equipmentAct(g:Game,a:EquipmentAction){
  }else if(a.type==='sell-apparel'){
   const item=apparel(a.id);if(!item||!e.wardrobe!.includes(a.id))throw Error('You do not own this item.');
   if(item.starter||e.outfit?.[item.slot]===a.id)throw Error('Unequip this item before selling it.');
-  const price=Math.floor(item.price*(item.kind==='clothing'?.15:.6));
+  const price=apparelResaleValue(item);
   e.wardrobe=e.wardrobe!.filter(id=>id!==a.id);g.silver+=price;record(g,'equipment',price);
   g.log.unshift({hours:g.hours,text:`Sold ${item.name} for ${price} silver.`});
  }else if(a.type==='equip-apparel'){

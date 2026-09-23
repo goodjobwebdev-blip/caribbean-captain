@@ -32,3 +32,5 @@ export const APPAREL:Apparel[]=[
 ];
 export const STARTER_OUTFIT:Record<OutfitSlot,string>={head:'plain-kerchief',body:'work-shirt',feet:'worn-deck-shoes'};
 export const apparel=(id:string)=>APPAREL.find(item=>item.id===id);
+
+export const apparelResaleValue=(item:Apparel)=>Math.floor(item.price*(item.kind==='clothing'?.15:.6));
