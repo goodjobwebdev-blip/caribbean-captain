@@ -1,0 +1,31 @@
+// @vitest-environment happy-dom
+import 'fake-indexeddb/auto';
+import {afterEach,it,expect} from 'vitest';
+import {render,screen,fireEvent,cleanup,within,waitFor} from '@testing-library/react';
+import {App} from '../src/main';
+import {profiles} from '../src/storage';
+afterEach(cleanup);
+it('opens services through dialogue, keeps a completed purchase open, and remembers return visits',async()=>{
+ render(<App/>);
+ const create=screen.getByRole('button',{name:'Create captain'});await waitFor(()=>expect(create.hasAttribute('disabled')).toBe(false));
+ fireEvent.change(screen.getByLabelText('Captain’s name'),{target:{value:'Dialogue integration'}});fireEvent.click(create);
+ await screen.findByText('Samuel Hale');
+ expect(screen.queryByRole('button',{name:'Create church checkpoint'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:/Let us record this chapter/}));
+ fireEvent.click(screen.getByRole('button',{name:'Create church checkpoint'}));
+ await screen.findByText(/This chapter of your voyage has been recorded/);
+ expect(screen.getByRole('button',{name:'Create church checkpoint'})).toBeTruthy();
+ const locations=screen.getByRole('navigation',{name:'Town locations'});
+ fireEvent.click(within(locations).getByText('Store',{exact:true}));await screen.findByText('Elias Ward');
+ expect(screen.queryByText('The trading counter')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:/Let me see your wares/}));expect(screen.getByText('The trading counter')).toBeTruthy();
+ expect(screen.queryByRole('button',{name:'Legal market'})).toBeNull();
+ fireEvent.change(screen.getByLabelText('Sugar quantity'),{target:{value:'1'}});
+ fireEvent.click(screen.getByRole('button',{name:/Confirm deal/}));await screen.findByText(/The cargo deal is complete/);
+ expect(screen.getByText('The trading counter')).toBeTruthy();
+ fireEvent.click(screen.getByRole('button',{name:'Speak to Elias Ward'}));expect(screen.queryByText('The trading counter')).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Back to harbour'}));await screen.findByText('Where to, Captain?');
+ fireEvent.click(within(locations).getByText('Store',{exact:true}));await screen.findByText(/Welcome back, Captain/);
+ const saved=(await profiles()).find(p=>p.name==='Dialogue integration')!;
+ expect(saved.game.npcMemories!['bridgetown:Store']!.visits).toBe(2);expect(saved.game.npcMemories!['bridgetown:Store']!.lastTrade!.text).toContain('deal is complete');
+});
