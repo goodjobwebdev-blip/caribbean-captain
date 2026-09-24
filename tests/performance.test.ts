@@ -96,10 +96,10 @@ describe('ship performance',()=>{
 });
 describe('larger freight',()=>{
  it('offers distinct 40/200/800-unit jobs with rebalanced new-job rewards',()=>{
-  const g=rich(),jobs=offers(g).filter(c=>c.type==='Freight'&&c.to==='saint-pierre');
+  const g=rich(),jobs=offers(g).filter(c=>c.type==='Freight'&&!c.assignment&&c.to==='saint-pierre');
   expect(jobs.map(c=>c.amount)).toEqual([40,200,800]);expect(jobs.map(c=>c.reward)).toEqual([120,519,2018]);
   expect(jobs[0].id).toBe('bridgetown:saint-pierre:0:Freight');expect(new Set(jobs.map(c=>c.id)).size).toBe(3);
-  g.ship=createShip('fluyt-merchant');g.crew=16;g.skills={sailing:{tier:10,points:0}};expect(offers(g).filter(c=>c.type==='Freight'&&c.to==='saint-pierre')).toEqual(jobs);
+  g.ship=createShip('fluyt-merchant');g.crew=16;g.skills={sailing:{tier:10,points:0}};expect(offers(g).filter(c=>c.type==='Freight'&&!c.assignment&&c.to==='saint-pierre')).toEqual(jobs);
  });
  it('checks both capacities and delivers the accepted larger terms exactly once',()=>{
   let g=rich();const tooBig=offers(g).find(c=>c.amount===800)!;expect(contractProblems(g,tooBig).join()).toContain('800 free hold units');

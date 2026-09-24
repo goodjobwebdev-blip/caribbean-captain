@@ -16,6 +16,6 @@ New offers carry a persisted building field. Missing fields always mean Harbour 
 
 Rewards, three-contract global limit, daily offer refresh, hold and weight rules, reputation, skill rewards, and action time remain unchanged. One delivery action takes one hour per building, even if it completes several jobs. No automatic payment on arrival.
 
-Deferred: new quest types and other buildings' planned quests are roadmap item 5; no escorts, medical deliveries, or monk passengers are introduced here.
+This document records item 4. Roadmap item 5 now adds medical deliveries, monk passengers, garrison supplies, official dispatches, and donations: see [easy commissions](easy-commissions.md). Escorts remain deferred.
 
 Validation covers mixed old/new contracts, duplicate-payment prevention, building filtering, canonical acceptance, NPC completion memory, journal destinations, checkpoint-compatible normalization, and delivery through the service panel. Existing voyage tests now deliver new freight at the Store.

@@ -14,7 +14,10 @@ export const TOPICS:Partial<Record<NpcPlace,readonly Topic[]>>={
  Tavern:[topic('lodging','I need hands for my ship—and perhaps a room.','Hire or release sailors, or rest at the tavern.'),topic('crew','My people could use your help.','Arrange training, medical care, or shore leave.'),topic('contact','Can you introduce me to someone discreet?','Arrange a local smuggler introduction.')],
  'Harbour Master':[topic('quests','Have you work for a reliable captain?','Accept letters, large freight, or passenger commissions. Deliver Harbour Master commissions here, including work accepted before freight moved to Stores.'),topic('permits','Let us put my papers and lookout in order.','Buy a national trade permit or a spyglass.')],
  Shipyard:[topic('repairs','My ship needs a practiced hand.','Repair hull and sails or replace missing cannons, including repairs with carried materials.'),topic('ships','Show me what ships you have for sale.','Compare ships and exchange the current vessel for another.')],
- Church:[topic('checkpoints','Let us record this chapter of my voyage.','Create, restore, or delete church checkpoints.')],
+ Church:[topic('quests','Does the parish need passage or a helping hand?','Carry monks to another church or fulfil a local silver donation request.'),topic('checkpoints','Let us record this chapter of my voyage.','Create, restore, or delete church checkpoints.')],
+ Pharmacy:[topic('quests','Have you remedies that need carrying overseas?','Deliver sealed medical supplies to another pharmacy.')],
+ 'Fort & Garrison':[topic('quests','Does another garrison need supplies?','Carry sealed ammunition and gunpowder to a garrison of the same nation.')],
+ Governor:[topic('quests','May I carry a dispatch for your office?','Deliver an official dispatch to another governor of the same nation.')],
  Blacksmith:[topic('equipment','Show me your steel and armour.','Buy, sell, and equip the existing personal combat equipment.')],
  Weaver:[topic('clothing','I could use something fit for a captain.','Buy, sell, and equip clothing.')],
 };
@@ -287,12 +290,14 @@ const RESULTS:Partial<Record<Action['type'],string>>={
 };
 export function rememberService(before:Game,after:Game,place:NpcPlace,action:Action){
  if(after.failed||after.voyage)return false;
- let text=RESULTS[action.type];if(!text)return false;
+ const donated=action.type==='accept'&&(after.archive?.length??0)>(before.archive?.length??0);
+ let text=donated?'Your parish donation is received with thanks.':RESULTS[action.type];if(!text)return false;
  if(action.type==='trade'&&action.channel==='smuggler')text='The discreet exchange and its inspection are resolved. Consult the transaction record for any confiscations or fines.';
  const id=npcAt(after.port,place).id,memory=(after.npcMemories??={})[id]??{visits:1,lastVisit:before.hours,interactions:0,completedWork:0};
  memory.interactions++;memory.lastAction={text,hour:after.hours};
  if(['trade','buy','sell','buy-equipment','sell-equipment','buy-apparel','sell-apparel','buy-ship'].includes(action.type))memory.lastTrade={text,hour:after.hours};
  if(action.type==='deliver')memory.completedWork+=before.contracts.length-after.contracts.length;
+ if(donated)memory.completedWork++;
  after.npcMemories[id]=memory;return true;
 }
 export function dialogueContext(g:Game,place:NpcPlace,topicId:string|null,reaction=false){

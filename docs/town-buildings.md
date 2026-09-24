@@ -58,11 +58,11 @@ The Church records recovery checkpoints and later offers religious or diplomatic
 - **Buy and sell:** None.
 - **Services — current:** Create, restore, and delete checkpoints.
 - **Services — TBD:** Improve attitude with nations.
-- **Quests — TBD:** Carry monks as passengers; complete small donation requests.
+- **Quests — current:** Carry monks as passengers; fulfil local silver donation requests. See [easy commissions](easy-commissions.md).
 
 ## Planned buildings
 
-The following buildings are present in the town interface. Blacksmith and Weaver are now actionable; the other listed buildings remain non-actionable previews with **TBD** capabilities.
+The following buildings are present in the town interface. Blacksmith and Weaver are now actionable; Pharmacy, Fort & Garrison, and Governor now offer commissions. Their other capabilities and the remaining buildings are **TBD**.
 
 ### Brothel
 
@@ -78,7 +78,7 @@ The Pharmacy supplies medicine and treats conditions beyond ordinary rest.
 
 - **Buy and sell:** Potions and medicinal herbs as inventory items.
 - **Services:** Heal the captain and treat injured or ill crew.
-- **Quests:** Deliver potions, herbs, and medical supplies rather than letters.
+- **Quests — current:** Deliver sealed herbs, remedies, and medical supplies to another pharmacy. Usable medicines remain TBD.
 
 ### Blacksmith
 
@@ -94,7 +94,8 @@ The Fort provides routine military work and receives prisoners captured at sea.
 
 - **Buy and sell:** None.
 - **Services:** Hand over captured pirates or enemies of the controlling nation.
-- **Quests:** Hunt wanted captains; resupply ammunition and gunpowder from another colony; patrol for pirates.
+- **Quests — current:** Deliver sealed ammunition and gunpowder to a same-nation garrison.
+- **Quests — TBD:** Hunt wanted captains; patrol for pirates.
 
 ### Governor
 
@@ -102,7 +103,8 @@ The Governor offers rare, dangerous, and politically sensitive official commissi
 
 - **Buy and sell:** None.
 - **Services:** None planned.
-- **Quests:** High-value bounties, pirate patrols, very important letters, espionage in hostile ports, and capture of ships carrying specified loot.
+- **Quests — current:** Official dispatches to a same-nation governor.
+- **Quests — TBD:** High-value bounties, pirate patrols, espionage in hostile ports, and capture of ships carrying specified loot.
 
 ### Book Store
 
@@ -153,3 +155,5 @@ The Customs House separates cargo regulation and anti-smuggling enforcement from
 | Customs House | Inspections, anti-smuggling, and confiscated cargo |
 
 The Store owns small and medium freight. The Harbour Master owns large freight. The Tavern owns small escorts; the Harbour Master owns medium and large escorts.
+
+See the [quest difficulty roadmap](quest-roadmap.md) for easy, medium, and hard implementation groups.
