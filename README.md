@@ -64,3 +64,5 @@ Small and medium freight jobs are accepted and delivered at Stores. Letters, pas
 Repeatable work now includes Church monk passages and parish donations, Pharmacy medical freight, Fort & Garrison supply deliveries, and Governor dispatches. See [easy commissions](docs/easy-commissions.md) and the [full quest difficulty roadmap](docs/quest-roadmap.md).
 
 Shipyard outfitting now supports 6–32-pound cannons and culverins per battery, replaceable sail sets, and permanent hull reinforcement. Refits affect sailing, naval combat, repairs, and resale. See [ship outfitting](docs/ship-outfitting.md).
+
+Game UI details now include crew and skill progress bars, ship condition/capacity meters, saved-action result highlights, and building delivery badges. Existing themes and game mechanics are unchanged. See [UI details](docs/ui-details.md).

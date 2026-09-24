@@ -167,3 +167,31 @@ input[type=radio]{accent-color:var(--primary)}
 .dialogue-choices button { text-align: left; padding: 1rem; white-space: normal; }
 .dialogue-choices small { display: block; margin-top: .4rem; font-weight: normal; }
 .npc-dialogue blockquote { min-height: 5rem; }
+
+/* Small game details use the selected theme's existing semantic colors. */
+.meter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin:14px 0}
+.status-meter{min-width:0;--meter-fill:var(--primary)}
+.meter-warning{--meter-fill:var(--warning)}.meter-danger{--meter-fill:var(--danger)}
+.meter-caption{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:7px;font-size:12px;flex-wrap:wrap}
+.meter-caption>span{color:var(--muted)}.meter-caption strong{font-size:11px;font-variant-numeric:tabular-nums;color:var(--text)}
+.meter-warning .meter-caption strong{color:var(--warning)}.meter-danger .meter-caption strong{color:var(--danger)}
+.meter-track{height:8px;overflow:hidden;border:1px solid var(--line);background:var(--surface);border-radius:20px}
+.meter-track>span{display:block;height:100%;background:var(--meter-fill);border-radius:inherit;transition:width .25s ease}
+.ship-meters{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:4px 16px;margin:0 0 18px}
+.crew-meters{grid-template-columns:repeat(3,minmax(0,1fr))}.crew-meters .status-meter:nth-child(n+4){grid-column:auto}
+.action-feedback{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:18px;border:1px solid var(--success-line);border-left:4px solid var(--primary);background:var(--paper);border-radius:6px;animation:feedback-arrive .25s ease-out}
+.action-feedback>div{flex:1;min-width:0}.feedback-heading{font-size:12px}.action-feedback ul{display:flex;flex-wrap:wrap;gap:7px;list-style:none;padding:0;margin:8px 0 0}
+.action-feedback li{font-size:12px;padding:4px 8px;border-radius:4px;background:var(--surface);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.action-feedback .feedback-milestone{font-weight:700;border:1px solid var(--success-line);background:var(--success-bg)}
+.action-feedback .feedback-cost{color:var(--muted)}.action-feedback>button{padding:3px 9px;font-size:19px;line-height:1.3}
+.delivery-badge,.quest-ready{background:var(--success-bg);color:var(--ink);border:1px solid var(--success-line)}
+.delivery-badge{font-size:10px;line-height:1.3;white-space:nowrap;padding:3px 6px;border-radius:12px;margin-left:auto}
+.quest-completed{border:1px solid var(--line);color:var(--muted)}.quest-failed{color:var(--danger);background:var(--danger-bg)}
+.commission .quest-status{display:inline-block;margin:5px 0 0 7px}.port-nav nav button{flex-wrap:wrap;gap:5px}
+.port-nav nav button[aria-current="location"],button[role="tab"][aria-selected="true"],button[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--primary);font-weight:700}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+button:disabled{cursor:not-allowed}
+@keyframes feedback-arrive{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}
+@media(max-width:720px){.crew-meters{grid-template-columns:repeat(2,minmax(0,1fr))}.ship-meters{padding:2px 12px}.delivery-badge{margin-left:0}.port-nav nav button .delivery-badge{display:inline-block}}
+@media(max-width:420px){.meter-grid{grid-template-columns:1fr}.meter-caption{gap:4px}.action-feedback{padding:12px}}
+@media(prefers-reduced-motion:reduce){.meter-track>span{transition:none}.action-feedback{animation:none}}
