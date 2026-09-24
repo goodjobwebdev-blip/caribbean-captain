@@ -195,3 +195,7 @@ button:disabled{cursor:not-allowed}
 @media(max-width:720px){.crew-meters{grid-template-columns:repeat(2,minmax(0,1fr))}.ship-meters{padding:2px 12px}.delivery-badge{margin-left:0}.port-nav nav button .delivery-badge{display:inline-block}}
 @media(max-width:420px){.meter-grid{grid-template-columns:1fr}.meter-caption{gap:4px}.action-feedback{padding:12px}}
 @media(prefers-reduced-motion:reduce){.meter-track>span{transition:none}.action-feedback{animation:none}}
+
+/* Harbour paintings reserve their space before loading. */
+.harbour-art{display:block;width:100%;height:auto;aspect-ratio:2/1;object-fit:cover;object-position:center 48%;border:1px solid var(--line);border-radius:6px;background:var(--surface);margin:0 0 18px}
+@media(max-width:720px){.harbour-art{aspect-ratio:5/2;height:auto;max-height:220px;object-fit:cover}}
