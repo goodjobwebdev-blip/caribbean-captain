@@ -1,3 +1,4 @@
+import {StatusMeter} from './GameDetails';
 import type {Game} from './game';
 import {effectiveSpeed,sailingBonus} from './game';
 import {spread} from './trade';
@@ -54,7 +55,7 @@ function SkillCard({definition:d,game:g}:{definition:SkillDefinition;game:Game})
   <div className="section-line"><div><p className="skill-category">{d.category}</p><h2>{d.name}</h2></div><span className="quest-status">Tier {progress.tier} / 10</span></div>
   <p>{d.description}</p>
   <dl className="full-stats skill-progress-stats"><div><dt>Mastery tier</dt><dd>{progress.tier} / 10</dd></div><div><dt>Progress to next tier</dt><dd>{target===null?'Maximum mastery':`${progress.points.toFixed(2)} / ${target} points`}</dd></div>{d.id==='sailing'&&<div><dt>Practice toward next point</dt><dd>{target===null?'Maximum mastery':`${progress.sailingHours??0} / 24 sailing hours`}</dd></div>}</dl>
-  {target!==null&&<progress aria-label={`${d.name} progress toward tier ${progress.tier+1}`} value={Math.min(progress.points,target)} max={target}>{progress.points} / {target}</progress>}
+  <StatusMeter label={target===null?`${d.name} mastery`:`${d.name} progress toward tier ${progress.tier+1}`} value={target===null?1:progress.points} max={target??1} detail={target===null?'Maximum mastery':`${progress.points.toFixed(2)} / ${target} points · ${(target-progress.points).toFixed(2)} to next tier`} progress/>
   <div className="skill-information">
    <section><h3>Influences now</h3><p>{mechanic}</p></section>
    <section><h3>Future influence <Status>TBD</Status></h3><p>{d.futureMechanic}</p></section>
