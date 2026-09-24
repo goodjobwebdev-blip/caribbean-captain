@@ -1,0 +1,52 @@
+// @vitest-environment happy-dom
+import {it,expect,afterEach} from 'vitest';
+import {render,screen,fireEvent,cleanup} from '@testing-library/react';
+import {act,newGame,offers,contractBuilding,normalizeGame,type Contract} from '../src/game';
+import {Commissions} from '../src/main';
+import {Journal} from '../src/Journal';
+import {rememberService} from '../src/npcs';
+afterEach(cleanup);
+it('routes new offers without changing offer IDs and validates their building',()=>{
+ const g=newGame('Routing',1),jobs=offers(g);
+ expect(jobs.filter(c=>contractBuilding(c)==='Store')).toHaveLength(28);
+ expect(jobs.filter(c=>contractBuilding(c)==='Harbour Master')).toHaveLength(42);
+ const freight=jobs.find(c=>c.type==='Freight'&&c.amount===40)!;
+ expect(freight.id).toBe(`${g.port}:${freight.to}:0:Freight`);
+ expect(()=>act(g,{type:'accept',contract:freight,building:'Harbour Master'})).toThrow('another building');
+ const accepted=act(g,{type:'accept',contract:{...freight,building:'Harbour Master'},building:'Store'});
+ expect(contractBuilding(accepted.contracts[0])).toBe('Store');
+ expect(g.contracts).toHaveLength(0);
+});
+it('keeps legacy contracts at the Harbour Master and only pays matching work once',()=>{
+ const g=newGame('Mixed',2),jobs=offers(g),freight=jobs.find(c=>c.type==='Freight'&&c.amount===40)!,letter=jobs.find(c=>c.type==='Letter'&&c.to===freight.to)!;
+ const legacy:Contract={...freight,id:'legacy'};delete legacy.building;
+ g.contracts=[freight,letter,legacy];g.port=freight.to;
+ const checkpoint=structuredClone(g);
+ const next=act(g,{type:'deliver',building:'Store'});
+ expect(next.archive?.map(c=>c.id)).toEqual([freight.id]);
+ expect(next.contracts.map(c=>c.id)).toEqual([letter.id,'legacy']);
+ expect(next.hours).toBe(g.hours+1);
+ expect(rememberService(g,next,'Store',{type:'deliver',building:'Store'})).toBe(true);
+ expect(next.npcMemories?.[`${g.port}:Store`]?.completedWork).toBe(1);
+ expect(()=>act(next,{type:'deliver',building:'Store'})).toThrow('No contracts');
+ const finished=act(next,{type:'deliver',building:'Harbour Master'});
+ expect(finished.contracts).toHaveLength(0);expect(finished.archive).toHaveLength(3);
+ const restored=normalizeGame(checkpoint);
+ expect(restored.contracts).toEqual(g.contracts);expect(contractBuilding(restored.contracts[2])).toBe('Harbour Master');
+});
+it('shows the proper delivery destination in the journal and keeps the service panel after delivery',()=>{
+ const g=newGame('Panels',3),freight=offers(g).find(c=>c.type==='Freight'&&c.amount===40)!;
+ g.port=freight.to;g.contracts=[freight,{...freight,id:'legacy',building:undefined}];
+ const view=render(<Journal game={g}/>);fireEvent.click(screen.getByRole('tab',{name:'Quests'}));
+ expect(screen.getAllByText('Delivery building')).toHaveLength(2);
+ expect(screen.getByText('Store',{exact:true})).toBeTruthy();expect(screen.getByText('Harbour Master',{exact:true})).toBeTruthy();
+ view.unmount();
+ let current=g;
+ const perform=(action:Parameters<typeof act>[1])=>{current=act(current,action);panel.rerender(<Commissions game={current} building="Store" busy={false} perform={perform}/>);};
+ const panel=render(<Commissions game={g} building="Store" busy={false} perform={perform}/>);
+ expect(screen.queryByRole('button',{name:'Accept letter'})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Deliver completed tasks'}));
+ expect(screen.getByRole('heading',{name:'Available work'})).toBeTruthy();
+ expect(screen.getByRole('button',{name:'Deliver completed tasks'}).hasAttribute('disabled')).toBe(true);
+ expect(current.contracts.map(c=>c.id)).toEqual(['legacy']);
+});

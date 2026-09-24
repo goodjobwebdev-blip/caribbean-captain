@@ -6,7 +6,7 @@ Agreed 23 September 2026. Implement named, predefined NPCs per town and building
 
 Entering a building shows its named host, a short scene and greeting, and dialogue choices leading to the existing services. The current town navigation remains available. “Speak to [name]” returns from a service to the conversation; “Back to harbour” is always available. Services retain authoritative prices, confirmations, and action controls. Dialogue navigation itself costs no game time.
 
-The Store offers trading, provisions preparation, and the existing smuggler market; Tavern offers recruitment/rest, crew care/training, and introductions; Harbour Master offers commissions and permits/navigation equipment; Shipyard offers repairs and ship exchange; Church offers checkpoints; Blacksmith and Weaver offer their existing catalogues. Quests remain at the Harbour Master until roadmap item 4. Placeholder buildings receive named hosts but offer no invented services or quests.
+The Store offers trading, provisions preparation, and the existing smuggler market; Tavern offers recruitment/rest, crew care/training, and introductions; Harbour Master offers commissions and permits/navigation equipment; Shipyard offers repairs and ship exchange; Church offers checkpoints; Blacksmith and Weaver offer their existing catalogues. Roadmap item 4 now adds Store freight commissions; see [building commissions](building-commissions.md). Placeholder buildings receive named hosts but offer no invented services or quests.
 
 ## NPC identities and memory
 
@@ -23,7 +23,7 @@ Show authored fallback prose immediately. Model latency must not disable navigat
 ## Deferred
 
 - Free-text chat, full conversation transcripts, relationship quests, gifts, and romance.
-- Moving commissions to appropriate buildings and adding quests (roadmap items 4–5).
+- Additional quest types (roadmap item 5); freight redistribution from item 4 is implemented.
 - NPC portraits and building imagery (item 8).
 - Mechanical price or inventory effects from individual NPC personalities.
 - Separate named smuggler contacts: the existing market is retained as a service branch; the host introduces the exchange without claiming its goods are legal.
