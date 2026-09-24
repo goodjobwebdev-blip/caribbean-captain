@@ -1,3 +1,4 @@
+import {gunFit,gunAccuracy,gunDamage,shipProtection,sailStats} from '../ships';
 import {crewPractice,CREW_DOMAINS} from '../crew';
 import {practice} from './progression';
 import type {Game} from '../game';
@@ -27,7 +28,7 @@ export function orderCatalogue(b:Battle,id:string):Order[]{
  for(const angle of [-180,-135,-90,-45,45,90,135,180])add(`turn_${angle}`,'turn',100*Math.abs(angle)/45,'sailing',{}, {angle},{Maneuverability:(50-performance(s).maneuverability)/100,'Full Sail':s.sails===2?.2:0,'Through wind':Math.abs(norm(b.wind-s.heading+180)-180)<=Math.abs(angle)?.2:0,Rigging:statePenalty(s.states.rigging)});
  for(const setting of [0,1,2])if(setting!==s.sails)add(`sails_${setting}`,'sails',150*Math.abs(setting-s.sails),'sailing',{}, {setting},{'Sail damage':(100-s.ship.sailCondition)/200,Rigging:statePenalty(s.states.rigging)});
  for(const battery of BATTERIES){const count=s.ship.cannons[battery];if(!count)continue;
-  const penalties={'Gunnery experience':(50-crewExperience(s.crew,'gunnery'))/200,'Battery damage':Math.max(0,1-count/Math.max(1,spec.defaultCannons[battery]))*.25};
+  const penalties={'Gunnery experience':(50-crewExperience(s.crew,'gunnery'))/200,'Battery damage':Math.max(0,1-count/Math.max(1,gunFit(s.ship,battery).fitted))*.25};
   add(`fire_${battery}`,'fire',150,'aiming',{}, {battery,target:enemy},penalties);
   for(const h of b.hazards)add(`fire_${battery}_${h.id}`,'fire',150,'aiming',{}, {battery,target:h.id},penalties);
   add(`unload_${battery}`,'unload',200,'reloading',{}, {battery},penalties);
@@ -63,7 +64,7 @@ export function preload(b:Battle,id:string,battery:Battery,ammo:Ammo){
 export function completePreloads(b:Battle){for(const [id,plan] of Object.entries(b.plans)){for(const o of plan.filter(o=>o.kind==='preload')){inventoryEffect(b.ships[id],o);b.preloaded.push(`${id}:${o.battery}`);}b.plans[id]=plan.filter(o=>o.kind!=='preload');}}
 function accuracy(ammo:Ammo,d:number){return ammo==='round-shot'?d<26?2:d<100?1:d<300?0:d<600?-1:d<=1000?-2:null:ammo==='chain-shot'?d<26?2:d<100?1:d<300?0:d<600?-2:null:ammo==='bombs'?d<26?2:d<100?1:d<300?-1:null:d<26?2:d<100?0:null;}
 function upgrade(s:Combatant,state:Condition,severity:number){s.states[state]=Math.min(3,Math.max(severity,s.states[state]?s.states[state]+1:0));}
-function hurt(s:Combatant,kind:string,raw:number,g:Game){const spec=shipDefinition(s.ship.configurationId),mitigation=kind==='hull'||kind==='cannons'?spec.protection:kind==='crew'?s.crew.equipment:0;const n=raw<=0?0:Math.max(1,Math.round(raw*100/(100+mitigation)));
+function hurt(s:Combatant,kind:string,raw:number,g:Game){const spec=shipDefinition(s.ship.configurationId),mitigation=kind==='hull'||kind==='cannons'?shipProtection(s.ship):kind==='crew'?s.crew.equipment:0;const n=raw<=0?0:Math.max(1,Math.round(raw*(kind==='sails'?sailStats(s.ship).damage:1)*100/(100+mitigation)));
  if(kind==='hull')s.ship.hullPoints-=n;if(kind==='sails')s.ship.sailCondition=Math.max(0,s.ship.sailCondition-n);if(kind==='crew')casualties(g,s.crew,n);
  if(kind==='cannons')for(let i=0;i<n;i++){const batteries=BATTERIES.filter(k=>s.ship.cannons[k]>0);if(!batteries.length)break;const k=batteries[Math.floor(rng(g)*batteries.length)];s.ship.cannons[k]--;s.batteries[k].loaded=Math.min(s.batteries[k].loaded,s.ship.cannons[k]);}
 }
@@ -75,12 +76,12 @@ function volley(g:Game,b:Battle,id:string,o:Order,pre:Battle){
  const d=Math.hypot(shooter.x-target.x,shooter.y-target.y),rangeMod=accuracy(gun.ammo,d);if(rangeMod===null){report(b,`${o.id}: target outside ammunition range; load retained.`);return;}
  const shipTarget='ship' in target?target:null,tier=shipTarget?shipDefinition(shipTarget.ship.configurationId).tier:1;
  const transverse=shipTarget?Math.abs(Math.sin((shipTarget.heading-Math.atan2(target.y-shooter.y,target.x-shooter.x)*180/Math.PI)*Math.PI/180)*speed(shipTarget,pre)*250):0;
- const r=roll(g,'Cannon volley',{'Cannon Aiming':Math.floor((shooter.skills.aiming??0)/3),'Ammunition range':rangeMod,'Target size':shipTarget?tier<=2?-1:tier>=5?1:0:-2,'Transverse movement':transverse<25?1:transverse<100?0:transverse<200?-1:-2,'Gunnery experience':Math.floor((crewExperience(shooter.crew,'gunnery')-50)/25)});recordRoll(g,b,r);
+ const r=roll(g,'Cannon volley',{'Cannon Aiming':Math.floor((shooter.skills.aiming??0)/3),'Ammunition range':rangeMod,'Gun accuracy':gunAccuracy(shooter.ship,o.battery!,d),'Target size':shipTarget?tier<=2?-1:tier>=5?1:0:-2,'Transverse movement':transverse<25?1:transverse<100?0:transverse<200?-1:-2,'Gunnery experience':Math.floor((crewExperience(shooter.crew,'gunnery')-50)/25)});recordRoll(g,b,r);
  practice(b,id,'aiming',r.band===0?.25:.5);
  const natural=r.dice[0]+r.dice[1],out=natural===2?0:natural===12?3:r.total<=6?0:r.total<=8?1:r.total<=10?2:3,mult=[0,.5,1,1.5][out];
  s.batteries[o.battery!].loaded=0;s.batteries[o.battery!].ammo=null;report(b,`${id} ${o.battery}: ${['Miss','Glancing hit','Solid hit','Critical hit'][out]}.`);if(!out)return;
  if(!shipTarget){explode(g,b,o.target!,out===3);return;}const t=b.ships[o.target!],packets:Record<string,number>={hull:0,sails:0,crew:0,cannons:0};
- for(let i=0;i<count;i++){const kind=gun.ammo==='round-shot'?weighted(g,[['hull',50],['sails',20],['crew',20],['cannons',10]]):gun.ammo==='chain-shot'?'sails':gun.ammo==='grapeshot'?'crew':'hull';packets[kind]+=(gun.ammo==='round-shot'?{hull:4,sails:2,crew:1,cannons:1}[kind]!:gun.ammo==='chain-shot'?5:gun.ammo==='grapeshot'?2:8)*gun.power;}
+ for(let i=0;i<count;i++){const kind=gun.ammo==='round-shot'?weighted(g,[['hull',50],['sails',20],['crew',20],['cannons',10]]):gun.ammo==='chain-shot'?'sails':gun.ammo==='grapeshot'?'crew':'hull';packets[kind]+=(gun.ammo==='round-shot'?{hull:4,sails:2,crew:1,cannons:1}[kind]!:gun.ammo==='chain-shot'?5:gun.ammo==='grapeshot'?2:8)*gun.power*gunDamage(shooter.ship,o.battery!);}
  for(const [kind,raw] of Object.entries(packets))hurt(t,kind,raw*mult,g);
  if(gun.ammo==='bombs'&&d<=25)hurt(s,'hull',packets.hull*mult,g);
  if(gun.ammo==='grapeshot'&&t.crew.fit<shipTarget.crew.fit){const lost=1-t.crew.fit/shipTarget.crew.fit;morale(g,b,t,lost<.05?0:lost<.15?-1:lost<.3?-2:-3);}

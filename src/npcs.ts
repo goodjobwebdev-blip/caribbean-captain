@@ -13,7 +13,7 @@ export const TOPICS:Partial<Record<NpcPlace,readonly Topic[]>>={
  Store:[topic('quests','Have you any work for my ship?','Accept small and medium freight commissions and deliver Store commissions here.'),topic('trade','Let me see your wares.','Buy and sell cargo through a single trading basket.'),topic('supplies','My crew needs provisions.','Prepare provisions from food carried aboard; provisions can also be bought at the trading counter.'),topic('smuggler','I have business best kept off the books.','Use the existing smuggler market. A tavern introduction is required; inspections and fines remain possible.')],
  Tavern:[topic('lodging','I need hands for my ship—and perhaps a room.','Hire or release sailors, or rest at the tavern.'),topic('crew','My people could use your help.','Arrange training, medical care, or shore leave.'),topic('contact','Can you introduce me to someone discreet?','Arrange a local smuggler introduction.')],
  'Harbour Master':[topic('quests','Have you work for a reliable captain?','Accept letters, large freight, or passenger commissions. Deliver Harbour Master commissions here, including work accepted before freight moved to Stores.'),topic('permits','Let us put my papers and lookout in order.','Buy a national trade permit or a spyglass.')],
- Shipyard:[topic('repairs','My ship needs a practiced hand.','Repair hull and sails or replace missing cannons, including repairs with carried materials.'),topic('ships','Show me what ships you have for sale.','Compare ships and exchange the current vessel for another.')],
+ Shipyard:[topic('outfitting','Let us discuss guns, sails, and a stronger hull.','Refit each battery with cannons or culverins, replace sails, or permanently reinforce the hull. Review prices, weight, speed and trade-offs before confirming.'),topic('repairs','My ship needs a practiced hand.','Repair hull and sails or replace missing cannons, including repairs with carried materials.'),topic('ships','Show me what ships you have for sale.','Compare ships and exchange the current vessel for another.')],
  Church:[topic('quests','Does the parish need passage or a helping hand?','Carry monks to another church or fulfil a local silver donation request.'),topic('checkpoints','Let us record this chapter of my voyage.','Create, restore, or delete church checkpoints.')],
  Pharmacy:[topic('quests','Have you remedies that need carrying overseas?','Deliver sealed medical supplies to another pharmacy.')],
  'Fort & Garrison':[topic('quests','Does another garrison need supplies?','Carry sealed ammunition and gunpowder to a garrison of the same nation.')],
@@ -277,7 +277,7 @@ export function visitNpc(original:Game,place:NpcPlace):Game{
  g.npcMemories[id]={...memory,visits:memory.visits+1,lastVisit:g.hours};return g;
 }
 const RESULTS:Partial<Record<Action['type'],string>>={
- trade:'The cargo deal is complete.',buy:'The purchase is complete.',sell:'The sale is complete.',
+ refit:'Your ship’s refit is complete.',trade:'The cargo deal is complete.',buy:'The purchase is complete.',sell:'The sale is complete.',
  hire:'A new sailor has joined your crew.',dismiss:'A sailor has been released from service.',sleep:'Your stay at the tavern is complete.',
  'train-crew':'The crew has finished its training.','medical-care':'The treatment is complete.','shore-leave':'Your crew has returned from shore leave.',
  repair:'The hull repairs are complete.','repair-sails':'The sail repairs are complete.','replace-cannons':'The missing default cannons have been replaced.',

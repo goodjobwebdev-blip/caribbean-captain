@@ -1,7 +1,7 @@
 import {PORT_IDS} from '../world';
 import {encounterPractice} from './progression';
 import type {Game,PortId} from '../game';
-import {SHIPS,createShip,resolveShip,shipDefinition,totalCannons} from '../ships';
+import {SHIPS,createShip,resolveShip,shipDefinition,totalCannons,sailStats} from '../ships';
 import {shipPerformance} from '../performance';
 import {CATALOGUE,type GoodId} from '../goods';
 import {marketSnapshot,consumeLots} from '../trade';
@@ -109,7 +109,7 @@ export function resolveEncounter(g:Game,a:EncounterChoice):'continue'|'naval'|'p
  if(a.choice==='pursue'){if(r.dice[0]+r.dice[1]===12||(r.dice[0]+r.dice[1]!==2&&r.total>=9))return 'pursuit';g.voyage!.remaining+=4;return end();}
  if(a.choice==='flee'){
   if(r.band===0){if(a.dump==='gunpowder'&&r.dice[0]+r.dice[1]===2)g.ship!.hullPoints=Math.max(0,g.ship!.hullPoints-shipDefinition(g.ship!.configurationId).maxHull*.1);return 'naval';}
-  if(r.band===1){const i=clamp(r.total-7,0,2),options=['hull','sails',...(tradeGoods(g).length?['goods']:[]),...((g.cargo.gunpowder??0)>0?['powder']:[])];const cost=options[Math.floor(rng(g)*options.length)];if(cost==='hull')g.ship!.hullPoints=Math.max(0,g.ship!.hullPoints-Math.ceil(shipDefinition(g.ship!.configurationId).maxHull*[.15,.1,.05][i]));if(cost==='sails')g.ship!.sailCondition=Math.max(0,g.ship!.sailCondition-[25,15,5][i]);if(cost==='goods')for(const id of tradeGoods(g))loss(g,id,Math.ceil(g.cargo[id]*[.5,.25,.1][i]));if(cost==='powder')loss(g,'gunpowder',Math.ceil(g.cargo.gunpowder*[.5,.25,.1][i]));e.message+=` Escape cost: ${cost}.`;}
+  if(r.band===1){const i=clamp(r.total-7,0,2),options=['hull','sails',...(tradeGoods(g).length?['goods']:[]),...((g.cargo.gunpowder??0)>0?['powder']:[])];const cost=options[Math.floor(rng(g)*options.length)];if(cost==='hull')g.ship!.hullPoints=Math.max(0,g.ship!.hullPoints-Math.ceil(shipDefinition(g.ship!.configurationId).maxHull*[.15,.1,.05][i]));if(cost==='sails')g.ship!.sailCondition=Math.max(0,g.ship!.sailCondition-[25,15,5][i]*sailStats(g.ship!).damage);if(cost==='goods')for(const id of tradeGoods(g))loss(g,id,Math.ceil(g.cargo[id]*[.5,.25,.1][i]));if(cost==='powder')loss(g,'gunpowder',Math.ceil(g.cargo.gunpowder*[.5,.25,.1][i]));e.message+=` Escape cost: ${cost}.`;}
   return end();
  }
  e.responses++;if(e.demand?.kind==='passengers')e.passengersRefused=true;

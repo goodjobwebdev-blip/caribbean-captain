@@ -1,6 +1,6 @@
 import {crewExperience,crew as defaultCrew} from './battle/types';
 import type {Game,Good} from './game';
-import {resolveShip,shipDefinition,totalCannons,type OwnedShip} from './ships';
+import {resolveShip,shipDefinition,gunWeight,reinforcementWeight,sailStats,type OwnedShip} from './ships';
 import {sailingProgress} from './skills';
 import {CATALOGUE} from './goods';
 export const GOODS_LOAD=CATALOGUE;
@@ -16,8 +16,8 @@ export function loadBreakdown(g:Game,ship:OwnedShip=resolveShip(g)){
  const freight=g.contracts.filter(c=>c.type==='Freight').reduce((sum,c)=>sum+c.amount*FREIGHT_WEIGHT,0);
  const passengers=g.contracts.filter(c=>c.type==='Passengers').reduce((sum,c)=>sum+c.amount,0)*PERSON_WEIGHT;
  const provisions=g.provisions*GOODS_LOAD.provisions.weight;
- const crew=g.crew*PERSON_WEIGHT,captain=PERSON_WEIGHT,cannons=totalCannons(ship.cannons)*CANNON_WEIGHT;
- return {trade,freight,provisions,crew,passengers,captain,cannons,total:trade+freight+provisions+crew+passengers+captain+cannons};
+ const crew=g.crew*PERSON_WEIGHT,captain=PERSON_WEIGHT,cannons=gunWeight(ship),reinforcement=reinforcementWeight(ship);
+ return {trade,freight,provisions,crew,passengers,captain,cannons,reinforcement,total:trade+freight+provisions+crew+passengers+captain+cannons+reinforcement};
 }
 export function shipPerformance(g:Game,ship:OwnedShip=resolveShip(g)){
  const spec=shipDefinition(ship.configurationId),weight=loadBreakdown(g,ship);
@@ -32,10 +32,11 @@ export function shipPerformance(g:Game,ship:OwnedShip=resolveShip(g)){
  const crew=fit<spec.minCrew?0:spec.optimalCrew===spec.minCrew?1:.6+.4*clamp((fit-spec.minCrew)/(spec.optimalCrew-spec.minCrew));
  const company=g.crewState??defaultCrew(g.crew),experience=1+(crewExperience(company,'sailing')-50)/500,readiness=1+(company.morale+company.discipline-100)/1000;
  const mastery=1+sailingProgress(g.skills).tier*.05;
- const speed=spec.speed*loadSpeed*hull*sails*crew*experience*readiness*mastery;
- const maneuverability=spec.maneuverability*loadManeuver*hull*sails*crew*experience*readiness;
+ const outfit=sailStats(ship);
+ const speed=outfit.speed*spec.speed*loadSpeed*hull*sails*crew*experience*readiness*mastery;
+ const maneuverability=outfit.maneuver*spec.maneuverability*loadManeuver*hull*sails*crew*experience*readiness;
  return {weight,loadRatio,availableDeadweight:spec.deadweight-weight.total,overloaded:weight.total>spec.deadweight+1e-8,
-  factors:{loadSpeed,loadManeuver,hull,sails,crew,experience,readiness,mastery},speed,maneuverability};
+  factors:{sailOutfitSpeed:outfit.speed,sailOutfitManeuver:outfit.maneuver,loadSpeed,loadManeuver,hull,sails,crew,experience,readiness,mastery},speed,maneuverability};
 }
 export function sailingProblems(g:Game):string[]{
  const ship=resolveShip(g),spec=shipDefinition(ship.configurationId),performance=shipPerformance(g,ship),problems:string[]=[];

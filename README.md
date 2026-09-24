@@ -62,3 +62,5 @@ Buildings now open with a named host and dialogue choices. Hosts remember visits
 Small and medium freight jobs are accepted and delivered at Stores. Letters, passengers, large freight, and previously accepted contracts stay at Harbour Masters. The Journal records the delivery building. See [building commissions](docs/building-commissions.md).
 
 Repeatable work now includes Church monk passages and parish donations, Pharmacy medical freight, Fort & Garrison supply deliveries, and Governor dispatches. See [easy commissions](docs/easy-commissions.md) and the [full quest difficulty roadmap](docs/quest-roadmap.md).
+
+Shipyard outfitting now supports 6–32-pound cannons and culverins per battery, replaceable sail sets, and permanent hull reinforcement. Refits affect sailing, naval combat, repairs, and resale. See [ship outfitting](docs/ship-outfitting.md).
