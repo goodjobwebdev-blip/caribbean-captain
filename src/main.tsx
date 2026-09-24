@@ -1,3 +1,4 @@
+import {ShipOutfitting} from './ShipOutfitting';
 import {NpcDialogue} from './NpcDialogue';
 import {visitNpc,rememberService,rememberCheckpoint,type NpcPlace} from './npcs';
 import {FoodPreparation} from './SupplyServices';
@@ -78,6 +79,7 @@ export function App(){
  {place==='Tavern'&&topic==='contact'&&<SmugglerContact game={g} busy={busy} perform={perform}/>}
  {place==='Tavern'&&topic==='crew'&&<CrewServices game={g} busy={busy} perform={perform}/>}
  {place==='Tavern'&&topic==='lodging'&&<div className="two-columns"><article className="service"><h2>A hand for the voyage</h2><p>Hire one sailor: 25 silver, 1 hour.</p><p>{g.crew} / {spec.maxCrew} crew. {spec.minCrew} sailors are needed to sail; {spec.optimalCrew} is the optimal crew.</p><p>Current crew effectiveness: {(performance.factors.crew*100).toFixed(1)}%. Extra crew beyond optimal adds upkeep and weight without a further speed bonus.</p><button disabled={busy||g.crew>=spec.maxCrew} onClick={()=>perform({type:'hire'})}>Hire sailor</button><button disabled={busy||g.crew<=spec.minCrew} onClick={()=>perform({type:'dismiss'})}>Release sailor</button><small>Releasing a sailor is free and takes one hour.</small></article><article className="service"><h2>A room upstairs</h2><p>Rest for 8 hours: 8 silver.</p><p>Your crew still draws wages and provisions while you rest. Rest clears captain fatigue, heals one Injury step, and returns up to 10% of living crew from injured to fit.</p><button disabled={busy} onClick={()=>perform({type:'sleep'})}>Sleep at tavern</button></article></div>}
+ {place==='Shipyard'&&topic==='outfitting'&&<ShipOutfitting key={ship.id} game={g} busy={busy} perform={perform}/>}
  {place==='Shipyard'&&(topic==='repairs'||topic==='ships')&&<Shipyard key={ship.id} game={g} busy={busy} perform={perform} view={topic}/>}
  {place==='Harbour Master'&&topic==='permits'&&<><NavigationEquipment game={g} busy={busy} perform={perform}/><TradePermit game={g} busy={busy} perform={perform}/></>}
  {isCommissionBuilding(place)&&topic==='quests'&&<Commissions game={g} building={place} busy={busy} perform={perform}/>}

@@ -126,3 +126,7 @@ The original 40-unit job keeps its ID and reward. Additional sizes have distinct
 IDs. Accepted contracts retain their agreed amounts and rewards, including in
 old saves. Delivery pays once and archives the actual quantity. Freight has no
 bonus Sailing reward; letter rewards and sailing practice remain unchanged.
+
+## Outfitting extension
+
+See [ship outfitting](ship-outfitting.md). Mounted gun weight now depends on calibre (5/7/9/11/14); legacy and stock guns remain 6-pound and weigh 5. Hull reinforcement adds 5% of design deadweight as carried weight. Sail sets apply an additional multiplicative speed and maneuverability factor, separately from sail condition. These effects apply to forecasts, travel, naval movement, ship comparisons, and capture capacity checks.

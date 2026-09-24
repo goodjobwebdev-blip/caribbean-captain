@@ -11,6 +11,7 @@ export function PerformanceBreakdown({game:g}:{game:Game}){
  <tr><th scope="row">Load · {(p.loadRatio*100).toFixed(1)}% of deadweight</th><td>{factorLabel(f.loadSpeed)}</td><td>{factorLabel(f.loadManeuver)}</td></tr>
  <tr><th scope="row">Hull condition</th><td>{factorLabel(f.hull)}</td><td>{factorLabel(f.hull)}</td></tr>
  <tr><th scope="row">Sail condition</th><td>{factorLabel(f.sails)}</td><td>{factorLabel(f.sails)}</td></tr>
+ <tr><th scope="row">Sail outfit</th><td>{factorLabel(f.sailOutfitSpeed)}</td><td>{factorLabel(f.sailOutfitManeuver)}</td></tr>
  <tr><th scope="row">Crew · {g.crew} / {spec.optimalCrew} optimal</th><td>{factorLabel(f.crew)}</td><td>{factorLabel(f.crew)}</td></tr>
 <tr><th scope="row">Crew sailing experience</th><td>{factorLabel(f.experience)}</td><td>{factorLabel(f.experience)}</td></tr><tr><th scope="row">Morale and discipline</th><td>{factorLabel(f.readiness)}</td><td>{factorLabel(f.readiness)}</td></tr>
  <tr><th scope="row">Captain’s Sailing mastery</th><td>{factorLabel(f.mastery)}</td><td>No change</td></tr>
@@ -23,6 +24,6 @@ export function PerformanceBreakdown({game:g}:{game:Game}){
 }
 export function LoadBreakdown({game:g}:{game:Game}){
  const weight=loadBreakdown(g),spec=currentShip(g);
- const items:[string,number][]=[['Trade goods',weight.trade],['Contract freight',weight.freight],['Provisions',weight.provisions],['Crew',weight.crew],['Passengers',weight.passengers],['Captain',weight.captain],['Installed cannons',weight.cannons]];
+ const items:[string,number][]=[['Trade goods',weight.trade],['Contract freight',weight.freight],['Provisions',weight.provisions],['Crew',weight.crew],['Passengers',weight.passengers],['Captain',weight.captain],['Installed cannons',weight.cannons],['Hull reinforcement',weight.reinforcement]];
  return <section aria-label="Weight aboard"><h2>Weight aboard</h2><dl className="full-stats">{items.map(([name,value])=><div key={name}><dt>{name}</dt><dd>{value.toFixed(1)} weight units</dd></div>)}<div><dt>Total deadweight</dt><dd>{weight.total.toFixed(1)} / {spec.deadweight}</dd></div><div><dt>Available deadweight</dt><dd>{(spec.deadweight-weight.total).toFixed(1)} weight units</dd></div></dl><p className="muted">Cargo space and weight are separate limits. The empty ship’s structure does not count as carried weight. Installed cannons affect movement through their weight only.</p></section>;
 }

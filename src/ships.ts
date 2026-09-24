@@ -9,7 +9,26 @@ export type ShipDefinition = {
  minCrew:number; optimalCrew:number; maxCrew:number; passengerCapacity:number; protection:number;
  cannonCapacity:Batteries; defaultCannons:Batteries;
 };
-export type OwnedShip = {id:string; name:string; configurationId:string; hullPoints:number; sailCondition:number; cannons:Batteries};
+export type Calibre=6|12|18|24|32;
+export type GunType='cannon'|'culverin';
+export type GunFit={type:GunType;calibre:Calibre;fitted:number};
+export type SailType='standard'|'reinforced'|'cotton'|'silk';
+export type OwnedShip = {id:string; name:string; configurationId:string; hullPoints:number; sailCondition:number; cannons:Batteries; gunFits?:Partial<Record<Battery,GunFit>>; sailType?:SailType; reinforcedHull?:boolean};
+export const CALIBRES:readonly Calibre[]=[6,12,18,24,32];
+export const GUN_STATS:Record<Calibre,{damage:number;weight:number;price:number}>={6:{damage:1,weight:5,price:1},12:{damage:1.25,weight:7,price:1.6},18:{damage:1.5,weight:9,price:2.3},24:{damage:1.75,weight:11,price:3},32:{damage:2,weight:14,price:4}};
+export const SAILS:Record<SailType,{name:string;speed:number;maneuver:number;damage:number;price:number}>={standard:{name:'Standard canvas',speed:1,maneuver:1,damage:1,price:200},reinforced:{name:'Reinforced canvas',speed:.97,maneuver:.97,damage:.75,price:350},cotton:{name:'Cotton',speed:1.05,maneuver:1.03,damage:1,price:500},silk:{name:'Silk',speed:1.1,maneuver:1.05,damage:1.25,price:900}};
+export const maxCalibre=(s:ShipDefinition):Calibre=>CALIBRES[Math.min(s.tier-1,4)];
+export const gunFit=(s:OwnedShip,b:Battery):GunFit=>s.gunFits?.[b]??{type:'cannon',calibre:6,fitted:Math.max(shipDefinition(s.configurationId).defaultCannons[b],s.cannons[b])};
+export const gunUnitPrice=(s:OwnedShip,f:Pick<GunFit,'type'|'calibre'>)=>Math.round(100*shipDefinition(s.configurationId).tier*GUN_STATS[f.calibre].price*(f.type==='culverin'?1.25:1));
+export const gunDamage=(s:OwnedShip,b:Battery)=>GUN_STATS[gunFit(s,b).calibre].damage*(gunFit(s,b).type==='culverin'?.8:1);
+export const gunAccuracy=(s:OwnedShip,b:Battery,distance:number)=>gunFit(s,b).type==='culverin'?1+(distance>=300?1:0):0;
+export const gunWeight=(s:OwnedShip)=>BATTERIES.reduce((n,b)=>n+s.cannons[b]*GUN_STATS[gunFit(s,b).calibre].weight,0);
+export const sailStats=(s:OwnedShip)=>SAILS[s.sailType??'standard'];
+export const sailPrice=(s:OwnedShip,type:SailType=s.sailType??'standard')=>SAILS[type].price*shipDefinition(s.configurationId).tier;
+export const reinforcementPrice=(s:OwnedShip)=>Math.round(shipDefinition(s.configurationId).price*.15);
+export const reinforcementWeight=(s:OwnedShip)=>s.reinforcedHull?shipDefinition(s.configurationId).deadweight*.05:0;
+export const shipProtection=(s:OwnedShip)=>shipDefinition(s.configurationId).protection+(s.reinforcedHull?10:0);
+export const missingGuns=(s:OwnedShip,b:Battery)=>Math.max(0,gunFit(s,b).fitted-s.cannons[b]);
 const guns=(port:number,starboard:number,bow=0,stern=0):Batteries=>({port,starboard,bow,stern});
 function define(id:string,hullType:string,shipClass:ShipClass,tier:number,price:number,maxHull:number,speed:number,maneuverability:number,capacity:number,deadweight:number,crew:[number,number,number],passengerCapacity:number,protection:number,cannonCapacity:Batteries,defaultCannons:Batteries):ShipDefinition {
  return {id,hullType,label:`${shipClass} ${hullType}`,shipClass,tier,price,maxHull,speed,maneuverability,capacity,deadweight,minCrew:crew[0],optimalCrew:crew[1],maxCrew:crew[2],passengerCapacity,protection,cannonCapacity,defaultCannons};
@@ -63,10 +82,13 @@ export function createShip(configurationId=STARTER_ID,name?:string,id:string=cry
 }
 export const totalCannons=(b:Batteries)=>BATTERIES.reduce((sum,k)=>sum+b[k],0);
 export const hullRepairQuote=(s:OwnedShip)=>Math.ceil((shipDefinition(s.configurationId).maxHull-s.hullPoints)*shipDefinition(s.configurationId).tier);
-export const sailRepairQuote=(s:OwnedShip)=>Math.ceil((100-s.sailCondition)*shipDefinition(s.configurationId).tier);
+export const sailRepairQuote=(s:OwnedShip)=>Math.ceil((100-s.sailCondition)*shipDefinition(s.configurationId).tier*sailStats(s).price/SAILS.standard.price);
 export const cannonPrice=(s:ShipDefinition)=>100*s.tier;
-export function cannonReplacementQuote(s:OwnedShip){const spec=shipDefinition(s.configurationId);return BATTERIES.reduce((sum,b)=>sum+Math.max(0,spec.defaultCannons[b]-s.cannons[b]),0)*cannonPrice(spec);}
-export function shipSaleValue(s:OwnedShip){const spec=shipDefinition(s.configurationId);return Math.max(0,Math.floor(spec.price*.7-hullRepairQuote(s)-sailRepairQuote(s)-cannonReplacementQuote(s)));}
+export function cannonReplacementQuote(s:OwnedShip){return BATTERIES.reduce((sum,b)=>sum+missingGuns(s,b)*gunUnitPrice(s,gunFit(s,b)),0);}
+export function shipSaleValue(s:OwnedShip){
+ const spec=shipDefinition(s.configurationId),guns=BATTERIES.reduce((n,b)=>{const value=s.cannons[b]*gunUnitPrice(s,gunFit(s,b)),stock=Math.min(s.cannons[b],spec.defaultCannons[b])*Math.min(gunUnitPrice(s,gunFit(s,b)),cannonPrice(spec));return n+stock+.6*(value-stock)-spec.defaultCannons[b]*cannonPrice(spec);},0);
+ return Math.max(0,Math.floor(spec.price*.7-hullRepairQuote(s)-sailRepairQuote(s)+guns+.6*(sailPrice(s)-sailPrice(s,'standard'))+(s.reinforcedHull?.7*reinforcementPrice(s):0)));
+}
 
 /** Shared legacy resolution for calculations and lazy save migration. */
 export function resolveShip(g:{ship?:OwnedShip;condition?:number;seed:number}):OwnedShip {

@@ -1,5 +1,7 @@
 # Ship ownership release
 
+> Historical ownership release scope. [Ship outfitting](ship-outfitting.md) now supersedes the default-only gun repair/resale rules and adds sail sets, calibre limits, custom armament, and hull reinforcement. Naval combat and capture are also implemented; the original scope limits below describe the earlier release.
+
 ## Included
 
 - One owned ship instance with a stable identity, name, configuration, hull points,

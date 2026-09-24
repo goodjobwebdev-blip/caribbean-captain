@@ -743,3 +743,7 @@ The following are explicit later phases or extensions:
 - detailed post-sinking rescue and cargo-loss resolution.
 
 Numerical values in this document require simulation and playtesting. The structural rules, state transitions, LLM authority boundary, and first-version scope are agreed.
+
+## Ship outfitting extension
+
+[Ship outfitting](ship-outfitting.md) adds per-battery calibre damage multipliers and cannon/culverin types. Culverins inflict 80% damage and gain +1 accuracy, with +2 total at distances >=300. Ammunition ranges and reload resource/time rules are unchanged. Permanent hull reinforcement adds 10 defense; sail-set durability multiplies incoming sail damage before rounding. Battery damage penalties compare surviving guns with fitted count rather than the stock catalogue count.

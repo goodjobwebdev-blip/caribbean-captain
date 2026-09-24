@@ -46,9 +46,10 @@ The Harbour Master provides official civilian commissions and permits.
 The Shipyard handles ships, repairs, armament, and ship-improvement work.
 
 - **Buy and sell — current:** Buy ships while selling the current ship as part of the exchange.
-- **Buy and sell — TBD:** Buy cannons separately. Replacing missing default cannons remains distinct from buying new or upgraded armament.
+- **Buy and sell — current:** Refit each battery with cannons or culverins of a supported calibre; removed guns sell back to the shipyard. Replacing destroyed fitted guns remains a separate repair service.
 - **Services — current:** Repair hull and sails, replace missing cannons, use carried repair materials, compare ships, and exchange ships.
-- **Services — TBD:** Rename and repaint ships; install upgrades such as cotton or silk sails, reinforced hulls, and other equipment.
+- **Services — current:** Replace sails (standard/reinforced canvas, cotton, silk) and permanently reinforce the hull. See [ship outfitting](ship-outfitting.md).
+- **Services — TBD:** Rename/repaint ships and additional equipment.
 - **Quests — TBD:** Buy a ship in another port and bring it back; collect repair materials from another port; escort an empty ship with a small crew.
 
 ### Church

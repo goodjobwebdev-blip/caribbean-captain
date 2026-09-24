@@ -1,3 +1,4 @@
+import {refitQuote,type RefitAction} from './outfitting';
 import type {NpcMemories} from './npcs';
 import {ensureCrew,recruitCrew,sailingCrewPractice,crewWages,resolveCrewBattle,crewServiceQuote,completeCrewService,type CrewAction} from './crew';
 import {equipmentAct,type Equipment,type EquipmentAction} from './equipment';
@@ -12,8 +13,8 @@ import {fruitAfter,spoilCargo,prepareProvisions,supplyRepairMaterials,type FoodG
 import {PERMIT_PRICE,nationOf,attitude,hasPermit,changeStanding,type Channel} from './commerce';
 import {ALL_GOODS,type GoodId} from './goods';
 import {ensureEconomy,observeMarket,consumeLots,settleBasket,type Economy,type BasketLine} from './trade';
-import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,PERSON_WEIGHT,FREIGHT_WEIGHT,CANNON_WEIGHT} from './performance';
-import {resolveShip,createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
+import {cargoSpaceUsed,shipPerformance,loadBreakdown,sailingProblems,PERSON_WEIGHT,FREIGHT_WEIGHT} from './performance';
+import {resolveShip,createShip,shipDefinition,shipSaleValue,hullRepairQuote,sailRepairQuote,cannonReplacementQuote,missingGuns,gunFit,gunWeight,BATTERIES,STARTER_ID,type OwnedShip} from './ships';
 import {initialSkills,sailingProgress,creditSailing,creditSailingPoints,type PlayerSkills} from './skills';
 import {PORTS,port,type PortId} from './world';
 export {PORTS,port,type PortId} from './world';
@@ -38,7 +39,7 @@ export const COMMISSION_DESCRIPTIONS:Record<CommissionBuilding,string>={
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
 export type Game = { npcMemories?:NpcMemories; equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
-export type Action = CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' } | {type:'buy-ship';configurationId:string} | {type:'deliver'; building?:CommissionBuilding} | { type: 'accept'; contract: Contract; building?:CommissionBuilding } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
+export type Action = RefitAction | CrewAction | EquipmentAction | {type:'difficulty';value:'Easy'|'Normal'|'Hard'} | BattleAction | {type:'contact';response:EncounterChoice} | {type:'continue-voyage'} | {type:'prepare-provisions';good:FoodGood;quantity:number;expected:string} | {type:'material-repair';kind:RepairKind;expected:string} | {type:'trade';lines:BasketLine[];expected:string;channel?:Channel} | { type: 'buy' | 'sell'; good: Good | 'provisions'; quantity: number } | {type:'buy-permit'|'meet-smuggler'} | { type: 'hire' | 'dismiss' | 'sleep' | 'repair' | 'repair-sails' | 'replace-cannons' } | {type:'buy-ship';configurationId:string} | {type:'deliver'; building?:CommissionBuilding} | { type: 'accept'; contract: Contract; building?:CommissionBuilding } | { type: 'sail'; to: PortId } | { type: 'encounter'; choice: 'flee' | 'negotiate' | 'fight' };
 export const distance = (a: PortId, b: PortId) => Math.hypot(port(a).x - port(b).x, port(a).y - port(b).y);
 export const letterReward = (from:PortId,to:PortId) => Math.ceil(distance(from,to)/100);
 export const questSkillReward = (c:Contract) => c.sailingReward ?? (c.type==='Letter'?letterReward(c.from,c.to):0);
@@ -217,14 +218,19 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const cost=hullRepairQuote(ship);if(!cost)throw new Error('Your hull needs no repairs.');
       pay(cost);if(advance(g,Math.ceil((spec.maxHull-ship.hullPoints)/5))){ship.hullPoints=spec.maxHull;note(g,`The shipyard repaired ${ship.name}'s hull for ${cost} silver.`);}break;
     }
+    case 'refit':{
+      const q=refitQuote(original,action.change);if(q.token!==action.expected)throw Error('The refit quote changed. Review it again.');if(q.errors.length)throw Error(q.errors.join(' '));
+      g.silver-=q.balance;record(g,'refit',-q.purchase);if(q.buyback)record(g,'refit-sale',q.buyback);
+      if(advance(g,q.hours)){Object.assign(ship,q.ship);note(g,`Ship refit completed: ${action.change.kind}. Paid ${q.purchase} silver; equipment buyback ${q.buyback} silver.`);}break;
+    }
     case 'repair-sails':{
       const cost=sailRepairQuote(ship);if(!cost)throw new Error('Your sails need no repairs.');
       pay(cost);if(advance(g,Math.ceil((100-ship.sailCondition)/5))){ship.sailCondition=100;note(g,`Sails repaired for ${cost} silver.`);}break;
     }
     case 'replace-cannons':{
-      const cost=cannonReplacementQuote(ship);if(!cost)throw new Error('No default cannons need replacing.');
-      const missing=BATTERIES.reduce((n,b)=>n+Math.max(0,spec.defaultCannons[b]-ship.cannons[b]),0);
-      allowWeight(missing*CANNON_WEIGHT);pay(cost);if(advance(g,missing)){for(const b of BATTERIES)ship.cannons[b]=Math.max(ship.cannons[b],spec.defaultCannons[b]);note(g,`Replaced ${missing} cannons for ${cost} silver.`);}break;
+      const cost=cannonReplacementQuote(ship);if(!cost)throw new Error('No fitted guns need replacing.');
+      const missing=BATTERIES.reduce((n,b)=>n+missingGuns(ship,b),0),restored=structuredClone(ship);for(const b of BATTERIES)restored.cannons[b]=gunFit(ship,b).fitted;
+      allowWeight(gunWeight(restored)-gunWeight(ship));pay(cost);if(advance(g,missing)){for(const b of BATTERIES)ship.cannons[b]=restored.cannons[b];note(g,`Replaced ${missing} cannons for ${cost} silver.`);}break;
     }
     case 'buy-ship':{
       const quote=shipPurchaseQuote(g,action.configurationId);

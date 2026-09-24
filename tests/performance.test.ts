@@ -11,7 +11,7 @@ const rich=()=>{const g=newGame('Mary',123);g.silver=1000000;return g;};
 describe('ship performance',()=>{
  it('preserves the healthy starting sloop pace with all starting weights accounted for',()=>{
   const g=newGame('Mary',123),w=loadBreakdown(g),p=shipPerformance(g);
-  expect(w).toEqual({trade:0,freight:0,provisions:30,crew:10,passengers:0,captain:1,cannons:20,total:61});
+  expect(w).toEqual({trade:0,freight:0,provisions:30,crew:10,passengers:0,captain:1,cannons:20,reinforcement:0,total:61});
   expect(p.speed).toBe(1.2);expect(p.maneuverability).toBe(80);expect(hoursTo('bridgetown','saint-pierre',g)).toBe(49);
   expect(act(g,{type:'sail',to:'saint-pierre'},rng(.5,.5,.5)).hours-g.hours).toBe(49);
  });
