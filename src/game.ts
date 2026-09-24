@@ -21,9 +21,20 @@ export type Good = Exclude<GoodId,'provisions'>;
 export const GOODS: Good[] = ALL_GOODS.filter((id):id is Good=>id!=='provisions');
 // Fixed baseline is retained only for contract pricing and legacy callers.
 export const SHIP = {...shipDefinition(STARTER_ID),name:'The Wayfarer',type:'Universal Sloop'};
-export type CommissionBuilding = 'Store' | 'Harbour Master';
+export const COMMISSION_BUILDINGS = ['Store','Harbour Master','Church','Pharmacy','Fort & Garrison','Governor'] as const;
+export type CommissionBuilding = typeof COMMISSION_BUILDINGS[number];
+export const isCommissionBuilding = (place:string):place is CommissionBuilding => COMMISSION_BUILDINGS.some(b=>b===place);
 export const contractBuilding = (c:Contract):CommissionBuilding => c.building ?? 'Harbour Master';
-export type Contract = { building?: CommissionBuilding; id: string; type: 'Freight' | 'Letter' | 'Passengers'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
+export type Contract = { building?: CommissionBuilding; assignment?: 'Monk passage' | 'Medical supplies' | 'Garrison supplies' | 'Official dispatch' | 'Parish donation'; id: string; type: 'Freight' | 'Letter' | 'Passengers' | 'Donation'; from: PortId; to: PortId; reward: number; sailingReward?: number; amount: number };
+export const contractTitle = (c:Contract) => c.assignment ?? c.type;
+export const COMMISSION_DESCRIPTIONS:Record<CommissionBuilding,string>={
+ Store:'Small (40 units) and medium (200 units) freight is accepted and delivered at Stores.',
+ 'Harbour Master':'Letters, passengers, and large (800 units) freight are accepted and delivered at Harbour Masters. Previously accepted contracts also remain here.',
+ Church:'Carry two monks to another church, or give 100 silver to the local parish once per town per game day. Donations earn +2 national attitude and +1 reputation, take one hour, and complete immediately without using a task slot.',
+ Pharmacy:'Carry 20 sealed units of herbs, remedies, and medical supplies to another pharmacy. The apothecary provides the cargo; it cannot be traded or used as medicine.',
+ 'Fort & Garrison':'Carry 40 sealed units of ammunition and gunpowder to a garrison of the same nation. Official freight needs no trading permit and cannot be sold or fired.',
+ Governor:'Carry an official dispatch to another governor of the same nation. One destination is offered each game day, with a higher payment than an ordinary letter.',
+};
 export type Dice = [number, number];
 export type Voyage = { to: PortId; hours: number; remaining: number; departureSpeed?:number; weather: string; dice: Dice; contacts?:Contact[]; elapsed?:number };
 export type Game = { npcMemories?:NpcMemories; equipment?:Equipment; encounter?:Encounter; encounterRoll?:Roll; inspectionRolls?:Roll[]; battle?:Battle; battleHistory?:Battle[]; crewState?:Crew; captainState?:Captain; difficulty?:'Easy'|'Normal'|'Hard'; pirateDanger?:number; spyglass?:boolean; falseFlag?:boolean; version: 1 | 2; ship?:OwnedShip; captain: string; skills?: PlayerSkills; port: PortId; hours: number; silver: number; provisions: number; crew: number; condition?: number; economy?:Economy; finances?:Finances; cargo: Record<string, number>; contracts: Contract[]; archive?: (Contract & {completedAt:number})[]; accepted: string[]; log: { hours: number; text: string }[]; seed: number; voyage: Voyage | null; failed: string | null; lastRoll: { label: string; dice: Dice; outcome: string } | null };
@@ -82,7 +93,10 @@ function advance(g:Game,hours:number) {
 }
 export const FREIGHT_SIZES=[40,200,800] as const;
 export function offers(g:Game):Contract[] {
- return PORTS.filter(p=>p.id!==g.port).flatMap(p=>{
+ const day=Math.floor(g.hours/24),destinations=PORTS.filter(p=>p.id!==g.port);
+ const officialDestinations=destinations.filter(p=>p.nation===port(g.port).nation);
+ const dispatchTo=officialDestinations[day%officialDestinations.length]?.id;
+ const jobs=destinations.flatMap(p=>{
   const d=distance(g.port,p.id);
   const base=(type:Contract['type'],amount:number):Contract=>({
    id:`${g.port}:${p.id}:${Math.floor(g.hours/24)}:${type}${type==='Freight'&&amount!==40?`:${amount}`:''}`,
@@ -90,11 +104,24 @@ export function offers(g:Game):Contract[] {
    reward:Math.round(type==='Letter'?20+d*1.04:type==='Freight'?20+d*amount*.0432:30+d*amount*.69),amount,
   });
   // Keep original offer IDs and ordering for saved commissions.
-  return [base('Letter',0),base('Freight',40),base('Passengers',3),...FREIGHT_SIZES.filter(n=>n!==40).map(n=>base('Freight',n))];
- }).filter(c=>!g.accepted.includes(c.id));
+  const special=(assignment:NonNullable<Contract['assignment']>,building:CommissionBuilding,type:Contract['type'],amount:number,multiplier=1):Contract=>{
+   const c=base(type,amount);return {...c,id:`${g.port}:${p.id}:${day}:${assignment}`,assignment,building,reward:Math.round(c.reward*multiplier)};
+  };
+  return [base('Letter',0),base('Freight',40),base('Passengers',3),...FREIGHT_SIZES.filter(n=>n!==40).map(n=>base('Freight',n)),
+   special('Monk passage','Church','Passengers',2),special('Medical supplies','Pharmacy','Freight',20),
+   ...(p.nation===port(g.port).nation?[special('Garrison supplies','Fort & Garrison','Freight',40)]:[]),
+   ...(p.id===dispatchTo?[special('Official dispatch','Governor','Letter',0,1.25)]:[])];
+ });
+ jobs.push({id:`${g.port}:${day}:Parish donation`,assignment:'Parish donation',building:'Church',type:'Donation',from:g.port,to:g.port,reward:0,sailingReward:0,amount:100});
+ return jobs.filter(c=>!g.accepted.includes(c.id));
 }
 export function contractProblems(g:Game,c:Contract):string[]{
  const spec=currentShip(g),problems:string[]=[];
+ if(c.type==='Donation'){
+  if(g.silver<c.amount+wageFor(g,1))problems.push('Keep 100 silver for the donation plus one hour of crew wages.');
+  if(g.provisions+1e-8<foodFor(g,1))problems.push('Keep enough provisions for one hour ashore.');
+  return problems;
+ }
  if(g.contracts.length>=3)problems.push('You can carry up to three active contracts.');
  if(c.type==='Freight'&&cargoUsed(g)+c.amount>spec.capacity+1e-8)problems.push(`This freight needs ${c.amount} free hold units.`);
  if(c.type==='Passengers'&&passengers(g)+c.amount>spec.passengerCapacity)problems.push(`There are only ${spec.passengerCapacity} passenger berths.`);
@@ -211,7 +238,12 @@ export function act(original:Game, action:Action, randomOverride?:()=>number):Ga
       const c=offers(g).find(c=>c.id===action.contract.id);if(!c)throw new Error('That offer is no longer available.');
       if(action.building&&action.building!==contractBuilding(c))throw new Error('That commission is offered at another building.');
       const problems=contractProblems(g,c);if(problems.length)throw new Error(problems.join(' '));
-      g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${c.type.toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery at the ${contractBuilding(c)}.`);break;
+      if(c.type==='Donation'){
+       g.silver-=c.amount;record(g,'donation',-c.amount);g.accepted.push(c.id);advance(g,1);
+       changeStanding(g,2,1);g.archive=[{...c,completedAt:g.hours},...(g.archive??[])];
+       note(g,`Donated ${c.amount} silver to the parish. +2 national attitude and +1 reputation.`);break;
+      }
+      g.contracts.push(c);g.accepted.push(c.id);advance(g,1);note(g,`Accepted ${contractTitle(c).toLowerCase()} to ${port(c.to).name}: ${c.reward} silver on delivery at the ${contractBuilding(c)}.`);break;
     }
     case 'deliver':{const building=action.building??'Harbour Master';const delivered=g.contracts.filter(c=>c.to===g.port&&contractBuilding(c)===building);if(!delivered.length)throw new Error(`No contracts to deliver at the ${building} in this port.`);const reward=delivered.reduce((a,c)=>a+c.reward,0);const skillReward=delivered.reduce((a,c)=>a+questSkillReward(c),0);const learning=creditSailingPoints(g.skills,skillReward);g.skills=learning.skills;g.silver+=reward;record(g,'quest',reward);g.archive=[...delivered.map(c=>({...c,sailingReward:questSkillReward(c),completedAt:g.hours+1})),...(g.archive??[])];g.contracts=g.contracts.filter(c=>!delivered.includes(c));changeStanding(g,2*delivered.length,delivered.length);advance(g,1);note(g,`Delivered ${delivered.length} contract(s). Earned ${reward} silver.${learning.earned?` +${learning.earned} Sailing point(s).`:''}${learning.tiers?` Sailing mastery increased to tier ${g.skills.sailing.tier}.`:''}`);break;}
     case 'sail': {

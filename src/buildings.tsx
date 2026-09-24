@@ -24,9 +24,9 @@ function Capability({title,items}:{title:string;items:readonly string[]}){
  return <section><div className="section-line"><h2>{title}</h2><span className="tbd-badge">TBD</span></div><ul>{items.map(item=><li key={item}>{item}</li>)}</ul></section>;
 }
 
-export function BuildingPlaceholder({building}:{building:PlannedBuilding}){
+export function BuildingPlaceholder({building,commissionsAvailable=false}:{building:PlannedBuilding;commissionsAvailable?:boolean}){
  return <div className="building-placeholder" aria-label={`${building.name} planned features`}>
-  <div className="planned-notice"><span className="tbd-badge">BUILDING TBD</span><p>This location is visible for planning only. Its commerce, services, and quests are not actionable yet.</p></div>
-  <div className="building-capabilities"><Capability title="Buy and sell" items={building.commerce}/><Capability title="Services" items={building.services}/><Capability title="Quests" items={building.quests}/></div>
+  <div className="planned-notice"><span className="tbd-badge">{commissionsAvailable?'MORE FEATURES TBD':'BUILDING TBD'}</span><p>{commissionsAvailable?'Commissions are available through the host’s dialogue. Other capabilities below remain planned.':'This location is visible for planning only. Its commerce, services, and quests are not actionable yet.'}</p></div>
+  <div className="building-capabilities"><Capability title="Buy and sell" items={building.commerce}/><Capability title="Services" items={building.services}/><Capability title="Quests" items={building.quests.filter(item=>!commissionsAvailable||!(item.startsWith('Deliver potions')||item.startsWith('Resupply the fort')||item==='Deliver very important letters.'))}/></div>
  </div>;
 }

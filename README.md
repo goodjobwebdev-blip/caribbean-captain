@@ -60,3 +60,5 @@ The world now includes 15 colonial towns across 13 island groups, with independe
 Buildings now open with a named host and dialogue choices. Hosts remember visits and completed dealings; service panels stay open after transactions. Optional AI prose adds contextual greetings and reactions without blocking the authored fallback. See [NPC dialogue](docs/npc-dialogues.md).
 
 Small and medium freight jobs are accepted and delivered at Stores. Letters, passengers, large freight, and previously accepted contracts stay at Harbour Masters. The Journal records the delivery building. See [building commissions](docs/building-commissions.md).
+
+Repeatable work now includes Church monk passages and parish donations, Pharmacy medical freight, Fort & Garrison supply deliveries, and Governor dispatches. See [easy commissions](docs/easy-commissions.md) and the [full quest difficulty roadmap](docs/quest-roadmap.md).
