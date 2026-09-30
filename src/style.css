@@ -207,3 +207,13 @@ button:disabled{cursor:not-allowed}
 .maneuver-grid small { line-height: 1.5; font-weight: normal; }
 .battle-advice { border-left: 3px solid var(--accent, #2c838b); padding: .6rem 1rem; line-height: 1.6; }
 .battle-model > details { margin-top: 1rem; }
+
+/* Narrow-screen controls stay comfortable to tap, including compact icon/nav rows. */
+@media(max-width:720px){
+ button{min-height:44px;}
+ summary{min-height:44px;padding-top:10px;padding-bottom:10px;}
+ select,input:not([type=checkbox]):not([type=radio]){min-height:44px;}
+ .topbar .nav-icon{width:44px;height:44px;min-width:44px;padding:10px;}
+ .port-nav nav button,.port-nav>button{min-height:44px;}
+ .topbar .brand{flex:1;}
+}

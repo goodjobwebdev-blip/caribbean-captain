@@ -68,3 +68,5 @@ Shipyard outfitting now supports 6–32-pound cannons and culverins per battery,
 Game UI details now include crew and skill progress bars, ship condition/capacity meters, saved-action result highlights, and building delivery badges. Existing themes and game mechanics are unchanged. See [UI details](docs/ui-details.md).
 
 Harbour stories now give every town a one-time incident with a choice of work, supplies, time and local goodwill. The captain’s compass surfaces practical next steps and remembers your journeys. Battles include an offline tactical captain and editable maneuver plans. See [tactical captains and harbour stories](docs/tactical-harbours-release.md).
+
+A connected three-port journey can now grow from your harbour choices. Recurring characters remember your decisions, and later terms and outcomes reflect them. Mobile navigation restores focus after cancelled route reviews and shows saved story results and new scenes in view. See [connected journeys](docs/connected-journeys.md).

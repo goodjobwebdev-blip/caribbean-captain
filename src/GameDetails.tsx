@@ -34,6 +34,7 @@ export function actionFeedback(before:Game,after:Game,action:Action):FeedbackIte
  const old=ownedShip(before),next=ownedShip(after);
  if(old.id===next.id){if(next.hullPoints>old.hullPoints)items.push({text:`Hull restored +${(next.hullPoints-old.hullPoints).toFixed(1)}`,kind:'gain'});if(next.sailCondition>old.sailCondition)items.push({text:`Sails restored +${(next.sailCondition-old.sailCondition).toFixed(1)}%`,kind:'gain'});}
  const completed=(after.archive?.length??0)-(before.archive?.length??0);if(completed>0)items.push({text:`${completed} commission${completed===1?'':'s'} completed`,kind:'milestone'});
+ if(action.type==='connection'&&before.connections?.stage!==after.connections?.stage)items.push({text:after.connections?.stage==='complete'?'Connected journey completed':before.connections?'Next chapter unlocked':'Connected journey begun',kind:'milestone'});
  if(action.type==='refit')items.push({text:'Refit complete',kind:'milestone'});
  if(action.type==='replace-cannons')items.push({text:'Fitted guns restored',kind:'gain'});
  return items;
