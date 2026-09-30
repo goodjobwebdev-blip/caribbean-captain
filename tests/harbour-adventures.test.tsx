@@ -104,7 +104,7 @@ describe('captain’s compass',()=>{
   expect(p.onAction).toHaveBeenCalledExactlyOnceWith(choice(g));
   const next=act(g,choice(g));v.rerender(<CaptainsCompass {...p} game={next}/>);
   expect(screen.getByText(HARBOUR_STORIES.bridgetown.choices[0].outcome)).toBeTruthy();
-  expect(screen.queryByRole('button',{name:/^Choose:/})).toBeNull();expect(screen.getByRole('link',{name:/Your work opened a new lead/}).getAttribute('href')).toBe('#connected-journey');
+  expect(screen.queryByRole('button',{name:/^Choose:/})).toBeNull();expect(screen.getByRole('button',{name:'Meet the contact ↑'})).toBeTruthy();
  });
  it('disables choices while saving or short of supplies and hides harbour controls at sea',()=>{
   const g=newGame('Wait',17),p=props(g),v=render(<CaptainsCompass {...p} busy/>);

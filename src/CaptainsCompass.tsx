@@ -63,7 +63,7 @@ export function CaptainsCompass({game:g,checkpointCount,busy,onNavigate,onPlan,o
   <section className="harbour-story" aria-labelledby={`${id}-story`}>
    <div className="harbour-story-heading"><p className="eyebrow">{memory?'THIS PORT REMEMBERS':'A STORY ON THE QUAY'}</p><span className="harbour-story-seal">{memory?'Chapter kept':'One chance to take part'}</span></div>
    <h3 id={`${id}-story`}>{tale.title}</h3>
-   {memory&&remembered?<div className="harbour-story-memory" ref={outcomeRef} tabIndex={-1} role="status" aria-label="Harbour story outcome"><p>{remembered.outcome}</p><small>{date(memory.completedAt)} · {remembered.label}</small>{!g.connections&&<p><a href="#connected-journey">Your work opened a new lead. Meet the contact ↑</a></p>}</div>:<>
+   {memory&&remembered?<div className="harbour-story-memory" ref={outcomeRef} tabIndex={-1} role="status" aria-label="Harbour story outcome"><p>{remembered.outcome}</p><small>{date(memory.completedAt)} · {remembered.label}</small>{!g.connections&&<p>Your work opened a new lead. <button disabled={busy} onClick={()=>{const target=document.getElementById('connected-journey');target?.scrollIntoView?.({block:'start'});target?.focus({preventScroll:true});}}>Meet the contact ↑</button></p>}</div>:<>
     <p className="harbour-story-narrator">A word from {npcAt(g.port,'Harbour Master').name}, Harbour Master</p>
     <p className="harbour-story-scene">{tale.scene}</p>
     <div className="harbour-story-choices">

@@ -12,6 +12,7 @@ it('focuses saved story outcomes and returns from cancelled departure to its tri
  fireEvent.click(await screen.findByRole('button',{name:'Back to harbour'}));
  fireEvent.click(await screen.findByRole('button',{name:'Choose: Move the merchant’s sugar'}));
  const outcome=await screen.findByRole('status',{name:'Harbour story outcome'});await waitFor(()=>expect(document.activeElement).toBe(outcome));
+ fireEvent.click(screen.getByRole('button',{name:'Meet the contact ↑'}));expect(document.activeElement).toBe(document.getElementById('connected-journey'));
  const before=(await profiles()).find(p=>p.name==='Narrow navigation test')!.game;
  const chart=screen.getByRole('button',{name:'Chart Saint-Pierre'});chart.focus();fireEvent.click(chart);
  const departure=await screen.findByLabelText('Departure review');await waitFor(()=>expect(document.activeElement).toBe(departure));
