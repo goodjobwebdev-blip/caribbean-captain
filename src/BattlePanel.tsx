@@ -14,7 +14,7 @@ import {requestBattleDecision} from './battle/planner';
 import {localBattleDecision,localDecisionKey} from './battle/local-planner';
 import {maneuverPlans} from './battle/maneuvers';
 import type {Decision} from './battle/types';
-const label=(id:string)=>id.replaceAll('_',' ').replaceAll('-',' ');
+const label=(id:string)=>{const turn=/^turn_(-?\d+)$/.exec(id);return turn?`turn ${Math.abs(Number(turn[1]))}° ${Number(turn[1])<0?'port':'starboard'}`:id.replaceAll('_',' ').replaceAll('-',' ');};
 type Props={game:Game;busy:boolean;apiKey:string;model:string;onAction:(action:Action)=>Promise<void>;onSettings:()=>void};
 export function BattlePanel({game:g,busy,apiKey,model,onAction,onSettings}:Props){
  const b=g.battle,e=g.encounter;
