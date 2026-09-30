@@ -199,3 +199,11 @@ button:disabled{cursor:not-allowed}
 /* Harbour paintings reserve their space before loading. */
 .harbour-art{display:block;width:100%;height:auto;aspect-ratio:2/1;object-fit:cover;object-position:center 48%;border:1px solid var(--line);border-radius:6px;background:var(--surface);margin:0 0 18px}
 @media(max-width:720px){.harbour-art{aspect-ratio:5/2;height:auto;max-height:220px;object-fit:cover}}
+
+/* Tactical plans remain readable on narrow decks and keyboard navigation. */
+.battle-maneuvers { margin: 1.25rem 0; }
+.maneuver-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: .65rem; }
+.maneuver-grid button { text-align: left; padding: .85rem; display: flex; flex-direction: column; gap: .4rem; }
+.maneuver-grid small { line-height: 1.5; font-weight: normal; }
+.battle-advice { border-left: 3px solid var(--accent, #2c838b); padding: .6rem 1rem; line-height: 1.6; }
+.battle-model > details { margin-top: 1rem; }
