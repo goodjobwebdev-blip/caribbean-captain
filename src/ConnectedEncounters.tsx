@@ -33,7 +33,7 @@ export function ConnectedEncounters({game,busy,onAction,onPlan}:Props){
  if(!view||game.failed||game.voyage||game.battle)return null;
  const latestOutcome=view.outcome??view.memory.at(-1)?.text??'';
  const rivalKnown=view.status!=='offer'||Boolean(view.scene?.includes(view.rival.name)||view.memory.some(memory=>memory.speaker.includes(view.rival.name)||memory.text.includes(view.rival.name)));
- return <section className="connected-encounters" aria-labelledby={`${id}-title`} aria-busy={locked}>
+ return <section className="connected-encounters" id="connected-journey" tabIndex={-1} aria-labelledby={`${id}-title`} aria-busy={locked}>
   <header className="connected-heading">
    <div><p className="eyebrow">A CONNECTED JOURNEY</p><h2 id={`${id}-title`}>{view.title}</h2></div>
    <span className="connected-chapter"><strong>Chapter {view.chapter} of 3</strong>{view.status==='complete'?'Journey complete':view.status==='travel'?'A crossing ahead':view.status==='offer'?'An introduction':'A choice ashore'}</span>
