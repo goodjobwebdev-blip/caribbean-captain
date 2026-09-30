@@ -1,0 +1,21 @@
+import {expect,it} from 'vitest';
+import {act,newGame,normalizeGame} from '../src/game';
+import {connectionsView,connectionObjective} from '../src/connections';
+import {captainBearings} from '../src/CaptainsCompass';
+import {actionFeedback} from '../src/GameDetails';
+it('prioritizes the accepted journey over generic exploration and reports only saved milestones',()=>{
+ const first=act(newGame('A',172),{type:'harbour-story',port:'bridgetown',choice:'aid'});
+ const action=connectionsView(first)!.options[0].action;
+ const accepted=act(first,action),objective=connectionObjective(accepted)!;
+ expect(captainBearings(accepted,1).find(b=>b.id==='connected-journey')?.destination).toBe(objective.destination);
+ expect(captainBearings(accepted,1).some(b=>b.id==='new-horizon')).toBe(false);
+ expect(actionFeedback(first,first,action).some(f=>f.text==='Connected journey begun')).toBe(false);
+ expect(actionFeedback(first,accepted,action).some(f=>f.text==='Connected journey begun')).toBe(true);
+ const loaded=normalizeGame(JSON.parse(JSON.stringify(accepted)));
+ expect(connectionsView(loaded)).toEqual(connectionsView(accepted));
+ expect(first.connections).toBeUndefined();
+ const arrived={...accepted,port:objective.destination};
+ const bearings=captainBearings(arrived,1);
+ expect(bearings.some(b=>b.id==='connected-arrival')).toBe(true);
+ expect(bearings.some(b=>['new-horizon','commission-route','work'].includes(b.id))).toBe(false);
+});
