@@ -6,7 +6,7 @@ Implements the Encounter → Naval Engagement → Deck Battle → Captain Duel f
 
 New voyages use a seeded contact schedule. Contact roles and opening postures produce contextual responses; not every contact becomes combat. Lookout and a spyglass can unlock early sightings. Peaceful hail stores the NPC origin market's dated departure snapshot.
 
-In Settings, load NanoGPT models and choose a **Battle model**. The Prose model and dialogue toggle are independent. Easy / Normal / Hard change NPC planning information, not combat stats. No model or API failure suspends the battle. Retry or Change Model resumes it. The implementation never supplies a deterministic NPC combat fallback.
+Combat now includes a local tactical captain, prepared while the player plans. No Battle model is required. The optional NanoGPT Battle model remains available for each decision, separate from prose and dialogue. Model failure never removes the local option. Local decisions use visible battle observations and their own supplies, never secret player schedules or inventory. Accepted decisions are still saved before reveal. Editable maneuver cards prepare orders without committing them. A blocked replacement can explicitly abandon remaining orders and hold course, preventing exhausted-resource deadlocks.
 
 Naval planning supports free initial battery preloads, timed orders, ammunition/powder reservations, turns, sails, volleys, explosives, grappling, repairs, morale support, doctoring and deception. The course preview assumes the opponent maintains its visible course. Both accepted plans are saved before reveal. Playback supports Pause, Normal, Fast, Next Event and Resolve Instantly, with mandatory stops at invalid starts and phase changes.
 

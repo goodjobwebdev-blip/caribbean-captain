@@ -1,0 +1,49 @@
+.captains-compass{margin:26px 0 32px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper);isolation:isolate}
+.compass-heading{display:flex;align-items:center;gap:18px;padding:25px 26px 20px;background:var(--sea);color:var(--header-text)}
+.compass-heading .eyebrow{color:var(--header-muted);margin:0 0 7px}
+.compass-heading h2{color:var(--header-text);margin:0;font-size:32px}
+.compass-heading p:last-child{font-size:12px;color:var(--header-muted);margin:8px 0 0}
+.compass-rose{display:grid;place-items:center;width:62px;height:62px;flex-shrink:0;border:1px solid var(--header-line);border-radius:50%;font-size:47px;line-height:1;color:var(--gold);outline:1px solid var(--header-line);outline-offset:5px}
+.compass-progress{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+.compass-progress>span{background:var(--surface);padding:12px 18px;font-size:10px;color:var(--muted);letter-spacing:.02em}
+.compass-progress strong{font-size:22px;font-weight:600;color:var(--ink);display:block;line-height:1.3}
+.compass-progress strong small{display:inline;font-size:11px;font-weight:400}
+.compass-bearings{padding:4px 22px 8px}
+.bearing{display:flex;align-items:flex-start;gap:13px;padding:17px 0;border-bottom:1px solid var(--line)}
+.bearing:last-child{border-bottom:0}
+.bearing-number{font-size:10px;color:var(--accent-text);border:1px solid var(--line);border-radius:50%;width:28px;height:28px;flex-shrink:0;display:grid;place-items:center;margin-top:1px}
+.bearing h3{margin:0 0 6px;font-size:22px}
+.bearing p{margin:0 0 9px;font-size:12px;line-height:1.6;color:var(--muted)}
+.bearing button{padding:6px 10px;font-size:11px}
+.bearing-urgent .bearing-number{border-color:var(--gold);color:var(--warning)}
+.harbour-story{background:var(--surface);border-top:1px solid var(--line);padding:23px}
+.harbour-story-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.harbour-story-heading .eyebrow{margin:0}
+.harbour-story-seal{font-size:9px;border:1px solid var(--line);border-radius:20px;padding:3px 8px;color:var(--muted)}
+.harbour-story h3{font-size:29px;margin:13px 0 8px}
+.harbour-story-narrator{font-size:11px;color:var(--accent-text);margin:0 0 11px}
+.harbour-story-scene{font-family:Georgia,serif;font-size:15px;line-height:1.85;margin:0 0 20px;color:var(--text)}
+.harbour-story-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.harbour-story-choice{display:flex;flex-direction:column;align-items:flex-start;padding:17px;background:var(--paper);border:1px solid var(--line);border-radius:6px;min-width:0}
+.harbour-story-choice h4{color:var(--ink);font-size:14px;line-height:1.4;margin:0 0 11px}
+.harbour-story-choice p{font-size:11px;line-height:1.6;margin:0 0 9px}
+.story-choice-cost{color:var(--muted)}
+.story-choice-reward{color:var(--ink);font-weight:600}
+.harbour-story-choice small{font-size:10px;margin-bottom:14px}
+.harbour-story-choice button{margin-top:auto;width:100%;font-size:11px;text-align:left;white-space:normal}
+.harbour-story-choice .story-choice-blocked{color:var(--warning);margin:9px 0 0;font-size:10px}
+.harbour-story-note{font-size:10px;margin-top:16px;line-height:1.7}
+.harbour-story-memory p{font-family:Georgia,serif;font-size:15px;line-height:1.8;margin:10px 0 13px}
+.harbour-story-memory small{font-size:10px}
+.compass-atlas{border-top:1px solid var(--line);padding:15px 23px;color:var(--text)}
+.compass-atlas summary{font-size:12px;font-weight:600;color:var(--ink)}
+.compass-atlas summary>span{font-weight:400;color:var(--muted);font-size:10px;margin-left:10px}
+.compass-atlas>p{font-size:11px;color:var(--muted);margin:12px 0}
+.compass-atlas ul{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 22px;padding:0;margin:0}
+.compass-atlas li{display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--line);padding:10px 0;font-size:11px;min-width:0}
+.compass-atlas li>span:first-child{color:var(--accent-text);font-size:13px}
+.compass-atlas li small{font-size:9px}
+.atlas-status{margin-left:auto;white-space:nowrap;font-size:9px;color:var(--muted)}
+.compass-atlas .uncharted{color:var(--muted)}
+@media(max-width:650px){.compass-heading{padding:22px 18px;gap:15px}.compass-rose{width:45px;height:45px;font-size:35px}.compass-heading h2{font-size:28px}.compass-heading p:last-child{font-size:11px}.compass-progress>span{padding:11px 10px;font-size:9px}.compass-progress strong{font-size:20px}.compass-bearings{padding:4px 16px 8px}.bearing{gap:10px}.bearing h3{font-size:20px}.harbour-story{padding:19px 16px}.harbour-story-choices{grid-template-columns:1fr}.compass-atlas{padding:15px 16px}.compass-atlas ul{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.captains-compass button{transition:none}}

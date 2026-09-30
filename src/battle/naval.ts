@@ -156,6 +156,9 @@ export function stepNaval(g:Game,b:Battle){
 }
 export function replaceOrder(b:Battle,id:string,replacement:string){
  const old=b.plans[id],index=old.findIndex(o=>o.start===b.unit&&!o.begun);if(index<0)throw Error('No replacement pending.');
+ // A damaged ship may no longer be able to supply any dependent tail order.
+ // Explicitly abandoning that tail always leaves a safe, resource-free way forward.
+ if(replacement==='cancel-remaining-orders'){b.plans[id]=old.slice(0,index);return;}
  const ids=[replacement,...old.slice(index+1).map(o=>o.id)];let plan:Scheduled[]=[];
  // Later orders retain order; only tail orders that overflow are removed.
  while(ids.length){try{plan=schedule(b,id,ids,b.unit);break;}catch(e){if(!(e instanceof Error)||!e.message.includes('exceeds'))throw e;ids.pop();}}
